@@ -1,2 +1,0 @@
-Epoch,Train Loss,Test Loss,Train Joint Loss,Test Joint Loss,Test KLD,Joint Mu,Joint Logvar,Train KLD,Train Image Loss,Test Image Loss,Mu Image,Logvar Image,Train ImageTxt Loss,Test ImageTxt Loss,Mu ImageTxt,Logvar ImageTxt
-1,6632.623111111111,4216.162,,,2.99436328125,,,5.684277777777778,8410.4,8280.6855,,,44.86115625,44.22723828125,,
