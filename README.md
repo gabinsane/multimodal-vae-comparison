@@ -13,6 +13,19 @@ The list of packages needed can be found in `requirements.txt`. However, we reco
 
 ## Usage
 
+### Generate dummy dataset
+
+The code currently supports either images of size [64,64,3] or .pkl with arrays of format [dataset_size, 1D_array], the arrays can have an arbitrary size. 
+We provide code to generate such dummy dataset, i.e. a set of images with colored objects, another matching set of images with corresponding color names and an attrs.pkl file with single number arrays
+that represent the color label. You can train with any pair from these three "modalities", just add the path to the dataset in appropriate arguments in the config. To generate your custom dataset, run:
+
+
+`python generate_dataset.py --size 10000`
+
+
+You can make the object colors or color names noisy by adding --noisytxt or --noisycol arguments. The generated data will be saved in the /data folder and is ready to train.
+
+
 ### Training
 
 The parameters can be set up via a .yml config or command line arguments - these are the same ones, but override the config. To train using the config, run:
