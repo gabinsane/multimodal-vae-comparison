@@ -1,0 +1,19 @@
+general:
+  n_epochs: 500
+  n_latents: 8
+  obj: moe_elbo
+  loss: lprob
+  viz_freq: 100
+  model: 2mods
+  noisy_txt: False
+modality_1:
+  dataset: /home/gabi/mmvae/vaevolution/data_anot_imagenonoise
+  type: img
+modality_2:
+  dataset: /home/gabi/mmvae/vaevolution/data_anot_imagenonoise/txt_imgs_nonoise
+  type: txt
+
+
+
+
+
