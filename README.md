@@ -48,10 +48,10 @@ general:
   model: 2mods   # if you train a bi-modal vae, set "2mods", for unimodal vae, set "uni" - this will take the dataset from modality_1 only
   noisy_txt: False  # if you have numeric/text labels as one modality, you can make them noisy (for experimental reasons only)
 modality_1:
-  dataset: /home/gabi/mmvae/vaevolution/data_anot_imagenonoise  # path to the folder or .pkl file with the first modality train data
+  dataset: ../data/image  # path to the folder or .pkl file with the first modality train data
   type: img # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
 modality_2:
-  dataset: /home/gabi/mmvae/vaevolution/data_anot_imagenonoise/txt_imgs_nonoise  # path to the folder or .pkl file with the second modality train data
+  dataset: ../data/attrs.pkl  # path to the folder or .pkl file with the second modality train data
   type: txt # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
 ```
 
