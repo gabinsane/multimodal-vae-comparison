@@ -4,12 +4,12 @@ import os, pickle, random
 from itertools import chain
 from PIL import Image, ImageDraw, ImageFont
 import math, glob, imageio, cv2
-import argparse
+import argparse, sys
 parser = argparse.ArgumentParser(description='VAE data generator')
 parser.add_argument('--size', type=int, default=5000, help='size of the dataset')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
-parser.add_argument('--noisycol', action='store_true', default=False,
+parser.add_argument('--noisycol', action='store_true', default=True,
                     help='add noise to image colors')
 args = parser.parse_args()
 
@@ -20,7 +20,9 @@ noise = {"red":["reed", "red", "reen"], "green":["green", "greal", "greed"], "bl
 fonts = ["/usr/share/fonts/truetype/ubuntu/Ubuntu-C.ttf", "/usr/share/fonts/truetype/tlwg/Loma.ttf", "/usr/share/fonts/truetype/freefont/FreeMono.ttf",
          "/usr/share/fonts/truetype/freefont/FreeSans.ttf", "/usr/share/fonts/truetype/freefont/FreeSerif.ttf"]
 dimmap = {1:0, 4:1, 16:2, 64:3, 256:4, 1024:5, 4096:6}
-colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0], "blue": [0,0,255], "yellow": [255,255,0], "maroon": [105,0,0], "purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150]}
+shapes = ["line", "circle", "semicircle", "pieslice", "square"]
+sizes = ["small", "large"]
+colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0], "blue": [0,0,255], "grey": [128,128,128], "maroon": [105,0,0], "purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150], "orange":[255,140,0]}
 
 def make_text_img(datapath, txt, idx):
     print("Image {}".format(idx))
@@ -53,6 +55,17 @@ def make_dummy_txt(pth, target_pth):
         draw.text((random.uniform(3, 15), random.uniform(5, 35)), word.upper(), font=fnt, fill=(0, 0, 0))
         image.save(filename)
 
+def word2vec(attrs_pth, target_pth):
+    from gensim.models import Word2Vec
+    words = unpickle(attrs_pth)
+    model = Word2Vec.load("../data/word2vec.model")
+    vecs = []
+    for seq in words:
+        vecs.append(([model.wv[seq[0]]],[model.wv[seq[1]]], [model.wv[seq[2]]]))
+    vecs_np = np.asarray(vecs).squeeze()
+    with open(target_pth, 'wb') as handle:
+        pickle.dump(vecs_np, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 def randomize_rgb(rgb):
     new_rgb = [0,0,0]
     for ix, c in enumerate(rgb):
@@ -65,33 +78,54 @@ def randomize_rgb(rgb):
     return new_rgb
 
 def make_attrs(path):
-    print("making attrs.pkl")
+    print("Making attrs.pkl")
     attrs = []
     for x in range(args.size):
-        attrs.append([random.choice(list(colors.keys()))])
+        size, color, shape = "", "", ""
+        if sizes:
+            size = random.choice(sizes)
+        if colors:
+            color = random.choice(list(colors.keys()))
+        if shapes:
+            shape = random.choice(shapes)
+        attrs.append([size, color,shape])
     attrs = np.asarray(attrs)
     with open(os.path.join(path, './attrs.pkl'), 'wb') as handle:
         pickle.dump(attrs, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-def make_dummy_imgs(pth, target_pth):
-    print("making color images")
+def unpickle(pth):
     with open(pth, 'rb') as handle:
-        text = pickle.load(handle)
-        target = np.expand_dims(text[:,0], axis=1).tolist()  # only takes first word from the sequences
-        target = list(chain.from_iterable(target))
-    for idx, word in enumerate(target):
-        print("Image {}".format(idx))
+        target = pickle.load(handle)
+        #target = np.expand_dims(text, axis=1).tolist()  # only takes first word from the sequences
+        #target = list(chain.from_iterable(text))
+    return target
+
+def make_shape_imgs(pth, target_pth):
+    print("Making {}".format(target_pth))
+    target = unpickle(pth)
+    for idx, text in enumerate(target):
+        size = text[0]
+        colname = text[1]
+        shapename = text[2]
+        print("\r Processing image {}/{}".format(idx+1, len(target)), end = "")
         # name of the file to save
         padding = 6 - len(str(idx))
         index = padding * "0" + str(idx)
         filename = os.path.join(target_pth, "img_{}.png".format(index))
         image = Image.new(mode="RGB", size=(64, 64), color="white")
         draw = ImageDraw.Draw(image)
-        color = randomize_rgb(colors[word]) if args.noisycol else colors[word]
-        x1 = random.randint(0,30)
-        x2 = random.randint(0,30)
-        #  draw.ellipse((x1, x2, x1 + 30, x2+30), fill=word, outline=word)
-        draw.line((x1, x2, x1 + 30, x2+30), fill=tuple(color), width=10)
+        color = randomize_rgb(colors[colname]) if args.noisycol else colors[colname]
+        size_add = 30 if size == "large" else 16
+        x1 = random.randint(5,35)
+        x2 = random.randint(5,35)
+        shapes = {"circle": draw.ellipse, "line":draw.line, "square":draw.rectangle, "semicircle":draw.chord, "pieslice":draw.pieslice}
+        shape = shapes[shapename]
+        if shape not in [draw.chord, draw.pieslice]:
+            shape((x1, x2, x1+size_add, x2+size_add), fill=tuple(color), width=int(size_add/2))
+        else:
+            coords = [50,270] if shape == draw.chord else [200,250]
+            size_a = size_add if shape == draw.chord else size_add *2
+            shape((x1, x2, x1 + size_a, x2+size_a), start=coords[0], end=coords[1], fill=tuple(color))
         image.save(filename)
 
 def make_arrays(dataset, pth, name):
@@ -115,6 +149,26 @@ def make_arrays(dataset, pth, name):
         pickle.dump(d, handle, protocol=pickle.HIGHEST_PROTOCOL)
         print("SAVED {}".format(os.path.join(pth, '{}.pkl'.format(name))))
 
+def make_dummy_imgs(pth, target_pth):
+    print("making color images")
+    with open(pth, 'rb') as handle:
+        text = pickle.load(handle)
+        target = np.expand_dims(text[:,0], axis=1).tolist()  # only takes first word from the sequences
+        target = list(chain.from_iterable(target))
+    for idx, word in enumerate(target):
+        print("Image {}".format(idx))
+        # name of the file to save
+        padding = 6 - len(str(idx))
+        index = padding * "0" + str(idx)
+        filename = os.path.join(target_pth, "img_{}.png".format(index))
+        image = Image.new(mode="RGB", size=(64, 64), color="white")
+        draw = ImageDraw.Draw(image)
+        color = randomize_rgb(colors[word]) if args.noisycol else colors[word]
+        x1 = random.randint(0,30)
+        x2 = random.randint(0,30)
+        #  draw.ellipse((x1, x2, x1 + 30, x2+30), fill=word, outline=word)
+        draw.line((x1, x2, x1 + 30, x2+30), fill=tuple(color), width=10)
+        image.save(filename)
 
 def load_images(path, imsize=64, size=math.inf):
     print("Loading data...")
@@ -135,7 +189,8 @@ if __name__ == "__main__":
     target_dir = "../data"
     make_attrs(target_dir)
     os.makedirs(os.path.join(target_dir, "image"), exist_ok=True)
-    os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
-    make_dummy_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
-    make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
-    print("All done. Data saved in mirracle_multimodal/data")
+    word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "attrs_4096d.pkl"))
+    make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
+    #os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
+    #make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
+    print("\n All done. Data saved in mirracle_multimodal/data")

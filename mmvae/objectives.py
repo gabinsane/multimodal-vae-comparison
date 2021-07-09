@@ -82,7 +82,7 @@ def m_moe_elbo(model, x, K=1, ltype="lprob"):
         kld = kl_divergence(qz_x, model.pz(*model.pz_params))
         klds.append(kld.sum(-1))
         for d in range(len(px_zs)):
-            lpx_z = loss_fn(px_zs[d][d], x[d], ltype=ltype).cuda()
+            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype).cuda()
             if d == r:
                   lwt = torch.tensor(0.0).cuda()
             else:
@@ -120,7 +120,7 @@ def m_poe_elbo(model, x, K, ltype="lprob"):
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
     klds.append(kld.sum(-1))
     for d in range(len(px_zs)):
-        lpx_z = loss_fn(px_zs[d][d], x[d], ltype=ltype)
+        lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype)
         lwt = torch.tensor(0.0)
         lpx_zs.append(lwt.exp() * lpx_z)
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
@@ -142,7 +142,7 @@ def _m_iwae(model, x, K=1):
     return torch.cat(lws)  # (n_modality * n_samples) x batch_size, batch_size
 
 
-def m_iwae(model, x, K=1):
+def m_iwae(model, x, K=1, ltype=""):
     """Computes iwae estimate for log p_\theta(x) for multi-modal vae """
     S = compute_microbatch_split(x, K)
     x_split = zip(*[_x.split(S) for _x in x])
@@ -197,7 +197,7 @@ def _m_dreg(model, x, K=1):
     return torch.cat(lws), torch.cat(zss)
 
 
-def m_dreg(model, x, K=1):
+def m_dreg(model, x, K=1, ltype=""):
     """Computes dreg estimate for log p_\theta(x) for multi-modal vae """
     S = compute_microbatch_split(x, K)
     x_split = zip(*[_x.split(S) for _x in x])
@@ -208,7 +208,7 @@ def m_dreg(model, x, K=1):
         grad_wt = (lw - torch.logsumexp(lw, 0, keepdim=True)).exp()
         if zss.requires_grad:
             zss.register_hook(lambda grad: grad_wt.unsqueeze(-1) * grad)
-    return (grad_wt * lw).sum(), 0, 0, 0
+    return -(grad_wt * lw).sum(), 0, 0, 0
 
 def _m_dreg_looser(model, x, K=1):
     """DERG estimate for log p_\theta(x) for multi-modal vae -- fully vectorised
@@ -217,6 +217,7 @@ def _m_dreg_looser(model, x, K=1):
     qz_xs, px_zs, zss = model(x, K)
     qz_xs_ = [vae.qz_x(*[p.detach() for p in vae.qz_x_params]) for vae in model.vaes]
     lws = []
+    lpx_zs = []
     for r, vae in enumerate(model.vaes):
         lpz = model.pz(*model.pz_params).log_prob(zss[r]).sum(-1)
         lqz_x = log_mean_exp(torch.stack([qz_x_.log_prob(zss[r]).sum(-1) for qz_x_ in qz_xs_]))
@@ -224,22 +225,23 @@ def _m_dreg_looser(model, x, K=1):
                      .mul(model.vaes[d].llik_scaling).sum(-1)
                  for d, px_z in enumerate(px_zs[r])]
         lpx_z = torch.stack(lpx_z).sum(0)
+        lpx_zs.append(lpx_z)
         lw = lpz + lpx_z - lqz_x
         lws.append(lw)
-    return torch.stack(lws), torch.stack(zss)
+    return torch.stack(lws), torch.stack(zss), lpx_zs
 
 
-def m_dreg_looser(model, x, K=1):
+def m_dreg_looser(model, x, K=1, ltype=""):
     """Computes dreg estimate for log p_\theta(x) for multi-modal vae
     This version is the looser bound---with the average over modalities outside the log
     """
     S = compute_microbatch_split(x, K)
     x_split = zip(*[_x.split(S) for _x in x])
-    lw, zss = zip(*[_m_dreg_looser(model, _x, K) for _x in x_split])
+    lw, zss, lpx_zs = zip(*[_m_dreg_looser(model, _x, K) for _x in x_split])
     lw = torch.cat(lw, 2)  # concat on batch
     zss = torch.cat(zss, 2)  # concat on batch
     with torch.no_grad():
         grad_wt = (lw - torch.logsumexp(lw, 1, keepdim=True)).exp()
         if zss.requires_grad:
             zss.register_hook(lambda grad: grad_wt.unsqueeze(-1) * grad)
-    return (grad_wt * lw).mean(0).sum()
+    return -(grad_wt * lw).mean(0).sum(), 0, -lpx_zs[0][0].mean(0).sum(),  -lpx_zs[0][1].mean(0).sum()
