@@ -51,7 +51,10 @@ def make_dummy_txt(pth, target_pth):
         filename = os.path.join(target_pth, "img_{}.png".format(index))
         image = Image.new(mode="RGB", size=(64, 64), color="white")
         draw = ImageDraw.Draw(image)
-        fnt = ImageFont.truetype(fonts[3], 13)
+        try:
+            fnt = ImageFont.truetype(fonts[3], 13)
+        except:
+            fnt = ImageFont.load_default()
         draw.text((random.uniform(3, 15), random.uniform(5, 35)), word.upper(), font=fnt, fill=(0, 0, 0))
         image.save(filename)
 
