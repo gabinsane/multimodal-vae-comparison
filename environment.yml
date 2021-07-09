@@ -62,6 +62,7 @@ dependencies:
     - ptyprocess==0.7.0
     - pygments==2.9.0
     - pywavelets==1.1.1
+    - imageio==2.8.0
     - pyzmq==19.0.2
     - s3transfer==0.3.3
     - scikit-image==0.15.0
