@@ -13,6 +13,19 @@ The list of packages needed can be found in `requirements.txt`. However, we reco
 
 ## Usage
 
+### Generate dummy dataset
+
+The code currently supports either images of size [64,64,3] or .pkl with arrays of format [dataset_size, 1D_array], the arrays can have an arbitrary size. 
+We provide code to generate such dummy dataset, i.e. a set of images with colored objects, another matching set of images with corresponding color names and an attrs.pkl file with single number arrays
+that represent the color label. You can train with any pair from these three "modalities", just add the path to the dataset in appropriate arguments in the config. To generate your custom dataset, run:
+
+
+`python generate_dataset.py --size 10000`
+
+
+You can make the object colors or color names noisy by adding --noisytxt or --noisycol arguments. The generated data will be saved in the /data folder and is ready to train.
+
+
 ### Training
 
 The parameters can be set up via a .yml config or command line arguments - these are the same ones, but override the config. To train using the config, run:
@@ -35,10 +48,10 @@ general:
   model: 2mods   # if you train a bi-modal vae, set "2mods", for unimodal vae, set "uni" - this will take the dataset from modality_1 only
   noisy_txt: False  # if you have numeric/text labels as one modality, you can make them noisy (for experimental reasons only)
 modality_1:
-  dataset: /home/gabi/mmvae/vaevolution/data_anot_imagenonoise  # path to the folder or .pkl file with the first modality train data
+  dataset: ../data/image  # path to the folder or .pkl file with the first modality train data
   type: img # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
 modality_2:
-  dataset: /home/gabi/mmvae/vaevolution/data_anot_imagenonoise/txt_imgs_nonoise  # path to the folder or .pkl file with the second modality train data
+  dataset: ../data/attrs.pkl  # path to the folder or .pkl file with the second modality train data
   type: txt # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
 ```
 
