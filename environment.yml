@@ -33,9 +33,10 @@ dependencies:
     - boto==2.49.0
     - boto3==1.14.34
     - botocore==1.17.34
+    - dataclasses==0.8
     - decorator==4.4.2
     - docutils==0.15.2
-    - gensim==3.8.1
+    - gensim==4.0.1
     - ipython==7.16.1
     - ipython-genutils==0.2.0
     - jedi==0.18.0
@@ -46,10 +47,11 @@ dependencies:
     - llvmlite==0.33.0
     - matplotlib==3.1.1
     - mpmath==1.2.1
+    - natsort==7.1.1
     - networkx==2.4
     - nltk==3.4.5
     - numba==0.50.1
-    - numpy==1.16.4
+    - numpy==1.19.5
     - opencv-python==4.5.1.48
     - pandas==0.25.3
     - parso==0.8.2
