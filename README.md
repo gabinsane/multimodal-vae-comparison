@@ -26,6 +26,9 @@ that represent the color label. You can train with any pair from these three "mo
 You can make the object colors or color names noisy by adding --noisytxt or --noisycol arguments. The generated data will be saved in the /data folder and is ready to train.
 
 
+**!!** Alternatively, you can generate a dataset consisting od images and corresponding word embeddings. To learn how to do that and see the dataset examples, see the [**Wiki page**](https://gitlab.ciirc.cvut.cz/imitrob/mirracle/mirracle_wiki/-/wikis/tutorials/How-to-train-and-run-Multimodal-Fusion)
+
+
 ### Training
 
 The parameters can be set up via a .yml config or command line arguments - these are the same ones, but override the config. To train using the config, run:
