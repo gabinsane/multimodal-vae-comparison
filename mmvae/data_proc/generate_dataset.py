@@ -5,6 +5,7 @@ from itertools import chain
 from PIL import Image, ImageDraw, ImageFont
 import math, glob, imageio, cv2
 import argparse, sys
+from train_w2v import train_word2vec
 parser = argparse.ArgumentParser(description='VAE data generator')
 parser.add_argument('--size', type=int, default=5000, help='size of the dataset')
 parser.add_argument('--noisytxt', action='store_true', default=False,
@@ -61,8 +62,12 @@ def make_dummy_txt(pth, target_pth):
 def word2vec(attrs_pth, target_pth):
     from gensim.models import Word2Vec
     words = unpickle(attrs_pth)
+    if not os.path.exists("../data/word2vec.model"):
+        print("Generating word2vec.model")
+        train_word2vec(words)
     model = Word2Vec.load("../data/word2vec.model")
     vecs = []
+    print("Making {}".format(target_pth))
     for seq in words:
         vecs.append(([model.wv[seq[0]]],[model.wv[seq[1]]], [model.wv[seq[2]]]))
     vecs_np = np.asarray(vecs).squeeze()
