@@ -8,6 +8,7 @@ import argparse, sys
 from train_w2v import train_word2vec
 parser = argparse.ArgumentParser(description='VAE data generator')
 parser.add_argument('--size', type=int, default=5000, help='size of the dataset')
+parser.add_argument('--type', type=str, default="img-img", help='type of the dataset. "img-img" =images + text images, "img-vec" = images + word embeddings ')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
 parser.add_argument('--noisycol', action='store_true', default=True,
@@ -39,13 +40,14 @@ def make_text_img(datapath, txt, idx):
     image.save(filename)
 
 def make_dummy_txt(pth, target_pth):
-    print("making text images")
+    print("\nMaking text images")
+    os.makedirs(target_pth, exist_ok=True)
     with open(pth, 'rb') as handle:
         text = pickle.load(handle)
         target = np.expand_dims(text[:,0], axis=1).tolist()  # only takes first word from the sequences
         target = list(chain.from_iterable(target))
     for idx, word in enumerate(target):
-        print("Image {}".format(idx))
+        print("\r{}/{}".format(idx+1, len(target)), end = "")
         # name of the file to save
         padding = 6 - len(str(idx))
         index = padding * "0" + str(idx)
@@ -67,7 +69,7 @@ def word2vec(attrs_pth, target_pth):
         train_word2vec(words)
     model = Word2Vec.load("../data/word2vec.model")
     vecs = []
-    print("Making {}".format(target_pth))
+    print("Making {} (each word encoded into a 4096d embedding)".format(target_pth))
     for seq in words:
         vecs.append(([model.wv[seq[0]]],[model.wv[seq[1]]], [model.wv[seq[2]]]))
     vecs_np = np.asarray(vecs).squeeze()
@@ -86,7 +88,7 @@ def randomize_rgb(rgb):
     return new_rgb
 
 def make_attrs(path):
-    print("Making attrs.pkl")
+    print("Making ../data/attrs.pkl")
     attrs = []
     for x in range(args.size):
         size, color, shape = "", "", ""
@@ -115,7 +117,7 @@ def make_shape_imgs(pth, target_pth):
         size = text[0]
         colname = text[1]
         shapename = text[2]
-        print("\r Processing image {}/{}".format(idx+1, len(target)), end = "")
+        print("\r{}/{}".format(idx+1, len(target)), end = "")
         # name of the file to save
         padding = 6 - len(str(idx))
         index = padding * "0" + str(idx)
@@ -158,20 +160,17 @@ def make_arrays(dataset, pth, name):
         print("SAVED {}".format(os.path.join(pth, '{}.pkl'.format(name))))
 
 def make_dummy_imgs(pth, target_pth):
-    print("making color images")
-    with open(pth, 'rb') as handle:
-        text = pickle.load(handle)
-        target = np.expand_dims(text[:,0], axis=1).tolist()  # only takes first word from the sequences
-        target = list(chain.from_iterable(target))
+    print("Making color images")
+    target = unpickle(pth)
     for idx, word in enumerate(target):
-        print("Image {}".format(idx))
+        print("\r{}/{}".format(idx+1, len(target)), end = "")
         # name of the file to save
         padding = 6 - len(str(idx))
         index = padding * "0" + str(idx)
         filename = os.path.join(target_pth, "img_{}.png".format(index))
         image = Image.new(mode="RGB", size=(64, 64), color="white")
         draw = ImageDraw.Draw(image)
-        color = randomize_rgb(colors[word]) if args.noisycol else colors[word]
+        color = randomize_rgb(colors[word[1]]) if args.noisycol else colors[word[1]]
         x1 = random.randint(0,30)
         x2 = random.randint(0,30)
         #  draw.ellipse((x1, x2, x1 + 30, x2+30), fill=word, outline=word)
@@ -197,8 +196,11 @@ if __name__ == "__main__":
     target_dir = "../data"
     make_attrs(target_dir)
     os.makedirs(os.path.join(target_dir, "image"), exist_ok=True)
-    word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "attrs_4096d.pkl"))
-    make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
-    #os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
-    #make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
-    print("\n All done. Data saved in mirracle_multimodal/data")
+    if args.type == "img-img":
+       make_dummy_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
+       os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
+       make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
+    elif args.type == "img-vec":
+       word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "attrs_4096d.pkl"))
+       make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
+    print("\nAll done. Data saved in mirracle_multimodal/data")
