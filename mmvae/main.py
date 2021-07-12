@@ -69,13 +69,13 @@ with open(args.cfg, "r") as ymlfile:
 if not args.mod1:
     args.mod1 = config["modality_1"]["dataset"]
 if ".pkl" in args.mod1:
-    args.data_dim1 = int(os.path.basename(args.mod1).split("D")[0]) if "D" in args.mod1 else 1
+    args.data_dim1 = int(os.path.basename(args.mod1.lower()).split("d")[0]) if "d" in args.mod1.lower() else 1
 args.data1 = config["modality_1"]["type"]
 if "modality_2" in config.keys():
     if not args.mod2:
         args.mod2 = config["modality_2"]["dataset"]
     if ".pkl" in args.mod2:
-        args.data_dim2 = int(os.path.basename(args.mod2).split("D")[0]) if "D" in args.mod2 else 1
+        args.data_dim2 = int(os.path.basename(args.mod2.lower()).split("d")[0]) if "d" in args.mod2.lower() else 1
     args.data2 = config["modality_2"]["type"]
 if not args.epochs:
     args.epochs = int(config["general"]["n_epochs"])

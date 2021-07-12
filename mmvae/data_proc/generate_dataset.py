@@ -11,7 +11,7 @@ parser.add_argument('--size', type=int, default=5000, help='size of the dataset'
 parser.add_argument('--type', type=str, default="img-img", help='type of the dataset. "img-img" =images + text images, "img-vec" = images + word embeddings ')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
-parser.add_argument('--noisycol', action='store_true', default=True,
+parser.add_argument('--noisycol', action='store_true', default=False,
                     help='add noise to image colors')
 args = parser.parse_args()
 
@@ -42,10 +42,7 @@ def make_text_img(datapath, txt, idx):
 def make_dummy_txt(pth, target_pth):
     print("\nMaking text images")
     os.makedirs(target_pth, exist_ok=True)
-    with open(pth, 'rb') as handle:
-        text = pickle.load(handle)
-        target = np.expand_dims(text[:,0], axis=1).tolist()  # only takes first word from the sequences
-        target = list(chain.from_iterable(target))
+    target = unpickle(pth)
     for idx, word in enumerate(target):
         print("\r{}/{}".format(idx+1, len(target)), end = "")
         # name of the file to save
@@ -58,7 +55,7 @@ def make_dummy_txt(pth, target_pth):
             fnt = ImageFont.truetype(fonts[3], 13)
         except:
             fnt = ImageFont.load_default()
-        draw.text((random.uniform(3, 15), random.uniform(5, 35)), word.upper(), font=fnt, fill=(0, 0, 0))
+        draw.text((random.uniform(3, 15), random.uniform(5, 35)), word[1].upper(), font=fnt, fill=(0, 0, 0))
         image.save(filename)
 
 def word2vec(attrs_pth, target_pth):

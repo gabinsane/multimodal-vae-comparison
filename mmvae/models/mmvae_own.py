@@ -10,13 +10,13 @@ from numpy import sqrt, prod
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset, ResampleDataset
 from torchvision.utils import save_image, make_grid
-
 from vis import plot_embeddings, plot_kls_df
 from .mmvae import MMVAE, MMVAE_P
 from .vae_mnist import MNIST, CROW
 from .vae_svhn import SVHN, CROW2
 from .vae_own import UNIVAE
-
+from gensim.models import Word2Vec
+from utils import normalize_w2v, unnormalize_w2v
 
 class MOE(MMVAE):
     def __init__(self, params):
@@ -31,6 +31,7 @@ class MOE(MMVAE):
         self.modelName = 'moe-dualmod'
         self.imgpath = params.mod1
         self.txtpath = params.mod2
+        self.w2v = Word2Vec.load("../data/word2vec.model")
 
     @property
     def pz_params(self):
@@ -73,6 +74,28 @@ class MOE(MMVAE):
             for o, recon in enumerate(recons_list):
                     try:
                         _data = data[r][:8].cpu()
+                        if "d.pkl" in self.vaes[1].pth:
+                            target, reconstruct = [], []
+                            _data = _data.reshape(-1,3,4096)
+                            recon = recon.reshape(-1, 3, 4096)
+                            for s in _data:
+                                seq = []
+                                for w in s:
+                                    seq.append(self.w2v.wv.most_similar(positive=[unnormalize_w2v(np.asarray(w)), ])[0][0])
+                                target.append(" ".join(seq))
+                            for s in recon:
+                                seq = []
+                                for w in s:
+                                    seq.append(self.w2v.wv.most_similar(positive=[unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                                reconstruct.append(" ".join(seq))
+                            if o == 0:
+                                reconstruct = ""
+                            if r == 0:
+                                target = ""
+                            if not (o == 0 and r ==0):
+                                output = open('{}/recon_{}x{}_{:03d}.txt'.format(runPath, r, o, epoch), "w")
+                                output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
+                                output.close()
                         recon = recon.squeeze(0).cpu()
                         # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
                         _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
@@ -86,15 +109,19 @@ class MOE(MMVAE):
                                 o_l = np.hstack((o_l, np.asarray(_data[x])))
                                 r_l = np.hstack((r_l, np.asarray(recon[x])))
                         w = np.vstack((o_l, r_l))
-                        cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w*255)
+                        if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
+                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w*255)
                     except:
                         pass
 
     def analyse(self, data, runPath, epoch):
-        zemb, zsl, kls_df = super(MOE, self).analyse(data, K=10)
-        labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
-        plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-        plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+        try:
+            zemb, zsl, kls_df = super(MOE, self).analyse(data, K=10)
+            labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+        except:
+            pass
 
 
 def resize_img(img, refsize):
@@ -115,6 +142,7 @@ class POE(MMVAE_P):
         self.modelName = 'poe-dualmod'
         self.imgpath = params.mod1
         self.txtpath = params.mod2
+        self.w2v = Word2Vec.load("../data/word2vec.model")
 
     @property
     def pz_params(self):
@@ -163,6 +191,27 @@ class POE(MMVAE_P):
             for o, recon in enumerate(recons_list):
                     try:
                         _data = data[r][:8].cpu()
+                        if "d.pkl" in self.vaes[1].pth:
+                            target, reconstruct = [], []
+                            _data = _data.reshape(-1,3,4096)
+                            recon = recon.reshape(-1, 3, 4096)
+                            for s in _data:
+                                seq = []
+                                for w in s:
+                                    seq.append(self.w2v.wv.most_similar(positive=[np.asarray(w), ])[0][0])
+                                target.append(" ".join(seq))
+                            for s in recon:
+                                seq = []
+                                for w in s:
+                                    seq.append(self.w2v.wv.most_similar(positive=[np.asarray(w.cpu()), ])[0][0])
+                                reconstruct.append(" ".join(seq))
+                            output = open('{}/recon_{}x{}_{:03d}.txt'.format(runPath, r, o, epoch),"w")
+                            if o == 0:
+                                reconstruct = ""
+                            if r == 0:
+                                target = ""
+                            output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
+                            output.close()
                         recon = recon.squeeze(0).cpu()
                         # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
                         _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
@@ -176,16 +225,19 @@ class POE(MMVAE_P):
                                 o_l = np.hstack((o_l, np.asarray(_data[x])))
                                 r_l = np.hstack((r_l, np.asarray(recon[x])))
                         w = np.vstack((o_l, r_l))
-                        cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w*255)
+                        if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
+                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w*255)
                     except:
                         pass
 
     def analyse(self, data, runPath, epoch):
-        zemb, zsl, kls_df = super(POE, self).analyse(data, K=10)
-        labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
-        plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-        plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
-
+        try:
+            zemb, zsl, kls_df = super(POE, self).analyse(data, K=10)
+            labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+        except:
+           pass
 
 def resize_img(img, refsize):
     #return F.pad(img, (2, 2, 2, 2)).expand(img.size(0), *refsize)

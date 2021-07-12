@@ -32,6 +32,20 @@ def create_vocab(text, add_noise):
                 text2idx[idx][word_idx] = vocab.to_index(text[idx][word_idx])
     return text2idx, vocab
 
+def normalize_w2v(data):
+    mx = 0.0188
+    mn = -0.0183
+    a = mx-mn
+    d = (data -mn) / a
+    return d
+
+def unnormalize_w2v(data):
+    mx = 0.0188
+    mn = -0.0183
+    a = mx-mn
+    d = (data * a) + mn
+    return d
+
 class Vocabulary:
     def __init__(self, name):
         self.name = name

@@ -19,7 +19,7 @@ def loss_fn(output, target, ltype):
     if ltype == "bce":
         loss = -torch.nn.functional.binary_cross_entropy(output.loc.cuda(), target.cuda(), reduction="sum")
     else:
-        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum(-1)
+        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum(-1).sum(-1)
     return loss
 
 
@@ -82,12 +82,12 @@ def m_moe_elbo(model, x, K=1, ltype="lprob"):
         kld = kl_divergence(qz_x, model.pz(*model.pz_params))
         klds.append(kld.sum(-1))
         for d in range(len(px_zs)):
-            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype).cuda()
+            lpx_z = loss_fn(px_zs[d][d], x[d], ltype=ltype).cuda()
             if d == r:
                   lwt = torch.tensor(0.0).cuda()
             else:
                   zs = zss[d].detach()
-                  lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0].cuda()
+                  lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
             lpx_zs.append((lwt.exp() * lpx_z))
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
     return -obj.sum(), torch.stack(klds).mean(0).sum(), -lpx_zs[0].sum(), -lpx_zs[3].sum()
@@ -121,7 +121,7 @@ def m_poe_elbo(model, x, K, ltype="lprob"):
     klds.append(kld.sum(-1))
     for d in range(len(px_zs)):
         lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype)
-        lwt = torch.tensor(0.0)
+        lwt = torch.tensor(0.0).cuda()
         lpx_zs.append(lwt.exp() * lpx_z)
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
     return -obj.sum(), torch.stack(klds).mean(0).sum(), -lpx_zs[0].sum(), -lpx_zs[1].sum()

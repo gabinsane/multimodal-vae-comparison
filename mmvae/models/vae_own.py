@@ -9,10 +9,11 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from torchvision.utils import save_image, make_grid
 import pickle
-from utils import Constants, create_vocab
+from utils import Constants, create_vocab, normalize_w2v, unnormalize_w2v
 from vis import plot_embeddings, plot_kls_df
 from .vae import VAE
 import cv2
+
 
 # Constants
 dataSize = torch.Size([3,64,64])
@@ -41,7 +42,7 @@ class Enc2(nn.Module):
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         n_chan = 3
-        self.mixing = "poe" if "poe" in params.obj else "moe"
+        self.mixing = "poe"
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
         self.conv1 = torch.nn.DataParallel(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs))
@@ -132,7 +133,7 @@ class Dec2(nn.Module):
         x = (self.convT3(x))
         d = torch.sigmoid(x.view(*z.size()[:-1], *dataSize))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
-        return d, torch.tensor(0.75).to(z.device)
+        return d.squeeze(), torch.tensor(0.75).to(z.device)
 
 # Classes
 class Enc(nn.Module):
@@ -147,12 +148,12 @@ class Enc(nn.Module):
         else:
             self.hidden_dim = int(data_dim/2)
         modules = []
-        self.mixing = "poe" if "poe" in params.obj else "moe"
-        modules.append(nn.Sequential(nn.Linear(data_dim, self.hidden_dim), nn.ReLU(True)))
+        self.mixing = "poe"
+        modules.append(torch.nn.DataParallel(nn.Sequential(nn.Linear(data_dim, self.hidden_dim), nn.ReLU(True))))
         modules.extend([extra_hidden_layer(self.hidden_dim) for _ in range(num_hidden_layers - 1)])
-        self.enc = nn.Sequential(*modules)
-        self.fc21 = nn.Linear(self.hidden_dim, latent_dim)
-        self.fc22 = nn.Linear(self.hidden_dim, latent_dim)
+        self.enc = torch.nn.DataParallel(nn.Sequential(*modules))
+        self.fc21 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
+        self.fc22 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
 
     def forward(self, x):
         e = self.enc(x)  # flatten data
@@ -174,15 +175,15 @@ class Dec(nn.Module):
             self.hidden_dim = int(data_dim/2)
         self.data_dim = data_dim
         modules = []
-        modules.append(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True)))
+        modules.append(torch.nn.DataParallel(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True))))
         modules.extend([extra_hidden_layer(self.hidden_dim) for _ in range(num_hidden_layers - 1)])
-        self.dec = nn.Sequential(*modules)
-        self.fc3 = nn.Linear(self.hidden_dim, data_dim)
+        self.dec = torch.nn.DataParallel(nn.Sequential(*modules))
+        self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, data_dim))
 
     def forward(self, z):
         p = self.fc3(self.dec(z))
         d = torch.sigmoid(p.view(*z.size()[:-1], self.data_dim))  # reshape data
-        d = d.clamp(Constants.eta, 1 - Constants.eta)
+        #d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
@@ -235,19 +236,18 @@ class UNIVAE(VAE):
         tx = transforms.ToTensor()
         if not ".pkl" in self.pth:
             d = load_images(self.pth)
-            data_size = d.shape[0]
-            d = d.reshape((data_size, 3, 64, 64))
+            d = d.reshape((d.shape[0], 3, 64, 64))
         else:
             with open(self.pth, 'rb') as handle:
                 d = pickle.load(handle)
                 if "attrs" in self.pth:
-                    d = d[:,0]
-                    d = np.expand_dims(d, axis=1)
-                    d, vocab = create_vocab(d, self.noisy)
+                    if isinstance(d[0][0], str):
+                        d, vocab = create_vocab(d, self.noisy)
+                else:
+                        d = normalize_w2v(d.reshape(d.shape[0], -1))
                 if len(d.shape) < 2:
                     d = np.expand_dims(d, axis=1)
         data_size = d.shape[0]
-        #d = d.reshape((data_size, 3, 64, 64))
         traindata = torch.Tensor(d[:int(data_size*(0.9))])
         testdata = torch.Tensor(d[int(data_size*(0.9)):])
         crow_t_dataset = torch.utils.data.TensorDataset(traindata)
