@@ -19,8 +19,9 @@ The code currently supports either images of size [64,64,3] or .pkl with arrays 
 We provide code to generate such dummy dataset, i.e. a set of images with colored objects, another matching set of images with corresponding color names and an attrs.pkl file with single number arrays
 that represent the color label. You can train with any pair from these three "modalities", just add the path to the dataset in appropriate arguments in the config. To generate your custom dataset, run:
 
+`cd mirracle_multimodal/mirracle_multimodal`
 
-`python generate_dataset.py --size 10000`
+`python data_proc/generate_dataset.py --size 10000 --type img-img`
 
 
 You can make the object colors or color names noisy by adding --noisytxt or --noisycol arguments. The generated data will be saved in the /data folder and is ready to train.
@@ -36,7 +37,6 @@ The parameters can be set up via a .yml config or command line arguments - these
 
 ```bash
 python main.py --cfg config1.yml
-
 ```
 
 
@@ -44,7 +44,7 @@ The content of the config is following:
 ```
 general:
   n_epochs: 500  # number of epochs to train
-  n_latents: 8   # size of the n-dimensional latent vector
+  n_latents: 16   # size of the n-dimensional latent vector
   obj: moe_elbo  # objective, for single modality training, use elbo/iwae/dreg. For multiple modalities, use moe_elbo/poe_elbo/poe_elbo_semi (produces better results)/iwae/dreg
   loss: lprob    # how to calculate the loss, "lprob" (log_prob of a distribution) is better when using the MoE approach, for PoE better use "bce" (binary cross entropy)
   viz_freq: 100  # save visualizations every n epochs
@@ -54,8 +54,9 @@ modality_1:
   dataset: ../data/image  # path to the folder or .pkl file with the first modality train data
   type: img # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
 modality_2:
-  dataset: ../data/attrs.pkl  # path to the folder or .pkl file with the second modality train data
+  dataset: ../data/4096d.pkl  # path to the folder or .pkl file with the second modality train data
   type: txt # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
+  num_words: 3 # in case you use img-vec dataset with text vectors, enter here how many words does each data sample contain (default is 3)
 ```
 
 The arguments contain some additional hyperparameters which were included in the MoE code, however we did not yet test these so they remain default:
