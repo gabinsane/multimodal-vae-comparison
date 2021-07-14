@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser(description='VAE data generator')
 parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
 parser.add_argument('--type', type=str, default="img-vec", help='type of the dataset. "img-img" =images + text images, "img-vec" = images + word embeddings ')
 parser.add_argument('--emb-size', type=int, default=4096, help='Size of word vectors in the img-vec dataset')
+parser.add_argument('--vecs-only', action='store_true', default=False, help='Generate additional embedding dataset based on attrs.pkl in data folder')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
 parser.add_argument('--noisycol', action='store_true', default=False,
@@ -64,7 +65,7 @@ def word2vec(attrs_pth, target_pth):
     from gensim.models import Word2Vec
     words = unpickle(attrs_pth)
     if not os.path.exists("../data/word2vec{}d.model".format(WORD_EMBEDDING_SIZE)):
-        print("Generating word2vec.model")
+        print("Generating word2vec{}.model".format(WORD_EMBEDDING_SIZE))
         train_word2vec(words, vector_size=WORD_EMBEDDING_SIZE)
     model = Word2Vec.load("../data/word2vec{}d.model".format(WORD_EMBEDDING_SIZE))
     vecs = []
@@ -193,13 +194,17 @@ def load_images(path, imsize=64, size=math.inf):
 if __name__ == "__main__":
     os.makedirs("../data", exist_ok=True)
     target_dir = "../data"
-    make_attrs(target_dir)
-    os.makedirs(os.path.join(target_dir, "image"), exist_ok=True)
+    if not args.vecs_only:
+        make_attrs(target_dir)
+        os.makedirs(os.path.join(target_dir, "image"), exist_ok=True)
+    else:
+        print("Using the pre-generated attrs.pkl to make {}d.pkl".format(args.emb_size))
     if args.type == "img-img":
        make_dummy_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
        os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
        make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
     elif args.type == "img-vec":
        word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "{}d.pkl".format(WORD_EMBEDDING_SIZE)))
-       make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
+       if not args.vecs_only:
+        make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
     print("\nAll done. Data saved in mirracle_multimodal/data")
