@@ -10,7 +10,7 @@ modality_1:
   dataset: ../data/image
   type: img
 modality_2:
-  dataset: ../data/12d.pkl
+  dataset: ../data/4096d.pkl
   type: txt
   num_words: 3
 
