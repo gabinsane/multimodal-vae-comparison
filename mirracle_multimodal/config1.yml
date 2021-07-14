@@ -1,0 +1,20 @@
+general:
+  n_epochs: 100
+  n_latents: 16
+  obj: moe_elbo
+  loss: lprob
+  viz_freq: 100
+  model: 2mods
+  noisy_txt: False
+modality_1:
+  dataset: ../data/image
+  type: img
+modality_2:
+  dataset: ../data/4096d.pkl
+  type: txt
+  num_words: 3
+
+
+
+
+
