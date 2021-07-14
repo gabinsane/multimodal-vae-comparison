@@ -24,7 +24,7 @@ class MOE(MMVAE):
             nn.Parameter(torch.zeros(1, params.latent_dim), requires_grad=False),  # mu
             nn.Parameter(torch.zeros(1, params.latent_dim), **grad)  # logvar
         ])
-        self.vaes[0].llik_scaling = prod(params.data_dim1) / prod(params.data_dim2) \
+        self.vaes[0].llik_scaling = prod(params.data_dim2) / prod(params.data_dim1) \
             if params.llik_scaling == 0 else params.llik_scaling
         self.modelName = 'moe-dualmod'
         self.imgpath = params.mod1
