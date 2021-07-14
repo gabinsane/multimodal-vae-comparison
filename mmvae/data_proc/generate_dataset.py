@@ -9,6 +9,7 @@ from train_w2v import train_word2vec
 parser = argparse.ArgumentParser(description='VAE data generator')
 parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
 parser.add_argument('--type', type=str, default="img-vec", help='type of the dataset. "img-img" =images + text images, "img-vec" = images + word embeddings ')
+parser.add_argument('--emb-size', type=int, default=4096, help='Size of word vectors in the img-vec dataset')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
 parser.add_argument('--noisycol', action='store_true', default=False,
@@ -21,7 +22,7 @@ noise = {"red":["reed", "red", "reen"], "green":["green", "greal", "greed"], "bl
          "maroon":["maroon","mallow", "marple"], "navy":["navy", "nareen", "naveal"]}
 fonts = ["/usr/share/fonts/truetype/ubuntu/Ubuntu-C.ttf", "/usr/share/fonts/truetype/tlwg/Loma.ttf", "/usr/share/fonts/truetype/freefont/FreeMono.ttf",
          "/usr/share/fonts/truetype/freefont/FreeSans.ttf", "/usr/share/fonts/truetype/freefont/FreeSerif.ttf"]
-WORD_EMBEDDING_SIZE = 12
+WORD_EMBEDDING_SIZE = args.emb_size
 dimmap = {1:0, 4:1, 16:2, 64:3, 256:4, 1024:5, 4096:6}
 shapes = ["line", "circle", "semicircle", "pieslice", "square"]
 sizes = ["small", "large"]
