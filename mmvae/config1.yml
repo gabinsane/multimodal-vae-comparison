@@ -1,6 +1,6 @@
 general:
   n_epochs: 500
-  n_latents: 8
+  n_latents: 16
   obj: moe_elbo
   loss: lprob
   viz_freq: 100
@@ -10,8 +10,9 @@ modality_1:
   dataset: ../data/image
   type: img
 modality_2:
-  dataset: ../data/attrs.pkl
+  dataset: ../data/12d.pkl
   type: txt
+  num_words: 3
 
 
 
