@@ -7,8 +7,8 @@ import math, glob, imageio, cv2
 import argparse, sys
 from train_w2v import train_word2vec
 parser = argparse.ArgumentParser(description='VAE data generator')
-parser.add_argument('--size', type=int, default=5000, help='size of the dataset')
-parser.add_argument('--type', type=str, default="img-img", help='type of the dataset. "img-img" =images + text images, "img-vec" = images + word embeddings ')
+parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
+parser.add_argument('--type', type=str, default="img-vec", help='type of the dataset. "img-img" =images + text images, "img-vec" = images + word embeddings ')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
 parser.add_argument('--noisycol', action='store_true', default=False,
@@ -21,6 +21,7 @@ noise = {"red":["reed", "red", "reen"], "green":["green", "greal", "greed"], "bl
          "maroon":["maroon","mallow", "marple"], "navy":["navy", "nareen", "naveal"]}
 fonts = ["/usr/share/fonts/truetype/ubuntu/Ubuntu-C.ttf", "/usr/share/fonts/truetype/tlwg/Loma.ttf", "/usr/share/fonts/truetype/freefont/FreeMono.ttf",
          "/usr/share/fonts/truetype/freefont/FreeSans.ttf", "/usr/share/fonts/truetype/freefont/FreeSerif.ttf"]
+WORD_EMBEDDING_SIZE = 12
 dimmap = {1:0, 4:1, 16:2, 64:3, 256:4, 1024:5, 4096:6}
 shapes = ["line", "circle", "semicircle", "pieslice", "square"]
 sizes = ["small", "large"]
@@ -61,12 +62,12 @@ def make_dummy_txt(pth, target_pth):
 def word2vec(attrs_pth, target_pth):
     from gensim.models import Word2Vec
     words = unpickle(attrs_pth)
-    if not os.path.exists("../data/word2vec.model"):
+    if not os.path.exists("../data/word2vec{}d.model".format(WORD_EMBEDDING_SIZE)):
         print("Generating word2vec.model")
-        train_word2vec(words)
-    model = Word2Vec.load("../data/word2vec.model")
+        train_word2vec(words, vector_size=WORD_EMBEDDING_SIZE)
+    model = Word2Vec.load("../data/word2vec{}d.model".format(WORD_EMBEDDING_SIZE))
     vecs = []
-    print("Making {} (each word encoded into a 4096d embedding)".format(target_pth))
+    print("Making {} (each word encoded into a {}d embedding)".format(target_pth, WORD_EMBEDDING_SIZE))
     for seq in words:
         vecs.append(([model.wv[seq[0]]],[model.wv[seq[1]]], [model.wv[seq[2]]]))
     vecs_np = np.asarray(vecs).squeeze()
@@ -198,6 +199,6 @@ if __name__ == "__main__":
        os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
        make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
     elif args.type == "img-vec":
-       word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "attrs_4096d.pkl"))
+       word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "{}d.pkl".format(WORD_EMBEDDING_SIZE)))
        make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
     print("\nAll done. Data saved in mirracle_multimodal/data")

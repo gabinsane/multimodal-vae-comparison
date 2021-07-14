@@ -15,8 +15,6 @@ from .mmvae import MMVAE, MMVAE_P
 from .vae_mnist import MNIST, CROW
 from .vae_svhn import SVHN, CROW2
 from .vae_own import UNIVAE
-from gensim.models import Word2Vec
-from utils import normalize_w2v, unnormalize_w2v
 
 class MOE(MMVAE):
     def __init__(self, params):
@@ -31,7 +29,6 @@ class MOE(MMVAE):
         self.modelName = 'moe-dualmod'
         self.imgpath = params.mod1
         self.txtpath = params.mod2
-        self.w2v = Word2Vec.load("../data/word2vec.model")
 
     @property
     def pz_params(self):
@@ -53,6 +50,8 @@ class MOE(MMVAE):
         N = 36
         samples_list = super(MOE, self).generate(N)
         for i, samples in enumerate(samples_list):
+            if samples.shape[0] != N:
+                samples = samples.reshape(N, 64,64,3)
             try:
                 r_l = []
                 for r, recons_list in enumerate(samples):
@@ -73,20 +72,20 @@ class MOE(MMVAE):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
                     try:
-                        _data = data[r][:8].cpu()
-                        if "d.pkl" in self.vaes[1].pth:
+                        _data = data[o][:8].cpu()
+                        if "d.pkl" in self.vaes[o].pth and o == 1:
                             target, reconstruct = [], []
-                            _data = _data.reshape(-1,3,4096)
-                            recon = recon.reshape(-1, 3, 4096)
+                            _data = _data.reshape(-1,3,int(self.vaes[o].data_dim/3))
+                            recon = recon.reshape(-1, 3, int(self.vaes[o].data_dim/3))
                             for s in _data:
                                 seq = []
                                 for w in s:
-                                    seq.append(self.w2v.wv.most_similar(positive=[unnormalize_w2v(np.asarray(w)), ])[0][0])
+                                    seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w)), ])[0][0])
                                 target.append(" ".join(seq))
                             for s in recon:
                                 seq = []
                                 for w in s:
-                                    seq.append(self.w2v.wv.most_similar(positive=[unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                                    seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                                 reconstruct.append(" ".join(seq))
                             if o == 0:
                                 reconstruct = ""
@@ -110,7 +109,8 @@ class MOE(MMVAE):
                                 r_l = np.hstack((r_l, np.asarray(recon[x])))
                         w = np.vstack((o_l, r_l))
                         if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
-                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w*255)
+                            w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
+                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w2)
                     except:
                         pass
 
@@ -142,7 +142,6 @@ class POE(MMVAE_P):
         self.modelName = 'poe-dualmod'
         self.imgpath = params.mod1
         self.txtpath = params.mod2
-        self.w2v = Word2Vec.load("../data/word2vec.model")
 
     @property
     def pz_params(self):
@@ -165,6 +164,8 @@ class POE(MMVAE_P):
         N = 36
         samples_list = super(POE, self).generate(N)
         for i, samples in enumerate(samples_list):
+            if samples.shape[0] != N:
+                samples = samples.reshape(N, 64,64,3)
             try:
                 r_l = []
                 for r, recons_list in enumerate(samples):
@@ -190,20 +191,20 @@ class POE(MMVAE_P):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
                     try:
-                        _data = data[r][:8].cpu()
-                        if "d.pkl" in self.vaes[1].pth:
+                        _data = data[o][:8].cpu()
+                        if "d.pkl" in self.vaes[o].pth:
                             target, reconstruct = [], []
-                            _data = _data.reshape(-1,3,4096)
-                            recon = recon.reshape(-1, 3, 4096)
+                            _data = _data.reshape(-1,3,int(self.vaes[1].data_dim/3))
+                            recon = recon.reshape(-1, 3, int(self.vaes[1].data_dim/3))
                             for s in _data:
                                 seq = []
                                 for w in s:
-                                    seq.append(self.w2v.wv.most_similar(positive=[np.asarray(w), ])[0][0])
+                                    seq.append(self.vaes[1].w2v.model.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                                 target.append(" ".join(seq))
                             for s in recon:
                                 seq = []
                                 for w in s:
-                                    seq.append(self.w2v.wv.most_similar(positive=[np.asarray(w.cpu()), ])[0][0])
+                                    seq.append(self.vaes[1].w2v.model.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                                 reconstruct.append(" ".join(seq))
                             output = open('{}/recon_{}x{}_{:03d}.txt'.format(runPath, r, o, epoch),"w")
                             if o == 0:
@@ -226,7 +227,8 @@ class POE(MMVAE_P):
                                 r_l = np.hstack((r_l, np.asarray(recon[x])))
                         w = np.vstack((o_l, r_l))
                         if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
-                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w*255)
+                            w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
+                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w2)
                     except:
                         pass
 

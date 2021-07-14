@@ -5,13 +5,14 @@ from matplotlib import pyplot
 import pickle
 
 
-def train_word2vec(text):
-    model = Word2Vec(text.tolist(), vector_size=4096)
-    model_2 = Word2Vec(vector_size=4096, min_count=1)
+def train_word2vec(text, vector_size=9):
+    model = Word2Vec(text.tolist(), vector_size=vector_size)
+    model_2 = Word2Vec(vector_size=vector_size, min_count=1)
     model_2.build_vocab(text)
     total_examples = model_2.corpus_count
     model_2.train(text.tolist(), total_examples=total_examples, epochs=200)
-    model.save("../data/word2vec.model")
+    model.save("../data/word2vec{}d.model".format(vector_size))
+    #pca(model)
 
 def pca(model):
     X = model.wv.vectors
@@ -22,7 +23,7 @@ def pca(model):
     for i, word in enumerate(list(model.wv.index_to_key)):
         pyplot.annotate(word, xy=(result[i, 0], result[i, 1]))
     pyplot.show()
-    #pyplot.savefig("../../data/pca.jpg")
+    pyplot.savefig("../../data/pca.jpg")
 
 
 if __name__ == "__main__":

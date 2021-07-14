@@ -8,8 +8,35 @@ import torch.distributions as dist
 import torch.nn.functional as F
 import numpy as np
 import random
-
+from gensim.models import Word2Vec
 # Classes
+
+class W2V():
+    def __init__(self, dim):
+        self.vec_dim = int(dim)
+        self.model = self.get_w2v(self.vec_dim)
+        self.max = None
+        self.min = None
+
+    def normalize_w2v(self, data):
+        self.max = data.max()
+        self.min = data.min()
+        a = self.max - self.min
+        d = (data - self.min) / a
+        return d
+
+    def unnormalize_w2v(self,data):
+        a = self.max - self.min
+        d = (data * a) + self.min
+        return d
+
+    def get_w2v(self, data_dim):
+        try:
+            w = Word2Vec.load("../data/word2vec{}d.model".format(data_dim))
+        except:
+            print("did not find /word2vec{}d.model".format(data_dim))
+            w = None
+        return w
 
 def create_vocab(text, add_noise):
     # create vocabulary
@@ -32,19 +59,6 @@ def create_vocab(text, add_noise):
                 text2idx[idx][word_idx] = vocab.to_index(text[idx][word_idx])
     return text2idx, vocab
 
-def normalize_w2v(data):
-    mx = 0.0188
-    mn = -0.0183
-    a = mx-mn
-    d = (data -mn) / a
-    return d
-
-def unnormalize_w2v(data):
-    mx = 0.0188
-    mn = -0.0183
-    a = mx-mn
-    d = (data * a) + mn
-    return d
 
 class Vocabulary:
     def __init__(self, name):
@@ -189,8 +203,9 @@ def get_mean(d, K=100):
     If attribute not available, estimate from samples.
     """
     try:
-        mean = d.mean
+        mean = d.loc
     except NotImplementedError:
+        print("could not get mean")
         samples = d.rsample(torch.Size([K]))
         mean = samples.mean(0)
     return mean

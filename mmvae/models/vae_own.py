@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from torchvision.utils import save_image, make_grid
 import pickle
-from utils import Constants, create_vocab, normalize_w2v, unnormalize_w2v
+from utils import Constants, create_vocab, W2V
 from vis import plot_embeddings, plot_kls_df
 from .vae import VAE
 import cv2
@@ -18,7 +18,6 @@ import cv2
 # Constants
 dataSize = torch.Size([3,64,64])
 #data_dim = int(prod(dataSize))
-hidden_dim = 400
 
 
 def extra_hidden_layer(hidden_dim=400):
@@ -42,7 +41,6 @@ class Enc2(nn.Module):
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         n_chan = 3
-        self.mixing = "poe"
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
         self.conv1 = torch.nn.DataParallel(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs))
@@ -77,7 +75,7 @@ class Enc2(nn.Module):
         # Log std-dev in paper (bear in mind)
         mu = self.mu_gen(x)
         logvar = self.var_gen(x)
-        lv =F.softmax(logvar, dim=-1) if self.mixing == "poe" else F.softmax(logvar, dim=-1) * logvar.size(-1) + Constants.eta
+        lv = torch.relu(logvar) + Constants.eta
         return mu, lv
 
 class Dec2(nn.Module):
@@ -142,23 +140,22 @@ class Enc(nn.Module):
     def __init__(self, latent_dim, params, num_hidden_layers=1, data_dim=1):
         super(Enc, self).__init__()
         if data_dim < 200:
-            self.hidden_dim = int(data_dim * 2)
-        elif data_dim == 256:
-            self.hidden_dim = 256
+            self.hidden_dim = 22
         else:
-            self.hidden_dim = int(data_dim/2)
-        modules = []
-        self.mixing = "poe"
-        modules.append(torch.nn.DataParallel(nn.Sequential(nn.Linear(data_dim, self.hidden_dim), nn.ReLU(True))))
-        modules.extend([extra_hidden_layer(self.hidden_dim) for _ in range(num_hidden_layers - 1)])
-        self.enc = torch.nn.DataParallel(nn.Sequential(*modules))
+            self.hidden_dim = 1024
+        self.lin1 = torch.nn.DataParallel(nn.Linear(data_dim, self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+
         self.fc21 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
         self.fc22 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
 
     def forward(self, x):
-        e = self.enc(x)  # flatten data
+        e = torch.relu(self.lin1(x))
+        #e = torch.relu(self.lin2(e))
+        #e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
-        lv = F.softmax(lv, dim=-1) if self.mixing == "poe" else F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
+        lv = torch.relu(lv) + Constants.eta
         return self.fc21(e), lv
 
 
@@ -168,22 +165,21 @@ class Dec(nn.Module):
     def __init__(self, latent_dim, num_hidden_layers=1, data_dim=1):
         super(Dec, self).__init__()
         if data_dim < 200:
-            self.hidden_dim = int(data_dim * 2)
-        elif data_dim == 256:
-            self.hidden_dim = 256
+            self.hidden_dim = 22
         else:
-            self.hidden_dim = int(data_dim/2)
+            self.hidden_dim = 1024
         self.data_dim = data_dim
-        modules = []
-        modules.append(torch.nn.DataParallel(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True))))
-        modules.extend([extra_hidden_layer(self.hidden_dim) for _ in range(num_hidden_layers - 1)])
-        self.dec = torch.nn.DataParallel(nn.Sequential(*modules))
+        self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, data_dim))
 
     def forward(self, z):
-        p = self.fc3(self.dec(z))
-        d = torch.sigmoid(p.view(*z.size()[:-1], self.data_dim))  # reshape data
-        #d = d.clamp(Constants.eta, 1 - Constants.eta)
+        p = torch.relu(self.lin1(z))
+        #p = torch.relu(self.lin2(p))
+        #p = torch.relu(self.lin3(p))
+        d = (self.fc3(p))  # reshape data
+        d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
@@ -195,10 +191,14 @@ class UNIVAE(VAE):
             self.pth = params.mod1
             self.data_dim = params.data_dim1
             self.data_type = params.data1
+            if "d.pkl" in self.pth:
+                self.num_words = params.num_words1
         elif index == 1:
             self.pth = params.mod2
             self.data_dim = params.data_dim2
             self.data_type = params.data2
+            if "d.pkl" in self.pth:
+                self.num_words = params.num_words2
         if not ".pkl" in self.pth:
             super(UNIVAE, self).__init__(
                 dist.Normal,  # prior
@@ -223,9 +223,11 @@ class UNIVAE(VAE):
             nn.Parameter(torch.zeros(1, params.latent_dim), **grad)  # logvar
         ])
         self.modelName = 'vae_{}'.format(self.data_type)
-        self.llik_scaling = 1.
         self.params = params
         self.noisy = params.noisytxt
+        self.llik_scaling = 1
+        if "d.pkl" in self.pth:
+            self.w2v = W2V(self.data_dim/self.num_words)
 
     @property
     def pz_params(self):
@@ -233,7 +235,6 @@ class UNIVAE(VAE):
 
     def getDataLoaders(self, batch_size, shuffle=False, device="cuda"):
         kwargs = {'num_workers': 1, 'pin_memory': True} if device == "cuda" else {}
-        tx = transforms.ToTensor()
         if not ".pkl" in self.pth:
             d = load_images(self.pth)
             d = d.reshape((d.shape[0], 3, 64, 64))
@@ -244,7 +245,8 @@ class UNIVAE(VAE):
                     if isinstance(d[0][0], str):
                         d, vocab = create_vocab(d, self.noisy)
                 else:
-                        d = normalize_w2v(d.reshape(d.shape[0], -1))
+                        d = d.reshape(d.shape[0], -1)
+                        d = self.w2v.normalize_w2v(d) #* np.random.uniform(low=0.9, high=1.1, size=(d.shape))
                 if len(d.shape) < 2:
                     d = np.expand_dims(d, axis=1)
         data_size = d.shape[0]
@@ -274,31 +276,55 @@ class UNIVAE(VAE):
         r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
         cv2.imwrite('{}/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
 
-
-
     def reconstruct(self, data, runPath, epoch):
         recons_mat = super(UNIVAE, self).reconstruct(data[:8]).squeeze()
         o_l = []
-        for r, recons_list in enumerate(recons_mat):
-                _data = data[r].cpu()
-                recon = recons_list.cpu()
-                # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
-                _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
-                recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
-                if o_l == []:
-                        o_l = np.asarray(_data)
-                        r_l = np.asarray(recon)
-                else:
-                        o_l = np.concatenate((o_l, np.asarray(_data)))
-                        r_l = np.concatenate((r_l, np.asarray(recon)))
-        w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
-        cv2.imwrite('{}/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
+        if "d.pkl" in self.pth:
+            _data = data[:8].cpu()
+            recon = recons_mat.cpu()
+            target, reconstruct = [], []
+            _data = _data.reshape(-1, 3, int(self.data_dim / 3))
+            recon = recon.reshape(-1, 3, int(self.data_dim / 3))
+            for s in _data:
+                seq = []
+                for w in s:
+                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w)), ])[0][0])
+                target.append(" ".join(seq))
+            for s in recon:
+                seq = []
+                prob = []
+                for w in s:
+                    seq.append(self.w2v.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                    prob.append("({})".format(str(round(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][1], 2))))
+                j = [" ".join((x, prob[y])) for y,x in enumerate(seq)]
+                reconstruct.append(" ".join(j))
+            output = open('{}/recon_{:03d}.txt'.format(runPath, epoch), "w")
+            output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
+            output.close()
+        else:
+            for r, recons_list in enumerate(recons_mat):
+                    _data = data[r].cpu()
+                    recon = recons_list.cpu()
+                    # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
+                    _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
+                    recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
+                    if o_l == []:
+                            o_l = np.asarray(_data)
+                            r_l = np.asarray(recon)
+                    else:
+                            o_l = np.concatenate((o_l, np.asarray(_data)))
+                            r_l = np.concatenate((r_l, np.asarray(recon)))
+            w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
+            cv2.imwrite('{}/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
 
     def analyse(self, data, runPath, epoch):
-        zemb, zsl, kls_df = super(UNIVAE, self).analyse(data, K=10)
-        labels = ['Prior', self.modelName.lower()]
-        plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-        plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+        try:
+            zemb, zsl, kls_df = super(UNIVAE, self).analyse(data, K=10)
+            labels = ['Prior', self.modelName.lower()]
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+        except:
+            pass
 
 def load_images(path, imsize=64):
         import os, glob, numpy as np, imageio

@@ -29,10 +29,10 @@ parser.add_argument('--K', type=int, default=1, metavar='K',
                     help='number of particles to use for iwae/dreg (default: 10)')
 parser.add_argument('--looser', action='store_true', default=False,
                     help='use the looser version of IWAE/DREG')
-parser.add_argument('--llik_scaling', type=float, default=0.,
+parser.add_argument('--llik_scaling', type=float, default=0,
                     help='likelihood scaling for cub images/svhn modality when running in'
                          'multimodal setting, set as 0 to use default value')
-parser.add_argument('--batch-size', type=int, default=32, metavar='N',
+parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='batch size for data (default: 256)')
 parser.add_argument('--epochs', type=int, default=None, metavar='E',
                     help='number of epochs to train (default: 10)')
@@ -69,13 +69,15 @@ with open(args.cfg, "r") as ymlfile:
 if not args.mod1:
     args.mod1 = config["modality_1"]["dataset"]
 if ".pkl" in args.mod1:
-    args.data_dim1 = int(os.path.basename(args.mod1.lower()).split("d")[0]) if "d" in args.mod1.lower() else 1
+    args.num_words1 = int(config["modality_1"]["num_words"])
+    args.data_dim1 = int(os.path.basename(args.mod1.lower()).split("d")[0]) * args.num_words1 if "d" in args.mod1.lower() else 1
 args.data1 = config["modality_1"]["type"]
 if "modality_2" in config.keys():
     if not args.mod2:
         args.mod2 = config["modality_2"]["dataset"]
     if ".pkl" in args.mod2:
-        args.data_dim2 = int(os.path.basename(args.mod2.lower()).split("d")[0]) if "d" in args.mod2.lower() else 1
+        args.num_words2 = int(config["modality_2"]["num_words"])
+        args.data_dim2 = int(os.path.basename(args.mod2.lower()).split("d")[0]) * args.num_words2 if "d" in args.mod2.lower() else 1
     args.data2 = config["modality_2"]["type"]
 if not args.epochs:
     args.epochs = int(config["general"]["n_epochs"])
@@ -222,11 +224,14 @@ def test(epoch, agg, lossmeter):
                 txt_loss_m.append(img_loss)
             b_loss += loss.item()
             if i == 0 and epoch % args.viz_freq == 0:
-                if (args.model =="uni" and "pkl" in args.mod1):
+                if (args.model =="uni" and "attrs.pkl" in args.mod1):
                     pass
                 else:
                     model.reconstruct(data, runPath, epoch)
-                    model.generate(runPath, epoch)
+                    try:
+                         model.generate(runPath, epoch)
+                    except:
+                        pass
                 if not args.no_analytics:
                      model.analyse(data, runPath, epoch)
     if "2mods" in args.model:
