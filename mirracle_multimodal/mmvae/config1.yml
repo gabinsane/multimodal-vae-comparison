@@ -1,5 +1,5 @@
 general:
-  n_epochs: 500
+  n_epochs: 100
   n_latents: 16
   obj: moe_elbo
   loss: lprob

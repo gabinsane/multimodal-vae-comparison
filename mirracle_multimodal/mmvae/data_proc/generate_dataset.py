@@ -74,7 +74,7 @@ def word2vec(attrs_pth, target_pth):
         vecs.append(([model.wv[seq[0]]],[model.wv[seq[1]]], [model.wv[seq[2]]]))
     vecs_np = np.asarray(vecs).squeeze()
     with open(target_pth, 'wb') as handle:
-        pickle.dump(vecs_np, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(vecs_np, handle, protocol=pickle.HIGHEST_PROTOCOL)ueue
 
 def randomize_rgb(rgb):
     new_rgb = [0,0,0]
