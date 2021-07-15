@@ -85,45 +85,6 @@ class MMVAE(nn.Module):
             torch.cat(zsl, 0).cpu().numpy(), \
             kls_df
 
-
-# class MMVAE_POOO(nn.Module):
-#     def __init__(self, prior_dist, params, *vaes):
-#         super(MMVAE_P, self).__init__()
-#         self.pz = prior_dist
-#         self.vaes = nn.ModuleList([vae(params, index) for index, vae in enumerate(vaes)])
-#         self.modelName = None  # filled-in per sub-class
-#         self.params = params
-#         self._pz_params = None  # defined in subclass
-#         self.experts = ProductOfExperts()
-#
-#     @property
-#     def pz_params(self):
-#         return self._pz_params
-#
-#     @staticmethod
-#     def getDataLoaders(batch_size, shuffle=True, device="cuda"):
-#         # handle merging individual datasets appropriately in sub-class
-#         raise NotImplementedError
-#
-#     def forward(self, x, K=1, both_qz=False):
-#         qz_xs, zss = [], []
-#         px_zs = [None for _ in range(len(self.vaes))]
-#         for m, vae in enumerate(self.vaes):
-#             if x[m] is not None:
-#                 qz_xs.append(vae.enc(x[m]))
-#         # PoE mixing
-#         qz_x_params = self.experts(qz_xs, self.params.latent_dim, unimod=True if len(qz_xs) == 1 else False)
-#         #qz_x = dist.Normal(*qz_x_params)
-#         # reparametrization trick
-#         #z = qz_x.rsample(torch.Size([K]))
-#         z = self.reparametrize(qz_x_params[0], qz_x_params[1])
-#         for ind, vae in enumerate(self.vaes):
-#                px_zs[ind] = vae.px_z(*vae.dec(z))
-#         qz_x = qz_x_params if not both_qz else [dist.Normal(*qz_x) for qz_x in qz_xs]
-#         z = [z] if not both_qz else [z * len(qz_xs)]
-#         return qz_x, px_zs, z
-
-
 class MMVAE_P(nn.Module):
     """Multimodal Variational Autoencoder."""
     def __init__(self, prior_dist, params, *vaes):
@@ -145,25 +106,6 @@ class MMVAE_P(nn.Module):
         z = [z] if not both_qz else [z * len(recons)]
         qz_x = qz_x if not both_qz else [dist.Normal(*[single_params[0][0], single_params[1][0]]), dist.Normal(*[single_params[0][1], single_params[1][1]])]
         return qz_x, recons, z
-
-    #     def forward(self, x, K=1, both_qz=False):
-    #         qz_xs, zss = [], []
-    #         px_zs = [None for _ in range(len(self.vaes))]
-    #         for m, vae in enumerate(self.vaes):
-    #             if x[m] is not None:
-    #                 qz_xs.append(vae.enc(x[m]))
-    #         # PoE mixing
-    #         qz_x_params = self.experts(qz_xs, self.params.latent_dim, unimod=True if len(qz_xs) == 1 else False)
-    #         #qz_x = dist.Normal(*qz_x_params)
-    #         # reparametrization trick
-    #         #z = qz_x.rsample(torch.Size([K]))
-    #         z = self.reparametrize(qz_x_params[0], qz_x_params[1])
-    #         for ind, vae in enumerate(self.vaes):
-    #                px_zs[ind] = vae.px_z(*vae.dec(z))
-    #         qz_x = qz_x_params if not both_qz else [dist.Normal(*qz_x) for qz_x in qz_xs]
-    #         z = [z] if not both_qz else [z * len(qz_xs)]
-    #         return qz_x, px_zs, z
-
 
     def infer(self,inputs):
         # initialize the universal prior expert
