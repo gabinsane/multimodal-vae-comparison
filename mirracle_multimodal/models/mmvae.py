@@ -96,7 +96,7 @@ class MMVAE_P(nn.Module):
             self._pz_params = None  # defined in subclass
             self.experts = ProductOfExperts()
 
-    def forward(self, inputs, test=False, both_qz=False):
+    def forward(self, inputs, both_qz=False, K=1):
         mu, logvar, single_params = self.infer(inputs)
         recons = []
         qz_x = dist.Normal(*[mu, logvar])
@@ -135,7 +135,7 @@ class MMVAE_P(nn.Module):
     def reconstruct(self, data):
         self.eval()
         with torch.no_grad():
-            _, px_zs, _ = self.forward(data, test=True)
+            _, px_zs, _ = self.forward(data)
             # cross-modal matrix of reconstructions
             recons = [get_mean(r) for r in px_zs]
         return recons
@@ -143,7 +143,10 @@ class MMVAE_P(nn.Module):
     def analyse(self, data, K):
         self.eval()
         with torch.no_grad():
-            qz_xs, _, zss = self.forward(data,both_qz=True, test=True)
+            zss = []
+            qz_xs, _, _= self.forward(data, both_qz=True)
+            for i in qz_xs:
+                zss.append(i.rsample(torch.Size([K])))
             pz = self.pz(*self.pz_params)
             zss = [pz.sample(torch.Size([K, data[0].size(0)])).view(-1, pz.batch_shape[-1]),
                    *[zs.view(-1, zs.size(-1)) for zs in zss]]
@@ -161,6 +164,7 @@ class MMVAE_P(nn.Module):
         return embed_umap(torch.cat(zss, 0).cpu().numpy()), \
             torch.cat(zsl, 0).cpu().numpy(), \
             kls_df
+
 
 class ProductOfExperts(nn.Module):
     """Return parameters for product of independent experts.
