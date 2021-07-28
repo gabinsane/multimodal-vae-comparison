@@ -12,9 +12,9 @@ from gensim.models import Word2Vec
 # Classes
 
 class W2V():
-    def __init__(self, dim):
+    def __init__(self, dim, path):
         self.vec_dim = int(dim)
-        self.model = self.get_w2v(self.vec_dim)
+        self.model = self.get_w2v(self.vec_dim, path)
         self.max = None
         self.min = None
 
@@ -30,11 +30,11 @@ class W2V():
         d = (data * a) + self.min
         return d
 
-    def get_w2v(self, data_dim):
+    def get_w2v(self, data_dim, path):
         try:
-            w = Word2Vec.load("../data/word2vec{}d.model".format(data_dim))
+            w = Word2Vec.load(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim)))
         except:
-            print("did not find /word2vec{}d.model".format(data_dim))
+            print("Did not find {}".format(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim))))
             w = None
         return w
 

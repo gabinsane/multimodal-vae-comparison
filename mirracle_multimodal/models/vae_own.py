@@ -75,7 +75,7 @@ class Enc2(nn.Module):
         # Log std-dev in paper (bear in mind)
         mu = self.mu_gen(x)
         logvar = self.var_gen(x)
-        lv = torch.relu(logvar) + Constants.eta
+        lv = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, lv
 
 class Dec2(nn.Module):
@@ -155,7 +155,7 @@ class Enc(nn.Module):
         #e = torch.relu(self.lin2(e))
         #e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
-        lv = torch.relu(lv) + Constants.eta
+        lv =  F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
 
 
@@ -227,7 +227,7 @@ class UNIVAE(VAE):
         self.noisy = params.noisytxt
         self.llik_scaling = 1
         if "d.pkl" in self.pth:
-            self.w2v = W2V(self.data_dim/self.num_words)
+            self.w2v = W2V(self.data_dim/self.num_words, self.pth)
 
     @property
     def pz_params(self):

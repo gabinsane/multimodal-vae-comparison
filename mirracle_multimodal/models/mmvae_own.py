@@ -63,7 +63,7 @@ class MOE(MMVAE):
                         r_l = np.concatenate((r_l, np.asarray(recon)))
                 r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),
                                  np.hstack(r_l[24:30]), np.hstack(r_l[30:36])))
-                cv2.imwrite('{}/gen_samples_{}_{:03d}.png'.format(runPath, i, epoch), r_l * 255)
+                cv2.imwrite('{}/gen_samples_{}_{}.png'.format(runPath, i, epoch), r_l * 255)
             except:
                 pass
 
@@ -92,7 +92,7 @@ class MOE(MMVAE):
                             if r == 0:
                                 target = ""
                             if not (o == 0 and r ==0):
-                                output = open('{}/recon_{}x{}_{:03d}.txt'.format(runPath, r, o, epoch), "w")
+                                output = open('{}/recon_{}x{}_{}.txt'.format(runPath, r, o, epoch), "w")
                                 output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
                                 output.close()
                         recon = recon.squeeze(0).cpu()
@@ -108,9 +108,9 @@ class MOE(MMVAE):
                                 o_l = np.hstack((o_l, np.asarray(_data[x])))
                                 r_l = np.hstack((r_l, np.asarray(recon[x])))
                         w = np.vstack((o_l, r_l))
-                        if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
+                        if not (r == 1 and o == 1 and "d.pkl" in self.vaes[o].pth):
                             w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
-                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w2)
+                            cv2.imwrite('{}/recon_{}x{}_{}.png'.format(runPath, r, o, epoch), w2)
                     except:
                         pass
 
@@ -118,8 +118,8 @@ class MOE(MMVAE):
         try:
             zemb, zsl, kls_df = super(MOE, self).analyse(data, K=10)
             labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
-            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{}.png'.format(runPath, epoch))
         except:
             pass
 
@@ -137,7 +137,7 @@ class POE(MMVAE_P):
             nn.Parameter(torch.zeros(1, params.latent_dim), requires_grad=False),  # mu
             nn.Parameter(torch.zeros(1, params.latent_dim), **grad)  # logvar
         ])
-        self.vaes[0].llik_scaling = prod(params.data_dim1) / prod(params.data_dim2) \
+        self.vaes[0].llik_scaling = prod(params.data_dim2) / prod(params.data_dim1) \
             if params.llik_scaling == 0 else params.llik_scaling
         self.modelName = 'poe-dualmod'
         self.imgpath = params.mod1
@@ -177,7 +177,7 @@ class POE(MMVAE_P):
                         r_l = np.concatenate((r_l, np.asarray(recon)))
                 r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),
                                  np.hstack(r_l[24:30]), np.hstack(r_l[30:36])))
-                cv2.imwrite('{}/gen_samples_{}_{:03d}.png'.format(runPath, i, epoch), r_l * 255)
+                cv2.imwrite('{}/gen_samples_{}_{}.png'.format(runPath, i, epoch), r_l * 255)
             except:
                 pass
 
@@ -194,19 +194,19 @@ class POE(MMVAE_P):
                         _data = data[o][:8].cpu()
                         if "d.pkl" in self.vaes[o].pth:
                             target, reconstruct = [], []
-                            _data = _data.reshape(-1,3,int(self.vaes[1].data_dim/3))
-                            recon = recon.reshape(-1, 3, int(self.vaes[1].data_dim/3))
+                            _data = _data.reshape(-1,3,int(self.vaes[o].data_dim/3))
+                            recon = recon.reshape(-1, 3, int(self.vaes[o].data_dim/3))
                             for s in _data:
                                 seq = []
                                 for w in s:
-                                    seq.append(self.vaes[1].w2v.model.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                                    seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                                 target.append(" ".join(seq))
                             for s in recon:
                                 seq = []
                                 for w in s:
-                                    seq.append(self.vaes[1].w2v.model.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                                    seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                                 reconstruct.append(" ".join(seq))
-                            output = open('{}/recon_{}x{}_{:03d}.txt'.format(runPath, r, o, epoch),"w")
+                            output = open('{}/recon_{}x{}_{}.txt'.format(runPath, r, o, epoch),"w")
                             if o == 0:
                                 reconstruct = ""
                             if r == 0:
@@ -228,7 +228,7 @@ class POE(MMVAE_P):
                         w = np.vstack((o_l, r_l))
                         if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
                             w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
-                            cv2.imwrite('{}/recon_{}x{}_{:03d}.png'.format(runPath, r, o, epoch), w2)
+                            cv2.imwrite('{}/recon_{}x{}_{}.png'.format(runPath, r, o, epoch), w2)
                     except:
                         pass
 
@@ -236,8 +236,8 @@ class POE(MMVAE_P):
         try:
             zemb, zsl, kls_df = super(POE, self).analyse(data, K=10)
             labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
-            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{}.png'.format(runPath, epoch))
         except:
            pass
 
