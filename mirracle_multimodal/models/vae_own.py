@@ -139,12 +139,9 @@ class Enc(nn.Module):
 
     def __init__(self, latent_dim, params, num_hidden_layers=1, data_dim=1):
         super(Enc, self).__init__()
-        if data_dim < 200:
-            self.hidden_dim = 22
-        else:
-            self.hidden_dim = 1024
+        self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(nn.Linear(data_dim, self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(data_dim, self.hidden_dim))
         self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
 
         self.fc21 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
@@ -164,13 +161,10 @@ class Dec(nn.Module):
 
     def __init__(self, latent_dim, num_hidden_layers=1, data_dim=1):
         super(Dec, self).__init__()
-        if data_dim < 200:
-            self.hidden_dim = 22
-        else:
-            self.hidden_dim = 1024
+        self.hidden_dim = 20
         self.data_dim = data_dim
         self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
         self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, data_dim))
 
@@ -294,7 +288,7 @@ class UNIVAE(VAE):
                 seq = []
                 prob = []
                 for w in s:
-                    seq.append(self.w2v.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                     prob.append("({})".format(str(round(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][1], 2))))
                 j = [" ".join((x, prob[y])) for y,x in enumerate(seq)]
                 reconstruct.append(" ".join(j))
