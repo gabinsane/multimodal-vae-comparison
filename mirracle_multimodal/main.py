@@ -305,5 +305,7 @@ if __name__ == '__main__':
             train(epoch, agg, lossmeter)
             test(epoch, agg, lossmeter)
             save_model(model, runPath + '/model.rar')
+            if epoch % 100 == 0:
+                save_model(model, runPath + '/model_epoch{}.rar'.format(epoch))
         if args.logp:  # compute as tight a marginal likelihood as possible
             estimate_log_marginal(5000)

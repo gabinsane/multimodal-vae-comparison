@@ -6,14 +6,12 @@ import torch
 import torch.distributions as dist
 import torch.nn as nn
 import torch.nn.functional as F
-from numpy import sqrt, prod
+from numpy import prod
 from torch.utils.data import DataLoader
-from torchnet.dataset import TensorDataset, ResampleDataset
-from torchvision.utils import save_image, make_grid
+from torchnet.dataset import TensorDataset
 from vis import plot_embeddings, plot_kls_df
 from .mmvae import MMVAE, MMVAE_P
-from .vae_mnist import MNIST, CROW
-from .vae_svhn import SVHN, CROW2
+
 from .vae_own import UNIVAE
 
 class MOE(MMVAE):
@@ -92,7 +90,7 @@ class MOE(MMVAE):
                             if r == 0:
                                 target = ""
                             if not (o == 0 and r ==0):
-                                output = open('{}/recon_{}x{}_{}.txt'.format(runPath, r, o, epoch), "w")
+                                output = open(os.path.join(runPath, 'recon_{}x{}_{}.txt'.format(r, o, epoch)), "w")
                                 output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
                                 output.close()
                         recon = recon.squeeze(0).cpu()
@@ -101,16 +99,19 @@ class MOE(MMVAE):
                         recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
                         o_l = []
                         for x in range(_data.shape[0]):
+                            org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                            rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                             if o_l == []:
-                                o_l = np.asarray(_data[x])
-                                r_l = np.asarray(recon[x])
+                                o_l = org
+                                r_l = rec
                             else:
-                                o_l = np.hstack((o_l, np.asarray(_data[x])))
-                                r_l = np.hstack((r_l, np.asarray(recon[x])))
+                                o_l = np.hstack((o_l, org))
+                                r_l = np.hstack((r_l, rec))
                         w = np.vstack((o_l, r_l))
                         if not (r == 1 and o == 1 and "d.pkl" in self.vaes[o].pth):
-                            w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
-                            cv2.imwrite('{}/recon_{}x{}_{}.png'.format(runPath, r, o, epoch), w2)
+                            w2 = cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
+                            w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                            cv2.imwrite(os.path.join(runPath, 'recon_{}x{}_{}.png'.format(r, o, epoch)), w2)
                     except:
                         pass
 
@@ -206,7 +207,7 @@ class POE(MMVAE_P):
                                 for w in s:
                                     seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
                                 reconstruct.append(" ".join(seq))
-                            output = open('{}/recon_{}x{}_{}.txt'.format(runPath, r, o, epoch),"w")
+                            output = open(os.path.join(runPath, 'recon_{}x{}_{}.txt'.format(r, o, epoch)), "w")
                             if o == 0:
                                 reconstruct = ""
                             if r == 0:
@@ -219,16 +220,19 @@ class POE(MMVAE_P):
                         recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
                         o_l = []
                         for x in range(_data.shape[0]):
+                            org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                            rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                             if o_l == []:
-                                o_l = np.asarray(_data[x])
-                                r_l = np.asarray(recon[x])
+                                o_l = org
+                                r_l = rec
                             else:
-                                o_l = np.hstack((o_l, np.asarray(_data[x])))
-                                r_l = np.hstack((r_l, np.asarray(recon[x])))
+                                o_l = np.hstack((o_l, org))
+                                r_l = np.hstack((r_l, rec))
                         w = np.vstack((o_l, r_l))
                         if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
                             w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
-                            cv2.imwrite('{}/recon_{}x{}_{}.png'.format(runPath, r, o, epoch), w2)
+                            w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                            cv2.imwrite(os.path.join(runPath, 'recon_{}x{}_{}.png'.format(r, o, epoch)), w2)
                     except:
                         pass
 
