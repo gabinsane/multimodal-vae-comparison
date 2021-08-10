@@ -172,7 +172,7 @@ class Dec(nn.Module):
         p = torch.relu(self.lin1(z))
         #p = torch.relu(self.lin2(p))
         #p = torch.relu(self.lin3(p))
-        d = torch.sigmoid(self.fc3(p))  # reshape data
+        d = (self.fc3(p))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
