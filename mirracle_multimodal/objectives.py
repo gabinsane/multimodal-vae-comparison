@@ -28,7 +28,7 @@ def elbo(model, x, K=1, ltype="lprob"):
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-    return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), -lpx_z.sum(), None
+    return -(lpx_z.mean() - kld.mean()).mean(), kld.mean(), -lpx_z.mean(), None
 
 
 def _iwae(model, x, K):
