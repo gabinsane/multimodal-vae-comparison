@@ -184,21 +184,24 @@ def train(epoch, agg, lossmeter):
         if args.print_freq > 0 and i % args.print_freq == 0:
             print("iteration {:04d}: loss: {:6.3f}".format(i, loss.item() / args.batch_size))
     if "2mods" in args.model:
-        progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m)/len(train_loader.dataset),
-                      "Train Image Loss": sum_det(img_loss_m)/len(train_loader.dataset),
-                      "Train ImageTxt Loss": sum_det(txt_loss_m)/len(train_loader.dataset), "Train KLD": sum_det(kld_m) / len(train_loader.dataset)}
+        progress_d = {"Epoch": epoch, "Train Loss": np.mean(detach(loss_m)),
+                      "Train Image Loss": np.mean(detach(img_loss_m)),
+                      "Train ImageTxt Loss": np.mean(detach(txt_loss_m)), "Train KLD": np.mean(detach(kld_m))}
     else:
         if args.data1 == "txt":
-            progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m) / len(train_loader.dataset),
-                          "Train ImageTxt Loss": sum_det(txt_loss_m) / len(train_loader.dataset)}
+            progress_d = {"Epoch": epoch, "Train Loss": np.mean(detach(loss_m)),
+                          "Train ImageTxt Loss": np.mean(detach(txt_loss_m))}
         else:
-            progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m) / len(train_loader.dataset),
-                          "Train Image Loss": sum_det(img_loss_m) / len(train_loader.dataset)}
+            progress_d = {"Epoch": epoch, "Train Loss": np.mean(detach(loss_m)),
+                          "Train Image Loss": np.mean(detach(img_loss_m))}
 
     lossmeter.update_train(progress_d)
     agg['train_loss'].append(b_loss / len(train_loader.dataset))
     print('====> Epoch: {:03d} Train loss: {:.4f}'.format(epoch, agg['train_loss'][-1]))
 
+
+def detach(listtorch):
+    return [np.asarray(l.detach().cpu()) for l in listtorch]
 
 def test(epoch, agg, lossmeter):
     model.eval()
@@ -235,17 +238,17 @@ def test(epoch, agg, lossmeter):
                 if not args.no_analytics:
                      model.analyse(data, runPath, epoch)
     if "2mods" in args.model:
-        progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(test_loader.dataset),
-                      "Test Image Loss": sum_det(img_loss_m)/len(test_loader.dataset),
-                      "Test ImageTxt Loss": sum_det(txt_loss_m)/len(test_loader.dataset), "Test KLD":sum_det(kld_m) / len(test_loader.dataset)}
+        progress_d = {"Epoch": epoch, "Test Loss": np.mean(detach(loss_m)),
+                      "Test Image Loss": np.mean(detach(img_loss_m)),
+                      "Test ImageTxt Loss": np.mean(detach(txt_loss_m)), "Test KLD": np.mean(detach(kld_m))}
     else:
         if args.data1 == "txt":
-            progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(test_loader.dataset),
-                         "Test ImageTxt Loss": sum_det(txt_loss_m)/len(test_loader.dataset), "Test KLD":sum_det(kld_m) / len(test_loader.dataset)}
+            progress_d = {"Epoch": epoch, "Test Loss": np.mean(detach(loss_m)),
+                         "Test ImageTxt Loss": np.mean(detach(txt_loss_m)), "Test KLD": np.mean(detach(kld_m))}
         else:
-            progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m) / len(test_loader.dataset),
-                          "Test Image Loss": sum_det(img_loss_m) / len(test_loader.dataset),
-                          "Test KLD": sum_det(kld_m) / len(test_loader.dataset)}
+            progress_d = {"Epoch": epoch, "Test Loss": np.mean(detach(loss_m)),
+                          "Test Image Loss": np.mean(detach(img_loss_m)),
+                          "Test KLD": np.mean(detach(kld_m))}
     lossmeter.update(progress_d)
     agg['test_loss'].append(b_loss / len(test_loader.dataset))
     print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))

@@ -17,9 +17,9 @@ def compute_microbatch_split(x, K):
 
 def loss_fn(output, target, ltype):
     if ltype == "bce":
-        loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cuda(), target.cuda(), reduction="sum")
+        loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cuda(), target.cuda(), reduction="mean")
     else:
-        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum(-1).sum(-1).sum(-1)
+        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).mean()
     return loss
 
 
@@ -87,10 +87,23 @@ def m_moe_elbo(model, x, K=1, ltype="lprob"):
                   lwt = torch.tensor(0.0).cuda()
             else:
                   zs = zss[d].detach()
-                  lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
+                  lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1).sum()
             lpx_zs.append((lwt.exp() * lpx_z))
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    return -obj.sum(), torch.stack(klds).mean(0).sum(), -lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[3].sum()
+    return -obj.mean(), torch.stack(klds).mean(0).mean(), -lpx_zs[0].mean() / model.vaes[0].llik_scaling, -lpx_zs[3].mean()
+
+def m_poe_elbo(model, x, K, ltype="lprob"):
+    """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
+    qz_x, px_zs, zss = model(x)
+    lpx_zs, klds = [], []
+    kld = kl_divergence(qz_x, model.pz(*model.pz_params))
+    klds.append(kld.sum(-1))
+    for d in range(len(px_zs)):
+        lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype)  * model.vaes[d].llik_scaling
+        lwt = torch.tensor(0.0).cuda()
+        lpx_zs.append(lwt.exp() * lpx_z)
+    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
+    return -obj.mean(), torch.stack(klds).mean(0).mean(), -lpx_zs[0].mean() / model.vaes[0].llik_scaling, -lpx_zs[1].mean()
 
 def m_poe_elbo_semi(model, x, K, ltype="lprob"):
     lpx_zs, klds, elbos = [[], []], [], []
@@ -111,20 +124,8 @@ def m_poe_elbo_semi(model, x, K, ltype="lprob"):
                 lpx_zs[m].append(lpx_z)
         elbo = (torch.stack(loc_lpx_z).sum(0) - kld.sum(-1).sum())
         elbos.append(elbo)
-    return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), -torch.stack(lpx_zs[0]).sum() / model.vaes[0].llik_scaling, -torch.stack(lpx_zs[1]).sum()
+    return -torch.stack(elbos).mean(), torch.stack(klds).mean(0).mean(), -torch.stack(lpx_zs[0]).mean() / model.vaes[0].llik_scaling, -torch.stack(lpx_zs[1]).mean()
 
-def m_poe_elbo(model, x, K, ltype="lprob"):
-    """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
-    qz_x, px_zs, zss = model(x)
-    lpx_zs, klds = [], []
-    kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-    klds.append(kld.sum(-1))
-    for d in range(len(px_zs)):
-        lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype)  * model.vaes[d].llik_scaling
-        lwt = torch.tensor(0.0).cuda()
-        lpx_zs.append(lwt.exp() * lpx_z)
-    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    return -obj.sum(), torch.stack(klds).mean(0).sum(), -lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[1].sum()
 
 def _m_iwae(model, x, K=1):
     """IWAE estimate for log p_\theta(x) for multi-modal vae -- fully vectorised"""
