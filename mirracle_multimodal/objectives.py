@@ -28,7 +28,7 @@ def elbo(model, x, K=1, ltype="lprob"):
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-    return -(lpx_z.mean() - kld.mean()).mean(), kld.mean(), -lpx_z.mean(), None
+    return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), -lpx_z.sum(), None
 
 
 def _iwae(model, x, K):
@@ -90,7 +90,7 @@ def m_moe_elbo(model, x, K=1, ltype="lprob"):
                   lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1).sum()
             lpx_zs.append((lwt.exp() * lpx_z))
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    return -obj.mean(), torch.stack(klds).mean(0).mean(), -lpx_zs[0].mean() / model.vaes[0].llik_scaling, -lpx_zs[3].mean()
+    return -obj.sum(), torch.stack(klds).mean(0).sum(), -lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[3].sum()
 
 def m_poe_elbo(model, x, K, ltype="lprob"):
     """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
@@ -103,7 +103,7 @@ def m_poe_elbo(model, x, K, ltype="lprob"):
         lwt = torch.tensor(0.0).cuda()
         lpx_zs.append(lwt.exp() * lpx_z)
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    return -obj.mean(), torch.stack(klds).mean(0).mean(), -lpx_zs[0].mean() / model.vaes[0].llik_scaling, -lpx_zs[1].mean()
+    return -obj.sum(), torch.stack(klds).mean(0).sum(), -lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[1].sum()
 
 def m_poe_elbo_semi(model, x, K, ltype="lprob"):
     lpx_zs, klds, elbos = [[], []], [], []
@@ -124,7 +124,7 @@ def m_poe_elbo_semi(model, x, K, ltype="lprob"):
                 lpx_zs[m].append(lpx_z)
         elbo = (torch.stack(loc_lpx_z).sum(0) - kld.sum(-1).sum())
         elbos.append(elbo)
-    return -torch.stack(elbos).mean(), torch.stack(klds).mean(0).mean(), -torch.stack(lpx_zs[0]).mean() / model.vaes[0].llik_scaling, -torch.stack(lpx_zs[1]).mean()
+    return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), -torch.stack(lpx_zs[0]).sum() / model.vaes[0].llik_scaling, -torch.stack(lpx_zs[1]).sum()
 
 
 def _m_iwae(model, x, K=1):

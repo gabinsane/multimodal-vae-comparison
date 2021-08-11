@@ -181,8 +181,8 @@ def train(epoch, agg, lossmeter):
         loss.backward()
         optimizer.step()
         b_loss += loss.item()
-        if args.print_freq > 0 and i % args.print_freq == 0:
-            print("iteration {:04d}: loss: {:6.3f}".format(i, loss.item() / args.batch_size))
+        #if args.print_freq > 0 and i % args.print_freq == 0:
+        #    print("iteration {:04d}: loss: {:6.3f}".format(i, loss.item() / args.batch_size))
     if "2mods" in args.model:
         progress_d = {"Epoch": epoch, "Train Loss": np.mean(detach(loss_m)),
                       "Train Image Loss": np.mean(detach(img_loss_m)),
