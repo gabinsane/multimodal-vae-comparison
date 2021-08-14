@@ -17,7 +17,7 @@ def compute_microbatch_split(x, K):
 
 def loss_fn(output, target, ltype):
     if ltype == "bce":
-        loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cuda(), target.cuda(), reduction="sum")
+        loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cpu(), target.cpu(), reduction="sum").cuda()
     else:
         loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum()
     return loss

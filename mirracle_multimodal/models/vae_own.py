@@ -43,20 +43,20 @@ class Enc2(nn.Module):
         n_chan = 3
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
-        self.conv1 = torch.nn.DataParallel(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs))
-        self.conv2 = torch.nn.DataParallel(nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
-        self.conv3 = torch.nn.DataParallel(nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
+        self.conv1 = nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs)
+        self.conv2 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+        self.conv3 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
 
         # If input image is 64x64 do fourth convolution
-        self.conv_64 = torch.nn.DataParallel(nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
+        self.conv_64 = nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
 
         # Fully connected layers
-        self.lin1 = torch.nn.DataParallel(nn.Linear(np.product(self.reshape), hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(hidden_dim, hidden_dim))
+        self.lin1 = nn.Linear(np.product(self.reshape), hidden_dim)
+        self.lin2 = nn.Linear(hidden_dim, hidden_dim)
 
         # Fully connected layers for mean and variance
-        self.mu_gen = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
-        self.var_gen = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
+        self.mu_gen = nn.Linear(hidden_dim, self.latent_dim)
+        self.var_gen = nn.Linear(hidden_dim, self.latent_dim)
 
     def forward(self, x):
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
@@ -99,18 +99,18 @@ class Dec2(nn.Module):
         self.n_chan = 3
 
         # Fully connected lay
-        self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(hidden_dim, hidden_dim))
-        self.lin3 = torch.nn.DataParallel(nn.Linear(hidden_dim, np.product(self.reshape)))
+        self.lin1 = nn.Linear(latent_dim, hidden_dim)
+        self.lin2 = nn.Linear(hidden_dim, hidden_dim)
+        self.lin3 = nn.Linear(hidden_dim, np.product(self.reshape))
 
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
         # If input image is 64x64 do fourth convolution
-        self.convT_64 = torch.nn.DataParallel(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
+        self.convT_64 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
 
-        self.convT1 = torch.nn.DataParallel(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
-        self.convT2 = torch.nn.DataParallel(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
-        self.convT3 = torch.nn.DataParallel(nn.ConvTranspose2d(hid_channels, self.n_chan, kernel_size, **cnn_kwargs))
+        self.convT1 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+        self.convT2 = nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs)
+        self.convT3 = nn.ConvTranspose2d(hid_channels, self.n_chan, kernel_size, **cnn_kwargs)
 
     def forward(self, z):
         if len(z.shape) == 2:
@@ -133,26 +133,25 @@ class Dec2(nn.Module):
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d.squeeze(), torch.tensor(0.75).to(z.device)
 
-# Classes
 class Enc(nn.Module):
     """ Generate latent parameters for MNIST image data. """
 
     def __init__(self, latent_dim, params, num_hidden_layers=1, data_dim=1):
         super(Enc, self).__init__()
-        self.hidden_dim = 300
-        self.lin1 = torch.nn.DataParallel(nn.Linear(data_dim, self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(data_dim, self.hidden_dim))
-        self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        self.hidden_dim = 100
+        self.lin1 = nn.Linear(data_dim, self.hidden_dim)
+        self.lin2 = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.lin3 = nn.Linear(self.hidden_dim, self.hidden_dim)
 
-        self.fc21 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
-        self.fc22 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
+        self.fc21 = nn.Linear(self.hidden_dim, latent_dim)
+        self.fc22 = nn.Linear(self.hidden_dim, latent_dim)
 
     def forward(self, x):
         e = torch.relu(self.lin1(x))
-        #e = torch.relu(self.lin2(e))
+        e = torch.relu(self.lin2(e))
         #e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
-        lv =  F.softmax(lv, dim=-1) + Constants.eta
+        lv =  F.softmax(lv, dim=-1)# + Constants.eta
         return self.fc21(e), lv
 
 
@@ -161,19 +160,19 @@ class Dec(nn.Module):
 
     def __init__(self, latent_dim, num_hidden_layers=1, data_dim=1):
         super(Dec, self).__init__()
-        self.hidden_dim = 20
+        self.hidden_dim = 100
         self.data_dim = data_dim
-        self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
-        self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
-        self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, data_dim))
+        self.lin1 = nn.Linear(latent_dim, self.hidden_dim)
+        self.lin2 = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.lin3 = nn.Linear(self.hidden_dim, self.hidden_dim)
+        self.fc3 = nn.Linear(self.hidden_dim, data_dim)
 
     def forward(self, z):
         p = torch.relu(self.lin1(z))
-        #p = torch.relu(self.lin2(p))
+        p = torch.relu(self.lin2(p))
         #p = torch.relu(self.lin3(p))
-        d = (self.fc3(p))  # reshape data
-        d = d.clamp(Constants.eta, 1 - Constants.eta)
+        d = torch.sigmoid(self.fc3(p))  # reshape data
+        #d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
@@ -322,7 +321,6 @@ class UNIVAE(VAE):
 
 def load_images(path, imsize=64):
         import os, glob, numpy as np, imageio
-        print("Loading data...")
         images = sorted(glob.glob(os.path.join(path, "*.png")))
         dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
         for i, image_path in enumerate(images):
