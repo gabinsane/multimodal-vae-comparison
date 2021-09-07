@@ -19,8 +19,9 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ['fusion = mirracle_multimodal.fuse:main',
-
+        'console_scripts': [
+            'fusion = mirracle_multimodal.fuse:main',
+            'learner = mirracle_multimodal.incremental_learn:main'
         ],
     },
 )
