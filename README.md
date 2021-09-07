@@ -13,24 +13,36 @@ The list of packages needed can be found in `requirements.txt`. However, we reco
 
 ## Usage
 
-### Generate dummy dataset
+## Generate dummy dataset
 
-The code currently supports either images of size [64,64,3] or .pkl with arrays of format [dataset_size, 1D_array], the arrays can have an arbitrary size. 
-We provide code to generate such dummy dataset, i.e. a set of images with colored objects, another matching set of images with corresponding color names and an attrs.pkl file with single number arrays
-that represent the color label. You can train with any pair from these three "modalities", just add the path to the dataset in appropriate arguments in the config. To generate your custom dataset, run:
-
-`cd mirracle_multimodal/mirracle_multimodal`
-
-`python data_proc/generate_dataset.py --size 10000 --type img-img`
+Currently you can generate two types of datasets, _img-img_ (10 classes) and _img-vec_ (10x5x2 classes)
 
 
-You can make the object colors or color names noisy by adding --noisytxt or --noisycol arguments. The generated data will be saved in the /data folder and is ready to train.
+**Img-img** comprises two sets of images [64,64,3], one set contains a rectangle of various colors (10 altogether), the other one contains the name of the corresponding color imprinted into the image [64,64,3]. 
 
 
-**!!** Alternatively, you can generate a dataset consisting od images and corresponding word embeddings. To learn how to do that and see the dataset examples, see the [**Wiki page**](https://gitlab.ciirc.cvut.cz/imitrob/mirracle/mirracle_wiki/-/wikis/tutorials/How-to-train-and-run-Multimodal-Fusion)
+**Img-vec** comprises a set of images [64,64,3] and a set of corresponding word embeddings [3, 4096]. The image set in this case contains 5 different shapes, 10 different colors and 2 different sizes. The descriptions are in the form of [size, color, shape].  
+
+
+Since there are 3 words for each image and each has a 4096D embedding, the overall shape is 12288 - that is the same as the overall dimensionality of the images [64x64x3]. The embeddings are generated using a custom pre-trained word2vec model. To see how it was done, see `train_w2v.py` in _data_proc_ directory.
+
+
+For each dataset, there is also an attrs.pkl file with text label annotations (color name for img-img and the three word description for img-vec).
+
+To generate the datasets, run:
+
+```
+cd mirracle_multimodal/mirracle_multimodal
+python data_proc/generate_dataset.py --size 10000 --type img-vec
+```
+
+The dataset will be generated in the *mirracle_multimodal/data* folder.  
 
 
 ### Training
+
+For learning how to train on CIIRC cluster, see [**Wiki page**](https://gitlab.ciirc.cvut.cz/imitrob/mirracle/mirracle_wiki/-/wikis/tutorials/How-to-train-and-run-Multimodal-Fusion)
+
 
 The parameters can be set up via a .yml config or command line arguments - these are the same ones, but override the config. To train using the config, run:
 
@@ -43,34 +55,29 @@ python main.py --cfg config1.yml
 The content of the config is following:
 ```
 general:
-  n_epochs: 500  # number of epochs to train
-  n_latents: 16   # size of the n-dimensional latent vector
-  obj: moe_elbo  # objective, for single modality training, use elbo/iwae/dreg. For multiple modalities, use moe_elbo/poe_elbo/poe_elbo_semi (produces better results)/iwae/dreg
-  loss: lprob    # how to calculate the loss, "lprob" (log_prob of a distribution) is better when using the MoE approach, for PoE better use "bce" (binary cross entropy)
+[general]
+  n_latents: 24  # size of the n-dimensional latent vector
+  batch_size: 64
+  epochs: 500  # number of epochs to train
+  obj: elbo # objective, only "elbo" is fully supported now
+  loss: bce # reconstruction loss, either lprob or bce. bce is more stable
   viz_freq: 100  # save visualizations every n epochs
-  model: 2mods   # if you train a bi-modal vae, set "2mods", for unimodal vae, set "uni" - this will take the dataset from modality_1 only
-  noisy_txt: False  # if you have numeric/text labels as one modality, you can make them noisy (for experimental reasons only)
-modality_1:
-  dataset: ../data/image  # path to the folder or .pkl file with the first modality train data
-  type: img # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
-modality_2:
-  dataset: ../data/4096d.pkl  # path to the folder or .pkl file with the second modality train data
-  type: txt # how to treat the modality, mostly for logging/saving reasons, does not depend on the data type
-  num_words: 3 # in case you use img-vec dataset with text vectors, enter here how many words does each data sample contain (default is 3)
+  mixing: poe # multimodal mixing approach. either "moe" or "poe"
+  modalities_num: 2 # how many modalities to combine from the ones you fill below
+  exp_name: test # folder name to save the model in
+  pre_trained:  # you can add a path to a pretrained model to load as starting weights
+  llik_scaling: 0 # serves for balancing modalities with larger dimensionality. 0 is automatic balancing, 1 is no balancing
+  seed: 1 # fixed random seed
+  mod1_type: img # how to treat the modality, at the moment use img or txt
+  mod1_path: ../data/image # path to the first modality dataset (folder or .pkl file)
+  mod2_type: txt
+  mod2_path:../data/3d.pkl
+  mod2_numwords: 3 # if we use text encodings, enter the number of words in each sequence
+  mod3_type:
+  mod4_type:
+  mod5_type:
+  mod6_type:
 ```
 
-The arguments contain some additional hyperparameters which were included in the MoE code, however we did not yet test these so they remain default:
-
-- **`--K`**: Number of particles, controls the number of particles `K` in IWAE/DReG estimator (see the paper).
-- **`--learn-prior`**: Prior variance learning, controls whether to enable prior variance learning. Results in our paper are produced with this enabled. Excluding this argument in the command will disable this option;
-- **`--llik_scaling`**: Likelihood scaling, specifies the likelihood scaling of one of the two modalities, so that the likelihoods of two modalities contribute similarly to the lower bound. The default values are: 
-    - _MNIST-SVHN_: MNIST scaling factor 32*32*3/28*28*1 = 3.92
-    - _CUB Image-Cpation_: Image scaling factor 32/64*64*3 = 0.0026
-
-
 ### Analysing
-After training, various reconstructions, sampling and embedding visualizatoins will be saved in the results directory. You can additionally analyse the data using these scripts:
-
-- for likelihood estimation of data using a trained model, run `python calculate_likelihoods.py --save-dir path/to/trained/model/folder/ --iwae-samples 1000`;
-- for coherence analysis and latent digit classification accuracy on MNIST-SVHN dataset, run `python analyse_ms.py --save-dir path/to/trained/model/folder/`;
-- for coherence analysis on CUB image-caption dataset, run `python analyse_cub.py --save-dir path/to/trained/model/folder/`.
+After training, various reconstructions, sampling and embedding visualizatoins will be saved in the results directory. You can perform further analysis using the script `infer.py`
