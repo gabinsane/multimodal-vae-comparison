@@ -1,0 +1,26 @@
+[general]
+  n_latents: 24
+  obj: elbo
+  loss: bce
+  viz_freq: 100
+  mixing: poe
+  modalities_num: 2
+  exp_name: test
+  pre_trained:
+  llik_scaling: 0
+  seed: 1
+  mod1_type: img
+  mod1_datadim: 12288
+  mod2_datadim: 12288
+  mod2_type: txt
+  mod2_numwords: 3
+  mod3_type:
+  mod4_type:
+  mod5_type:
+  mod6_type:
+
+
+
+
+
+
