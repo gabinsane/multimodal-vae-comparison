@@ -1,20 +1,26 @@
-general:
-  n_epochs: 100
-  n_latents: 16
-  obj: moe_elbo
-  loss: lprob
+[general]
+  n_latents: 24
+  batch_size: 64
+  epochs: 500
+  obj: elbo
+  loss: bce
   viz_freq: 100
-  model: 2mods
-  noisy_txt: False
-modality_1:
-  dataset: ../data/image
-  type: img
-modality_2:
-  dataset: ../data/4096d.pkl
-  type: txt
-  num_words: 3
-
-
+  mixing: poe
+  modalities_num: 2
+  exp_name: test
+  pre_trained:
+  llik_scaling: 0
+  seed: 1
+  mod1_type: img
+  mod1_path: ../data/image
+  mod2_path: ../data/3d.pkl
+  mod2_datadim: 9
+  mod2_type: txt
+  mod2_numwords: 3
+  mod3_type:
+  mod4_type:
+  mod5_type:
+  mod6_type:
 
 
 
