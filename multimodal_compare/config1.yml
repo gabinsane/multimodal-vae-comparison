@@ -1,0 +1,20 @@
+[general]
+  n_latents: 24
+  batch_size: 64
+  epochs: 500
+  obj: elbo
+  loss: bce
+  viz_freq: 100
+  mixing: poe
+  modalities_num: 2
+  exp_name: test
+  pre_trained:
+  llik_scaling: 0
+  seed: 1
+  mod1_type: img
+  mod1_path: ../data/image
+  mod2_path: ../data/3d.pkl
+  mod2_datadim: 9
+  mod2_type: txt
+  mod2_numwords: 3
+
