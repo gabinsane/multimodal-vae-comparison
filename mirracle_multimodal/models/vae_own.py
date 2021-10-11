@@ -240,7 +240,8 @@ class UNIVAE(VAE):
                         d, vocab = create_vocab(d, self.noisy)
                 else:
                         d = d.reshape(d.shape[0], -1)
-                        d = self.w2v.normalize_w2v(d) #* np.random.uniform(low=0.9, high=1.1, size=(d.shape))
+                        d = d * np.random.uniform(low=0.9, high=1.1, size=(d.shape))
+                        d = self.w2v.normalize_w2v(d) #
                 if len(d.shape) < 2:
                     d = np.expand_dims(d, axis=1)
         data_size = d.shape[0]
