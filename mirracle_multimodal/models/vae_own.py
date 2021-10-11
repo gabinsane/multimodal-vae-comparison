@@ -12,7 +12,7 @@ import pickle
 from utils import Constants, create_vocab, W2V
 from vis import plot_embeddings, plot_kls_df
 from .vae import VAE
-import cv2
+import cv2, os
 
 
 # Constants
@@ -32,7 +32,7 @@ class Enc2(nn.Module):
     @param n_latents: integer
                       number of latent variable dimensions.
     """
-    def __init__(self, latent_dim, params, num_hidden_layers=1):
+    def __init__(self, latent_dim):
         super(Enc2, self).__init__()
         hid_channels = 32
         kernel_size = 4
@@ -86,7 +86,7 @@ class Dec2(nn.Module):
     @param n_latents: integer
                       number of latent variable dimensions.
     """
-    def __init__(self, latent_dim, num_hidden_layers=1):
+    def __init__(self, latent_dim):
         super(Dec2, self).__init__()
         latent_dim = latent_dim
 
@@ -137,7 +137,7 @@ class Dec2(nn.Module):
 class Enc(nn.Module):
     """ Generate latent parameters for MNIST image data. """
 
-    def __init__(self, latent_dim, params, num_hidden_layers=1, data_dim=1):
+    def __init__(self, latent_dim, data_dim=1):
         super(Enc, self).__init__()
         self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(nn.Linear(data_dim, self.hidden_dim))
@@ -159,7 +159,7 @@ class Enc(nn.Module):
 class Dec(nn.Module):
     """ Generate a SVHN image given a sample from the latent space. """
 
-    def __init__(self, latent_dim, num_hidden_layers=1, data_dim=1):
+    def __init__(self, latent_dim, data_dim=1):
         super(Dec, self).__init__()
         self.hidden_dim = 20
         self.data_dim = data_dim
@@ -180,48 +180,39 @@ class Dec(nn.Module):
 class UNIVAE(VAE):
     """ Universal VAE used for custom datasets. """
 
-    def __init__(self, params, index):
-        if index == 0:
-            self.pth = params.mod1
-            self.data_dim = params.data_dim1
-            self.data_type = params.data1
-            if "d.pkl" in self.pth:
-                self.num_words = params.num_words1
-        elif index == 1:
-            self.pth = params.mod2
-            self.data_dim = params.data_dim2
-            self.data_type = params.data2
-            if "d.pkl" in self.pth:
-                self.num_words = params.num_words2
-        if not ".pkl" in self.pth:
+    def __init__(self, params):
+        self.pth = params["mod_path"]
+        self.data_type = params["mod_type"]
+        self.num_words = params["mod_numwords"]
+        self.data_dim = int(params["mod_datadim"])
+        if self.data_type == "img":
             super(UNIVAE, self).__init__(
                 dist.Normal,  # prior
                 dist.Normal,  # likelihood
                 dist.Normal,  # posterior
-                Enc2(params.latent_dim, params, params.num_hidden_layers),
-                Dec2(params.latent_dim, params.num_hidden_layers),
+                Enc2(params["n_latents"]),
+                Dec2(params["n_latents"]),
                 params
             )
-        else:
+        elif self.data_type == "txt":
             super(UNIVAE, self).__init__(
                 dist.Normal,  # prior
                 dist.Normal,  # likelihood
                 dist.Normal,  # posterior
-                Enc(params.latent_dim, params, params.num_hidden_layers, self.data_dim),
-                Dec(params.latent_dim, params.num_hidden_layers, self.data_dim),
+                Enc(params["n_latents"], self.data_dim),
+                Dec(params["n_latents"], self.data_dim),
                 params
             )
-        grad = {'requires_grad': params.learn_prior}
+        grad = {'requires_grad': False}
         self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, params.latent_dim), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, params.latent_dim), **grad)  # logvar
+            nn.Parameter(torch.zeros(1, params["n_latents"]), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, params["n_latents"]), **grad)  # logvar
         ])
         self.modelName = 'vae_{}'.format(self.data_type)
         self.params = params
-        self.noisy = params.noisytxt
         self.llik_scaling = 1
         if "d.pkl" in self.pth:
-            self.w2v = W2V(self.data_dim/self.num_words, self.pth)
+            self.w2v = W2V(int(self.data_dim)/int(self.num_words), self.pth)
 
     @property
     def pz_params(self):
@@ -239,9 +230,9 @@ class UNIVAE(VAE):
                     if isinstance(d[0][0], str):
                         d, vocab = create_vocab(d, self.noisy)
                 else:
-                        d = d.reshape(d.shape[0], -1)
+                        d = d.reshape(d.shape[0],-1)
                         d = d * np.random.uniform(low=0.9, high=1.1, size=(d.shape))
-                        d = self.w2v.normalize_w2v(d) #
+                        d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2:
                     d = np.expand_dims(d, axis=1)
         data_size = d.shape[0]
@@ -321,6 +312,17 @@ class UNIVAE(VAE):
         except:
             pass
 
+    def analyse_encodings(self, data, runPath, epoch):
+        from sklearn.manifold import TSNE
+        K = 10
+        qz_x, _, z = super(UNIVAE, self).forward(data)
+        samples = qz_x.rsample(torch.Size([K]))
+        # samples = np.concatenate([s for s in samples.cpu().detach()])
+        # downsample = pca.fit_transform(qz_x.loc.cpu().detach())
+        zemb = TSNE(n_components=3).fit_transform(qz_x.loc.cpu().detach())
+        #plot_embeddings_enc(zemb, annots, labels_enc2[0], '{}/pca_{}_{}.png'.format(runPath, epoch, "whole_inputs"))
+
+
 def load_images(path, imsize=64):
         import os, glob, numpy as np, imageio
         images = sorted(glob.glob(os.path.join(path, "*.png")))
@@ -332,3 +334,88 @@ def load_images(path, imsize=64):
             dataset[i, :] = image / 255
         print("Dataset of shape {} loaded".format(dataset.shape))
         return dataset
+
+class MIRR_VAE(VAE):
+    """ Universal VAE used for custom datasets. """
+
+    def __init__(self, params):
+        self.params = params
+        self.data_dim = params.data_dim1
+        self.data_type = params.data1
+        grad = False
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, params.latent_dim), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, params.latent_dim), **grad)  # logvar
+        ])
+        self.modelName = 'vae_{}'.format(self.data_type)
+        self.llik_scaling = 1
+
+    @property
+    def pz_params(self):
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
+    def generate(self, runPath, epoch):
+        N, K = 36, 1
+        samples = super(UNIVAE, self).generate(N, K).cpu().squeeze()
+        # wrangle things so they come out tiled
+        #samples = samples.view(N, *samples.size()[1:])
+        r_l = []
+        for r, recons_list in enumerate(samples):
+                recon = recons_list.cpu()
+                recon = recon.reshape(64,64,3).unsqueeze(0)
+                if r_l == []:
+                        r_l = np.asarray(recon)
+                else:
+                        r_l = np.concatenate((r_l, np.asarray(recon)))
+        r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
+        cv2.imwrite('{}/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
+
+    def reconstruct(self, data, runPath, epoch):
+        recons_mat = super(UNIVAE, self).reconstruct(data[:8]).squeeze()
+        o_l = []
+        if "d.pkl" in self.pth:
+            _data = data[:8].cpu()
+            recon = recons_mat.cpu()
+            target, reconstruct = [], []
+            _data = _data.reshape(-1, 3, int(self.data_dim / 3))
+            recon = recon.reshape(-1, 3, int(self.data_dim / 3))
+            for s in _data:
+                seq = []
+                for w in s:
+                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w)), ])[0][0])
+                target.append(" ".join(seq))
+            for s in recon:
+                seq = []
+                prob = []
+                for w in s:
+                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                    prob.append("({})".format(str(round(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][1], 2))))
+                j = [" ".join((x, prob[y])) for y,x in enumerate(seq)]
+                reconstruct.append(" ".join(j))
+            output = open('{}/recon_{:03d}.txt'.format(runPath, epoch), "w")
+            output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
+            output.close()
+        else:
+            for r, recons_list in enumerate(recons_mat):
+                    _data = data[r].cpu()
+                    recon = recons_list.cpu()
+                    # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
+                    _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
+                    recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
+                    if o_l == []:
+                            o_l = np.asarray(_data)
+                            r_l = np.asarray(recon)
+                    else:
+                            o_l = np.concatenate((o_l, np.asarray(_data)))
+                            r_l = np.concatenate((r_l, np.asarray(recon)))
+            w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
+            cv2.imwrite('{}/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
+
+    def analyse(self, data, runPath, epoch):
+        try:
+            zemb, zsl, kls_df = super(UNIVAE, self).analyse(data, K=10)
+            labels = ['Prior', self.modelName.lower()]
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+        except:
+            pass

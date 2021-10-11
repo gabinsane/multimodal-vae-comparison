@@ -15,7 +15,17 @@ class MMVAE(nn.Module):
     def __init__(self, prior_dist, params, *vaes):
         super(MMVAE, self).__init__()
         self.pz = prior_dist
-        self.vaes = nn.ModuleList([vae(params, index) for index, vae in enumerate(vaes)])
+        vae_mods = []
+        for ix, vae in enumerate(vaes):
+            params["mod_type"] = params["mod{}_type".format(ix + 1)]
+            params["mod_path"] = params["mod{}_path".format(ix + 1)] if "mod{}_path".format(
+                ix + 1) in params.keys() else ""
+            params["mod_numwords"] = params["mod{}_numwords".format(ix + 1)] if "mod{}_numwords".format(
+                ix + 1) in params.keys() else ""
+            params["mod_datadim"] = int(params["mod{}_datadim".format(ix + 1)]) if "mod{}_datadim".format(
+                ix + 1) in params.keys() else ""
+            vae_mods.append(vae(params))
+        self.vaes = nn.ModuleList(vae_mods)
         self.modelName = None  # filled-in per sub-class
         self.params = params
         self._pz_params = None  # defined in subclass
@@ -34,10 +44,11 @@ class MMVAE(nn.Module):
         # initialise cross-modal matrix
         px_zs = [[None for _ in range(len(self.vaes))] for _ in range(len(self.vaes))]
         for m, vae in enumerate(self.vaes):
-            qz_x, px_z, zs = vae(x[m], K=K)
-            qz_xs.append(qz_x)
-            zss.append(zs)
-            px_zs[m][m] = px_z  # fill-in diagonal
+            if x[m] is not None:
+                qz_x, px_z, zs = vae(x[m], K=K)
+                qz_xs.append(qz_x)
+                zss.append(zs)
+                px_zs[m][m] = px_z  # fill-in diagonal
         for e, zs in enumerate(zss):
             for d, vae in enumerate(self.vaes):
                 if e != d:  # fill-in off-diagonal
@@ -90,7 +101,17 @@ class MMVAE_P(nn.Module):
     def __init__(self, prior_dist, params, *vaes):
             super(MMVAE_P, self).__init__()
             self.pz = prior_dist
-            self.vaes = nn.ModuleList([vae(params, index) for index, vae in enumerate(vaes)])
+            vae_mods = []
+            for ix, vae in enumerate(vaes):
+                params["mod_type"] = params["mod{}_type".format(ix + 1)]
+                params["mod_path"] = params["mod{}_path".format(ix + 1)] if "mod{}_path".format(
+                    ix + 1) in params.keys() else ""
+                params["mod_numwords"] = int(params["mod{}_numwords".format(ix + 1)]) if "mod{}_numwords".format(
+                    ix + 1) in params.keys() else ""
+                params["mod_datadim"] = int(params["mod{}_datadim".format(ix + 1)]) if "mod{}_datadim".format(
+                    ix + 1) in params.keys() else ""
+                vae_mods.append(vae(params))
+            self.vaes = nn.ModuleList(vae_mods)
             self.modelName = None  # filled-in per sub-class
             self.params = params
             self._pz_params = None  # defined in subclass
@@ -109,7 +130,7 @@ class MMVAE_P(nn.Module):
 
     def infer(self,inputs):
         # initialize the universal prior expert
-        mu, logvar = prior_expert((1, next(x for x in inputs if x is not None).shape[0], self.params.latent_dim), use_cuda=True)
+        mu, logvar = prior_expert((1, next(x for x in inputs if x is not None).shape[0], self.params["n_latents"]), use_cuda=True)
         for ix, modality in enumerate(inputs):
             if modality is not None:
                 mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda"))
