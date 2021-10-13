@@ -9,9 +9,8 @@ from .vae_mnist import MNIST as VAE_mnist
 from .vae_mnist import CROW as VAE_imgcol
 from .vae_svhn import SVHN as VAE_svhn
 from .vae_svhn import CROW2 as VAE_imgtxt
-from .vae_own import UNIVAE as VAE_uni
-from .vae_own import MIRR_VAE as VAE_1
+from .vae_own import UNIVAE as VAE_1
 
 __all__ = [VAE_2_moe, VAE_mnist, VAE_svhn, VAE_cubIS, VAE_cubS,
-           VAE_cubI, VAE_cubISft, VAE_cubIft, VAE_imgcol, VAE_imgtxt, VAE_uni, VAE_2_poe,
+           VAE_cubI, VAE_cubISft, VAE_cubIft, VAE_imgcol, VAE_imgtxt, VAE_2_poe,
            VAE_1]

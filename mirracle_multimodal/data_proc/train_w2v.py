@@ -6,8 +6,8 @@ import pickle
 
 
 def train_word2vec(text, vector_size=9):
-    model = Word2Vec(text.tolist(), vector_size=vector_size)
-    model_2 = Word2Vec(vector_size=vector_size, min_count=1)
+    model = Word2Vec(text.tolist(), size=vector_size)
+    model_2 = Word2Vec(size=vector_size, min_count=1)
     model_2.build_vocab(text)
     total_examples = model_2.corpus_count
     model_2.train(text.tolist(), total_examples=total_examples, epochs=200)

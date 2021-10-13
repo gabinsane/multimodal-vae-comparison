@@ -183,7 +183,6 @@ class UNIVAE(VAE):
     def __init__(self, params):
         self.pth = params["mod_path"]
         self.data_type = params["mod_type"]
-        self.num_words = params["mod_numwords"]
         self.data_dim = int(params["mod_datadim"])
         if self.data_type == "img":
             super(UNIVAE, self).__init__(
@@ -195,6 +194,7 @@ class UNIVAE(VAE):
                 params
             )
         elif self.data_type == "txt":
+            self.num_words = params["mod_numwords"]
             super(UNIVAE, self).__init__(
                 dist.Normal,  # prior
                 dist.Normal,  # likelihood

@@ -4,19 +4,20 @@
   epochs: 500
   obj: elbo
   loss: bce
-  viz_freq: 100
+  viz_freq: 50
   mixing: poe
-  modalities_num: 2
-  exp_name: test
+  modalities_num: 1
+  exp_name: incretest
   pre_trained:
   llik_scaling: 0
   seed: 1
-  mod1_type: img
-  mod1_path: ../data/image
-  mod2_path: ../data/3d.pkl
-  mod2_datadim: 9
-  mod2_type: txt
-  mod2_numwords: 3
+  mod_type: img
+  mod_path: ../data/image
+  mod_datadim: 12288
+  mod2_path:
+  mod2_datadim:
+  mod2_type:
+  mod2_numwords:
   mod3_type:
   mod4_type:
   mod5_type:

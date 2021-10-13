@@ -94,6 +94,7 @@ def m_moe_elbo(model, x, K=1, ltype="lprob"):
 
 def m_poe_elbo(model, x, K, ltype="lprob"):
     """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
+
     qz_x, px_zs, zss = model(x)
     lpx_zs, klds = [], []
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
