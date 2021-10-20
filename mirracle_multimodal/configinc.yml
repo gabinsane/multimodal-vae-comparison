@@ -1,5 +1,5 @@
 [general]
-  n_latents: 24
+  n_latents: 8
   obj: elbo
   loss: bce
   viz_freq: 500
@@ -8,9 +8,13 @@
   exp_name: incrtest3
   pre_trained:
   llik_scaling: 0
-  seed: 1
+  buffer: 1000
+  batch_size: 32
+  data_repeats: 500
+  seed: 2
   mod_type: img
-  mod_testdata: ../data/image
+  mod_testdata: ../data/testset
+  mod_path: ../data/image
   mod_datadim: 12288
   mod2_datadim:
   mod2_type:

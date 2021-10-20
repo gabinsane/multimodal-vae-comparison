@@ -1,5 +1,5 @@
 import math
-import os
+import os, csv
 import shutil
 import sys
 import time
@@ -115,20 +115,32 @@ class Constants(object):
 
 
 # https://stackoverflow.com/questions/14906764/how-to-redirect-stdout-to-both-file-and-console-with-scripting
+
+
 class Logger(object):
-    def __init__(self, filename, mode="a"):
-        self.terminal = sys.stdout
-        self.log = open(filename, mode)
+    """Saves training progress into csv"""
 
-    def write(self, message):
-        self.terminal.write(message)
-        self.log.write(message)
+    def __init__(self, path, args):
+        self.fields = ["Epoch", "Train Loss", "Test Loss", "Train KLD", "Test KLD"]
+        self.path = path
+        for m in range(args.modalities_num):
+            self.fields.append("Train Mod_{}".format(m))
+            self.fields.append("Test Mod_{}".format(m))
+        self.reset()
 
-    def flush(self):
-        # this flush method is needed for python 3 compatibility.
-        # this handles the flush command by doing nothing.
-        # you might want to specify some extra behavior here.
-        pass
+    def reset(self):
+        with open(os.path.join(self.path, "loss.csv"), mode='w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self.fields)
+            writer.writeheader()
+
+    def update_train(self, val_d):
+        self.dic = val_d
+
+    def update(self, val_d):
+        with open(os.path.join(self.path, "loss.csv"), mode='a') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self.fields)
+            writer.writerow({**self.dic, **val_d})
+        self.dic = {}
 
 
 class Timer:
