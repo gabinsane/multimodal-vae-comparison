@@ -1,7 +1,7 @@
 import argparse
 import configparser
 import sys
-import json
+import json, random
 from collections import defaultdict
 import numpy as np
 import os
@@ -102,10 +102,11 @@ def train(epoch, data, agg, lossmeter):
     optimizer.step()
     b_loss += loss.item()
     print("Model updated; loss: {:6.3f}".format(loss.item()))
-    progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m)/len(data), "Train KLD": sum_det(kld_m)/len(data)}
-    for i, x in enumerate(partial_losses):
-        progress_d["Train Mod_{}".format(i)] = sum_det(x)/len(data)
-    lossmeter.update_train(progress_d)
+    if epoch is not None:
+        progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m)/len(data), "Train KLD": sum_det(kld_m)/len(data)}
+        for i, x in enumerate(partial_losses):
+            progress_d["Train Mod_{}".format(i)] = sum_det(x)/len(data)
+        lossmeter.update_train(progress_d)
     agg['test_loss'].append(b_loss /len(data))
 
 def test(epoch, data, agg, lossmeter):
@@ -115,16 +116,16 @@ def test(epoch, data, agg, lossmeter):
     kld_m = []
     partial_losses =  [[] for _ in range(args.modalities_num)]
     with torch.no_grad():
-        loss, kld, partial_l = objective(model, data, K=1, ltype=args.loss)
+        loss, kld, partial_l = objective(model,  torch.tensor(data[:100]).float(), K=1, ltype=args.loss)
         loss_m.append(loss)
         kld_m.append(kld)
         for i, l in enumerate(partial_l):
             partial_losses[i].append(l)
         b_loss += loss.item()
-        if i == 0 and epoch % args.viz_freq == 0:
-            model.reconstruct(data, runPath, epoch)
-            model.generate(runPath, epoch)
-            model.analyse(data, runPath, epoch)
+        #if i == 0 and epoch % args.viz_freq == 0:
+        model.reconstruct(torch.tensor(data).float(), runPath, epoch)
+        model.generate(runPath, epoch)
+        model.analyse(torch.tensor(data).float(), runPath, epoch)
     progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(data), "Test KLD": sum_det(kld_m)/len(data)}
     for i, x in enumerate(partial_losses):
         progress_d["Test Mod_{}".format(i)] = sum_det(x)/len(data)
@@ -157,20 +158,39 @@ class InputSubscriber(Node):
             10)
         self.subscription  # prevent unused variable warning
         self.get_logger().info("Initiated, waiting for input data")
+        self.testdata = self.load_testdata(args.mod_testdata)
+        self.traindata = []
+
+    def load_testdata(self, pth,  imsize=64):
+        import os, glob, numpy as np, imageio
+        images = (glob.glob(os.path.join(pth, "*.png")))
+        random.shuffle(images)
+        dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
+        for i, image_path in enumerate(images[:3010]):
+            image = imageio.imread(image_path)
+            # image = reshape_image(image, self.imsize)
+            # image = cv2.resize(image, (imsize, imsize))
+            dataset[i, :] = image / 255
+        return dataset.reshape(-1, 3, 64, 64)
 
     def listener_callback(self, msg):
         self.get_logger().info("Got data from iteration %s" % self.iter)
         agg = defaultdict(list)
         d = np.asarray(msg.data)
         d1 = d[:12288].reshape(3,64,64)
+        self.traindata.append(d1)
         d1 = torch.tensor(d1)
-        d2 = d[12288:].reshape(12288)
-        d2 = torch.tensor(d2)
-        train(self.iter, [d1.unsqueeze(0), d2.unsqueeze(0)], agg, self.lossmeter)
-        test(self.iter,  [d1.unsqueeze(0), d2.unsqueeze(0)], agg, self.lossmeter)
+        if self.iter % 1000 == 0 and self.iter != 0:
+            for _ in range(1500):
+                random.shuffle(self.traindata)
+                train(None, torch.tensor(self.traindata[:64]), agg, self.lossmeter)
+            self.traindata = []
+            test(self.iter, self.testdata, agg, self.lossmeter)
+        else:
+            train(self.iter, d1.unsqueeze(0), agg, self.lossmeter)
         save_model(model, runPath + '/model.rar')
-        if self.iter % 10 == 0:
-            save_model(model, runPath + '/model_iterations{}.rar'.format(self.iter))
+        #if self.iter % 1000 == 0:
+        #    save_model(model, runPath + '/model_iterations{}.rar'.format(self.iter))
         self.iter += 1
 
 def main():
