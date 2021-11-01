@@ -77,8 +77,10 @@ with open('{}/args.json'.format(runPath), 'w') as fp:
 # -- also save object because we want to recover these for other things
 torch.save(args, '{}/args.rar'.format(runPath))
 # preparation for training
-optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                       lr=1e-3, amsgrad=True)
+#optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
+#                        lr=1e-3, amsgrad=True)
+
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.8)
 objective = getattr(objectives,
                     ('m_' if hasattr(model, 'vaes') else '')
                     + ("_".join((args.obj, args.mixing)) if hasattr(model, 'vaes') else args.obj))
@@ -169,6 +171,7 @@ class DataSource():
             print("Data replay, iteration {}/{}".format(x, self.repeats))
             for i in range(int(self.buffer_size / self.batch_size)):
                 train(None, collected_d[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg, self.lossmeter)
+        save_model(model, runPath + '/model.rar')
 
     def iterate_data(self):
         agg = defaultdict(list)
@@ -182,7 +185,7 @@ class DataSource():
             trest(self.iter, self.testdata, agg, self.lossmeter)
         else:
             train(self.iter, ts.unsqueeze(0).float(), agg, self.lossmeter)
-        save_model(model, runPath + '/model.rar')
+            save_model(model, runPath + '/model.rar')
         #if self.iter % 1000 == 0:
         #    save_model(model, runPath + '/model_iterations{}.rar'.format(self.iter))
         self.iter += 1

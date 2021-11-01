@@ -123,6 +123,7 @@ class Logger(object):
     def __init__(self, path, args):
         self.fields = ["Epoch", "Train Loss", "Test Loss", "Train KLD", "Test KLD"]
         self.path = path
+        self.dic = {}
         for m in range(args.modalities_num):
             self.fields.append("Train Mod_{}".format(m))
             self.fields.append("Test Mod_{}".format(m))

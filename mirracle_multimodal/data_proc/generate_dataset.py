@@ -13,6 +13,8 @@ parser.add_argument('--emb-size', type=int, default=4096, help='Size of word vec
 parser.add_argument('--vecs-only', action='store_true', default=False, help='Generate additional embedding dataset based on attrs.pkl in data folder')
 parser.add_argument('--noisytxt', action='store_true', default=False,
                     help='add noise to color names')
+parser.add_argument('--subpart',  default=0,
+                    help='0 keeps all categories balanced, 1-4 serve for incremental learning')
 parser.add_argument('--noisycol', action='store_true', default=False,
                     help='add noise to image colors')
 args = parser.parse_args()
@@ -25,9 +27,20 @@ fonts = ["/usr/share/fonts/truetype/ubuntu/Ubuntu-C.ttf", "/usr/share/fonts/true
          "/usr/share/fonts/truetype/freefont/FreeSans.ttf", "/usr/share/fonts/truetype/freefont/FreeSerif.ttf"]
 WORD_EMBEDDING_SIZE = args.emb_size
 dimmap = {1:0, 4:1, 16:2, 64:3, 256:4, 1024:5, 4096:6}
-shapes = ["line", "circle", "semicircle", "pieslice", "square"]
 sizes = ["small", "large"]
-colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0], "blue": [0,0,255], "grey": [128,128,128], "maroon": [105,0,0], "purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150], "orange":[255,140,0]}
+if int(args.subpart) == 0:
+    shapes = ["line", "circle", "semicircle", "pieslice", "square"]
+    colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0], "blue": [0,0,255], "grey": [128,128,128], "maroon": [105,0,0], "purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150], "orange":[255,140,0]}
+elif int(args.subpart) == 1:
+    shapes = ["line", "circle"]
+    colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0]}
+elif int(args.subpart) == 2:
+    colors = {"orange": [0,0,255], "grey": [128,128,128], "maroon": [105,0,0]}
+    shapes = ["semicircle", "pieslice"]
+elif int(args.subpart) == 3:
+    colors = {"purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150]}
+    shapes = ["square",  "polygon"]
+
 
 def make_text_img(datapath, txt, idx):
     print("Image {}".format(idx))
@@ -128,14 +141,17 @@ def make_shape_imgs(pth, target_pth):
         size_add = 30 if size == "large" else 16
         x1 = random.randint(5,35)
         x2 = random.randint(5,35)
-        shapes = {"circle": draw.ellipse, "line":draw.line, "square":draw.rectangle, "semicircle":draw.chord, "pieslice":draw.pieslice}
+        shapes = {"circle": draw.ellipse, "line":draw.line, "square":draw.rectangle, "semicircle":draw.chord, "pieslice":draw.pieslice,  "polygon":draw.polygon}
         shape = shapes[shapename]
-        if shape not in [draw.chord, draw.pieslice]:
+        if shape not in [draw.chord, draw.pieslice, draw.polygon]:
             shape((x1, x2, x1+size_add, x2+size_add), fill=tuple(color), width=int(size_add/2))
         else:
-            coords = [50,270] if shape == draw.chord else [200,250]
-            size_a = size_add if shape == draw.chord else size_add *2
-            shape((x1, x2, x1 + size_a, x2+size_a), start=coords[0], end=coords[1], fill=tuple(color))
+            if shape == draw.polygon:
+                shape(((x1, x2), (x2, x1), (x2 + size_add, x1 + size_add)), fill=tuple(color), outline=(0, 0, 0))
+            else:
+                coords = [50,270] if shape == draw.chord else [200,250]
+                size_a = size_add if shape == draw.chord else size_add *2
+                shape((x1, x2, x1 + size_a, x2+size_a), start=coords[0], end=coords[1], fill=tuple(color))
         image.save(filename)
 
 def make_arrays(dataset, pth, name):
