@@ -95,39 +95,55 @@ def train(epoch, agg, lossmeter):
     b_loss = 0
     loss_m = []
     kld_m = []
-    mod1_loss_m = []
-    mod2_loss_m = []
+    partial_losses =  [[] for _ in range(args.modalities_num)]
     for i, dataT in enumerate(train_loader):
         if int(args.modalities_num) > 1:
             data = unpack_data(dataT, device=device)
         else:
             data = unpack_data(dataT[0], device=device)
         optimizer.zero_grad()
-        loss, kld, mod1_loss, mod2_loss = objective(model, data, K=1, ltype=args.loss)
+        loss, kld, partial_l = objective(model, data, K=1, ltype=args.loss)
         loss_m.append(loss)
         kld_m.append(kld)
-        mod1_loss_m.append(mod1_loss)
-        mod2_loss_m.append(mod2_loss)
+        for i,l in enumerate(partial_l):
+            partial_losses[i].append(l)
         loss.backward()
         optimizer.step()
         b_loss += loss.item()
-        #if args.print_freq > 0 and i % args.print_freq == 0:
-        #    print("iteration {:04d}: loss: {:6.3f}".format(i, loss.item() / args.batch_size))
-    if int(args.modalities_num) > 1:
-        progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m)/len(train_loader.dataset),
-                      "Train {}1 Loss".format(args.mod1_type.upper()): sum_det(mod1_loss_m)/len(train_loader.dataset),
-                      "Train {}2 Loss".format(args.mod2_type.upper()): sum_det(mod2_loss_m)//len(train_loader.dataset), "Train KLD": sum_det(kld_m) / len(train_loader.dataset)}
-    else:
-        progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m) / len(train_loader.dataset),
-                           "Train {} Loss".format(args.mod_type.upper()): np.mean(detach(mod1_loss_m))}
-
+    progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m)/len(data), "Train KLD": sum_det(kld_m)/len(data)}
+    for i, x in enumerate(partial_losses):
+        progress_d["Train Mod_{}".format(i)] = sum_det(x)/len(data)
     lossmeter.update_train(progress_d)
-    agg['train_loss'].append(b_loss / len(train_loader.dataset))
+    agg['train_loss'].append(b_loss /len(data))
     print('====> Epoch: {:03d} Train loss: {:.4f}'.format(epoch, agg['train_loss'][-1]))
 
 
 def detach(listtorch):
     return [np.asarray(l.detach().cpu()) for l in listtorch]
+
+def trest(epoch, data, agg, lossmeter):
+    model.eval()
+    b_loss = 0
+    loss_m = []
+    kld_m = []
+    partial_losses =  [[] for _ in range(args.modalities_num)]
+    with torch.no_grad():
+        loss, kld, partial_l = objective(model,  torch.tensor(data[:1000]).float(), K=1, ltype=args.loss)
+        loss_m.append(loss)
+        kld_m.append(kld)
+        for i, l in enumerate(partial_l):
+            partial_losses[i].append(l)
+        b_loss += loss.item()
+        #if i == 0 and epoch % args.viz_freq == 0:
+        model.reconstruct(torch.tensor(data).float(), runPath, epoch)
+        model.generate(runPath, epoch)
+        model.analyse(torch.tensor(data).float(), runPath, epoch)
+    progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(data[:1000]), "Test KLD": sum_det(kld_m)/len(data)}
+    for i, x in enumerate(partial_losses):
+        progress_d["Test Mod_{}".format(i)] = sum_det(x)/len(data[:1000])
+    lossmeter.update(progress_d)
+    agg['test_loss'].append(b_loss / len(data[:1000]))
+    print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))
 
 def vaetest(epoch, agg, lossmeter):
     model.eval()
@@ -189,45 +205,65 @@ def sum_det(tn):
     else:
         return float(torch.stack(tn).sum().cpu().detach())
 
-class Logger(object):
-    """Saves training progress into csv"""
-    def __init__(self, config, path):
-        self.fields = ["Epoch", "Train Loss", "Test Loss", "Train Joint Loss", "Test Joint Loss", "Test KLD",
-                       "Joint Mu", "Joint Logvar", "Train KLD", "Test IMG Loss", "Test TXT Loss", "Train IMG Loss", "TRAIN TXT Loss",
-                       "Test IMG1 Loss", "Test TXT1 Loss", "Train IMG2 Loss", "TRAIN TXT2 Loss"
-                       ]
-        self.path = path
-        for key in config.keys():
-            self.fields.append("Train {} Loss".format(config[key]["name"]))
-            self.fields.append("Test {} Loss".format(config[key]["name"]))
-            self.fields.append("Mu {}".format(config[key]["name"]))
-            self.fields.append("Logvar {}".format(config[key]["name"]))
-        self.reset()
+# class Logger(object):
+#     """Saves training progress into csv"""
+#     def __init__(self, config, path):
+#         self.fields = ["Epoch", "Train Loss", "Test Loss", "Train Joint Loss", "Test Joint Loss", "Test KLD",
+#                        "Joint Mu", "Joint Logvar", "Train KLD", "Test IMG Loss", "Test TXT Loss", "Train IMG Loss", "TRAIN TXT Loss",
+#                        "Test IMG1 Loss", "Test TXT1 Loss", "Train IMG2 Loss", "TRAIN TXT2 Loss"
+#                        ]
+#         self.path = path
+#         for key in config.keys():
+#             self.fields.append("Train {} Loss".format(config[key]["name"]))
+#             self.fields.append("Test {} Loss".format(config[key]["name"]))
+#             self.fields.append("Mu {}".format(config[key]["name"]))
+#             self.fields.append("Logvar {}".format(config[key]["name"]))
+#         self.reset()
+#
+#     def reset(self):
+#         with open(os.path.join(self.path, "loss.csv"), mode='w') as csv_file:
+#             writer = csv.DictWriter(csv_file, fieldnames=self.fields)
+#             writer.writeheader()
+#
+#     def update_train(self, val_d):
+#         self.dic = val_d
+#
+#     def update(self, val_d):
+#         with open(os.path.join(self.path, "loss.csv"), mode='a') as csv_file:
+#             writer = csv.DictWriter(csv_file, fieldnames=self.fields)
+#             writer.writerow({**self.dic, **val_d})
+#         self.dic = {}
 
-    def reset(self):
-        with open(os.path.join(self.path, "loss.csv"), mode='w') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=self.fields)
-            writer.writeheader()
-
-    def update_train(self, val_d):
-        self.dic = val_d
-
-    def update(self, val_d):
-        with open(os.path.join(self.path, "loss.csv"), mode='a') as csv_file:
-            writer = csv.DictWriter(csv_file, fieldnames=self.fields)
-            writer.writerow({**self.dic, **val_d})
-        self.dic = {}
+def load_data(pth,  imsize=64):
+        import os, glob, numpy as np, imageio
+        def generate(images):
+            dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
+            for i, image_path in enumerate(images[:3010]):
+                image = imageio.imread(image_path)
+                dataset[i, :] = image / 255
+            return dataset.reshape(-1, 3, 64, 64)
+        if any([os.path.isdir(x) for x in glob.glob(os.path.join(pth, "*"))]):
+            subparts = (glob.glob(os.path.join(pth, "./*")))
+            datasets = []
+            for s in subparts:
+                images = (glob.glob(os.path.join(s, "*.png")))
+                d = generate(images)
+                datasets.append(d)
+            return datasets
+        else:
+            images = (glob.glob(os.path.join(pth, "*.png")))
+            dataset = generate(images)
+            return dataset
 
 if __name__ == '__main__':
+    testdata = load_data(args.mod_testdata)
     with Timer('MM-VAE') as t:
         agg = defaultdict(list)
         conf = {"A":{"name":"Image"}, "B":{"name":"ImageTxt"}}
-        lossmeter = Logger(conf, runPath)
+        lossmeter = Logger(runPath, args)
         for epoch in range(1, int(args.epochs) + 1):
             train(epoch, agg, lossmeter)
-            vaetest(epoch, agg, lossmeter)
+            trest(epoch, testdata, agg, lossmeter)
             save_model(model, runPath + '/model.rar')
             if epoch % 100 == 0:
                 save_model(model, runPath + '/model_epoch{}.rar'.format(epoch))
-        if args.logp:  # compute as tight a marginal likelihood as possible
-            estimate_log_marginal(5000)

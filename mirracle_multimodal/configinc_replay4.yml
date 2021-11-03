@@ -5,14 +5,15 @@
   viz_freq: 100
   mixing: poe
   modalities_num: 1
-  exp_name: allatonce_3000_shuffled
+  exp_name: incremental_3000_directmixing_30
   pre_trained:
   llik_scaling: 0
-  buffer: 2997
+  buffer: 999
   batch_size: 64
   data_repeats: 500
-  replay_samples_percent: 1
-  direct_sample_mixing: false
+  replay_samples_percent: 30
+  direct_sample_mixing: true
+  sample_replay: false
   seed: 2
   mod_type: img
   mod_testdata: ./data/image_test

@@ -77,10 +77,10 @@ with open('{}/args.json'.format(runPath), 'w') as fp:
 # -- also save object because we want to recover these for other things
 torch.save(args, '{}/args.rar'.format(runPath))
 # preparation for training
-#optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-#                        lr=1e-3, amsgrad=True)
+optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
+                        lr=1e-3, amsgrad=True)
 
-optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.8)
+#optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.8)
 objective = getattr(objectives,
                     ('m_' if hasattr(model, 'vaes') else '')
                     + ("_".join((args.obj, args.mixing)) if hasattr(model, 'vaes') else args.obj))
@@ -106,7 +106,7 @@ def train(epoch, data, agg, lossmeter):
         for i, x in enumerate(partial_losses):
             progress_d["Train Mod_{}".format(i)] = sum_det(x)/len(data)
         lossmeter.update_train(progress_d)
-    agg['test_loss'].append(b_loss /len(data))
+    agg['train_loss'].append(b_loss /len(data))
 
 def trest(epoch, data, agg, lossmeter):
     model.eval()
@@ -115,16 +115,16 @@ def trest(epoch, data, agg, lossmeter):
     kld_m = []
     partial_losses =  [[] for _ in range(args.modalities_num)]
     with torch.no_grad():
-        loss, kld, partial_l = objective(model,  torch.tensor(data[:100]).float(), K=1, ltype=args.loss)
+        loss, kld, partial_l = objective(model,  torch.tensor(data[:1000]).float(), K=1, ltype=args.loss)
         loss_m.append(loss)
         kld_m.append(kld)
         for i, l in enumerate(partial_l):
             partial_losses[i].append(l)
         b_loss += loss.item()
-        #if i == 0 and epoch % args.viz_freq == 0:
-        model.reconstruct(torch.tensor(data).float(), runPath, epoch)
-        model.generate(runPath, epoch)
-        model.analyse(torch.tensor(data).float(), runPath, epoch)
+        if epoch % 10 == 0:
+            model.reconstruct(torch.tensor(data).float(), runPath, epoch)
+        #model.generate(runPath, epoch)
+        #model.analyse(torch.tensor(data).float(), runPath, epoch)
     progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(data), "Test KLD": sum_det(kld_m)/len(data)}
     for i, x in enumerate(partial_losses):
         progress_d["Test Mod_{}".format(i)] = sum_det(x)/len(data)
@@ -152,47 +152,89 @@ class DataSource():
         self.repeats = int(args.data_repeats)       # how many times to present each data sample
 
         self.lossmeter = Logger(runPath, args)
+        self.task_samples = []
         self.testdata = self.load_data(args.mod_testdata)
         self.traindata = self.load_data(args.mod_path)
+        self.subpart = 0
+        self.comptime = []
 
     def load_data(self, pth,  imsize=64):
         import os, glob, numpy as np, imageio
-        images = (glob.glob(os.path.join(pth, "*.png")))
-        random.shuffle(images)
-        dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
-        for i, image_path in enumerate(images[:3010]):
-            image = imageio.imread(image_path)
-            dataset[i, :] = image / 255
-        return dataset.reshape(-1, 3, 64, 64)
+        def generate(images):
+            dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
+            for i, image_path in enumerate(images[:3010]):
+                image = imageio.imread(image_path)
+                dataset[i, :] = image / 255
+            return dataset.reshape(-1, 3, 64, 64)
+        if any([os.path.isdir(x) for x in glob.glob(os.path.join(pth, "*"))]):
+            subparts = (glob.glob(os.path.join(pth, "./*")))
+            datasets = []
+            for s in subparts:
+                images = (glob.glob(os.path.join(s, "*.png")))
+                d = generate(images)
+                self.task_samples.append(np.asarray(random.sample(list(d), int(len(d) * (int(args.replay_samples_percent)/100)))))
+                datasets.append(d)
+            return datasets
+        else:
+            images = (glob.glob(os.path.join(pth, "*.png")))
+            dataset = generate(images)
+            return dataset
 
     def replay_train(self, agg):
-        collected_d = torch.tensor(self.traindata[self.iter - self.buffer_size:self.iter]).float()
+        collected_d = self.traindata[self.iter - self.buffer_size:self.iter]
+        if int(self.iter / self.buffer_size) > 1 and args.direct_sample_mixing == "true":
+            for x in range(int(self.iter/self.buffer_size)-1):
+                collected_d = np.append(collected_d, self.task_samples[x], axis=0)
+            np.random.shuffle(collected_d)
+        collected_d = torch.tensor(collected_d).float()
         for x in range(self.repeats):
             print("Data replay, iteration {}/{}".format(x, self.repeats))
-            for i in range(int(self.buffer_size / self.batch_size)):
+            for i in range(int(len(collected_d) / self.batch_size)):
                 train(None, collected_d[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg, self.lossmeter)
+            trest(self.iter+x, self.testdata, agg, self.lossmeter)
+        if args.sample_replay == "true":
+            replay_data = []
+            for x in range(int(self.iter/self.buffer_size)-1):
+                replay_data = np.append( replay_data, self.task_samples[x], axis=0)
+            np.random.shuffle(replay_data)
+            replay_data = torch.tensor(replay_data).float()
+            for x in range(10):
+                print("Replaying old data, iteration {}/{}".format(x, 10))
+                for i in range(int(len(replay_data) / self.batch_size)):
+                    train(None, replay_data[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg,
+                          self.lossmeter)
+            trest(self.iter+x, self.testdata, agg, self.lossmeter)
         save_model(model, runPath + '/model.rar')
 
     def iterate_data(self):
         agg = defaultdict(list)
-        if self.iter == len(self.traindata):
-            self.replay_train(agg)
-            trest(self.iter, self.testdata, agg, self.lossmeter)
-            return True
-        ts = torch.tensor(self.traindata[self.iter])
+        if not isinstance(self.traindata, list):
+            data_size = len(self.traindata)
+        else:
+            data_size = sum([len(x) for x in self.traindata])
+            self.traindata = np.concatenate(self.traindata)
+            #np.random.shuffle(self.traindata)
         if self.iter % self.buffer_size == 0 and self.iter != 0:
             self.replay_train(agg)
+            self.comptime.append(time.time())
             trest(self.iter, self.testdata, agg, self.lossmeter)
-        else:
-            train(self.iter, ts.unsqueeze(0).float(), agg, self.lossmeter)
-            save_model(model, runPath + '/model.rar')
-        #if self.iter % 1000 == 0:
-        #    save_model(model, runPath + '/model_iterations{}.rar'.format(self.iter))
+        if self.iter == data_size:
+            #self.replay_train(agg)
+            #trest(self.iter, self.testdata, agg, self.lossmeter)
+            return True
         self.iter += 1
         return False
 
 if __name__ == '__main__':
+    import time
+    start = time.time()
     data_manager = DataSource()
     done = False
     while not done:
         done = data_manager.iterate_data()
+    end = time.time()
+    data_manager.comptime.append(end)
+    times = [x-start for x in data_manager.comptime]
+    print("Time elapsed: {}".format(end - start))
+    with open(os.path.join(runPath, 'elapsedtime.txt'), 'w') as f:
+        f.write(str(times))

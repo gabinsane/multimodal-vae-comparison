@@ -1,5 +1,5 @@
 [general]
-  n_latents: 24
+  n_latents: 12
   batch_size: 64
   epochs: 500
   obj: elbo
@@ -7,12 +7,13 @@
   viz_freq: 50
   mixing: poe
   modalities_num: 1
-  exp_name: incretest
+  exp_name: nonincre_allatonce_3000_shuffled
   pre_trained:
   llik_scaling: 0
-  seed: 1
+  seed: 2
   mod_type: img
-  mod_path: ../data/image
+  mod_testdata: ./data/image_test
+  mod_path: ./data/image_3000
   mod_datadim: 12288
   mod2_path:
   mod2_datadim:

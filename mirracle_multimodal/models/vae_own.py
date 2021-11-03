@@ -324,16 +324,26 @@ class UNIVAE(VAE):
 
 
 def load_images(path, imsize=64):
-        import os, glob, numpy as np, imageio
-        images = sorted(glob.glob(os.path.join(path, "*.png")))
-        dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
-        for i, image_path in enumerate(images):
-            image = imageio.imread(image_path)
-            # image = reshape_image(image, self.imsize)
-            # image = cv2.resize(image, (imsize, imsize))
-            dataset[i, :] = image / 255
-        print("Dataset of shape {} loaded".format(dataset.shape))
-        return dataset
+            import os, glob, numpy as np, imageio, random
+            def generate(images):
+                dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
+                for i, image_path in enumerate(images[:3010]):
+                    image = imageio.imread(image_path)
+                    dataset[i, :] = image / 255
+                return dataset.reshape(-1, 3, 64, 64)
+            if any([os.path.isdir(x) for x in glob.glob(os.path.join(path, "*"))]):
+                subparts = (glob.glob(os.path.join(path, "./*")))
+                datasets = []
+                for s in subparts:
+                    images = (glob.glob(os.path.join(s, "*.png")))
+                    d = generate(images)
+                    datasets.append(d)
+                return np.concatenate(datasets)
+            else:
+                images = (glob.glob(os.path.join(path, "*.png")))
+                dataset = generate(images)
+                return dataset
+
 
 class MIRR_VAE(VAE):
     """ Universal VAE used for custom datasets. """

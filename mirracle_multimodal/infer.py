@@ -178,11 +178,17 @@ def assemble_txtrecos(gt, txt, pth):
 
 trainloader, testloader = None, None
 paths = "/home/gabi/mirracle_multimodal/mmvae/results/single/img_24l_bce/0a/"
-dir_of_models = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/BAL/24L"
+dir_of_models = "/home/gabi/multimodalvae_backup/mirr_multimodal/mirracle_multimodal/mirracle_multimodal/results/IMBAL"
 #cv_seeds(dir_of_models)
 if dir_of_models:
-    paths = glob(os.path.join(dir_of_models, "*/*/*/*"))
-    plot_convergence(paths)
+    paths = glob(os.path.join(dir_of_models, "*/*/*/*/*"))
+    for path in paths:
+        if os.path.exists('{}/recon_1x1_500.txt'.format(path)):
+            with open('{}/recon_1x1_500.txt'.format(path)) as f:
+                txt = f.readlines()
+                gt_t = txt[0].split("|")
+                r_t = txt[1].split("|")
+                assemble_txtrecos(gt_t, r_t, '{}/recon_1x1_500.png'.format(path))
     # for p in paths:
     #     #if not "txt" in p and not 'img' in p:
     #     try:
