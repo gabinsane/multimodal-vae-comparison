@@ -40,6 +40,8 @@ def parse_args():
                             help='path to pre-trained model (train from scratch if empty)')
         parser.add_argument('--no_cuda', action='store_true', default=False,
                             help='disable CUDA usage')
+        parser.add_argument('--batch_size', type=int,
+                            help='Batch size')
         parser.add_argument('--seed', type=int, metavar='S',
                             help='seed number')
         parser.add_argument('--exp_name', type=str,
@@ -190,7 +192,8 @@ class DataSource():
         for x in range(self.repeats):
             print("Data replay, iteration {}/{}".format(x, self.repeats))
             for i in range(int(len(collected_d) / self.batch_size)):
-                train(None, collected_d[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg, self.lossmeter)
+                Ep = None if i != range(int(len(collected_d) / self.batch_size))[-1] else self.iter+x
+                train(Ep, collected_d[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg, self.lossmeter)
             trest(self.iter+x, self.testdata, agg, self.lossmeter)
         if args.sample_replay == "true":
             replay_data = []
@@ -201,7 +204,8 @@ class DataSource():
             for x in range(10):
                 print("Replaying old data, iteration {}/{}".format(x, 10))
                 for i in range(int(len(replay_data) / self.batch_size)):
-                    train(None, replay_data[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg,
+                    Ep = None if i != range(int(len(replay_data) / self.batch_size))[-1] else self.iter + x
+                    train(Ep, replay_data[(i * self.batch_size):(i * self.batch_size + self.batch_size)], agg,
                           self.lossmeter)
             trest(self.iter+x, self.testdata, agg, self.lossmeter)
         save_model(model, runPath + '/model.rar')
