@@ -186,8 +186,16 @@ class DataSource():
         collected_d = self.traindata[self.iter - self.buffer_size:self.iter]
         if int(self.iter / self.buffer_size) > 1 and args.direct_sample_mixing == "true":
             for x in range(int(self.iter/self.buffer_size)-1):
-                collected_d = np.append(collected_d, self.task_samples[x], axis=0)
-            np.random.shuffle(collected_d)
+                previous_data = self.task_samples[x]
+                len_data = int(len(self.task_samples[x]) * (int(self.iter/self.buffer_size)-1) + len(collected_d))
+                num_batches = int(len_data/self.batch_size)
+                b = 0
+                for i in range(len(previous_data)):
+                    if b == num_batches:
+                        b = 0
+                    collected_d = np.insert(collected_d, random.randint(b*self.batch_size, b*self.batch_size + self.batch_size-1), previous_data[i], axis=0)
+                    b += 1
+            #np.random.shuffle(collected_d)
         collected_d = torch.tensor(collected_d).float()
         for x in range(self.repeats):
             print("Data replay, iteration {}/{}".format(x, self.repeats))
