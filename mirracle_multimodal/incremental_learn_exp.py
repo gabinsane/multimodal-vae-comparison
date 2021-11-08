@@ -193,7 +193,11 @@ class DataSource():
                 for i in range(len(previous_data)):
                     if b == num_batches:
                         b = 0
-                    collected_d = np.insert(collected_d, random.randint(b*self.batch_size, b*self.batch_size + self.batch_size-1), previous_data[i], axis=0)
+                    while True:
+                        rand_insert = random.randint(b*self.batch_size, b*self.batch_size + self.batch_size-1)
+                        if rand_insert < len(collected_d):
+                            break
+                    collected_d = np.insert(collected_d, rand_insert, previous_data[i], axis=0)
                     b += 1
             #np.random.shuffle(collected_d)
         collected_d = torch.tensor(collected_d).float()
