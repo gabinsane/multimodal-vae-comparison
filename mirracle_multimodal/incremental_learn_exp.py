@@ -187,16 +187,17 @@ class DataSource():
         if int(self.iter / self.buffer_size) > 1 and args.direct_sample_mixing == "true":
             for x in range(int(self.iter/self.buffer_size)-1):
                 previous_data = self.task_samples[x]
-                len_data = int(len(self.task_samples[x]) * (int(self.iter/self.buffer_size)-1) + len(collected_d))
-                num_batches = int(len_data/self.batch_size)
                 b = 0
                 for i in range(len(previous_data)):
-                    if b == num_batches:
+                    if (b*self.batch_size) >= len(collected_d):
                         b = 0
+                    m = b*self.batch_size + self.batch_size-1
                     while True:
-                        rand_insert = random.randint(b*self.batch_size, b*self.batch_size + self.batch_size-1)
+                        rand_insert = random.randint(b*self.batch_size, m)
                         if rand_insert < len(collected_d):
                             break
+                        if (b*self.batch_size + self.batch_size-1) >= len(collected_d):
+                            m = len(collected_d)
                     collected_d = np.insert(collected_d, rand_insert, previous_data[i], axis=0)
                     b += 1
             #np.random.shuffle(collected_d)
