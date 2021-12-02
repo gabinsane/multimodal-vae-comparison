@@ -327,7 +327,7 @@ def load_images(path, imsize=64):
             import os, glob, numpy as np, imageio, random
             def generate(images):
                 dataset = np.zeros((len(images), imsize, imsize, 3), dtype=np.float)
-                for i, image_path in enumerate(images[:3010]):
+                for i, image_path in enumerate(images):
                     image = imageio.imread(image_path)
                     dataset[i, :] = image / 255
                 return dataset.reshape(-1, 3, 64, 64)

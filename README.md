@@ -46,10 +46,16 @@ For learning how to train on CIIRC cluster, see [**Wiki page**](https://gitlab.c
 
 The parameters can be set up via a .yml config or command line arguments - these are the same ones, but override the config. To train using the config, run:
 
-
+To train with single modality (image example here), run:
 ```bash
-python main.py --cfg config1.yml
+python main.py --cfg config1mod.yml
 ```
+
+To train bimodal VAE (image and text here), run:
+```bash
+python main.py --cfg config2mods.yml
+```
+You can change the mixing parameter here from "poe" to "moe" to use Mixture-of-Experts instead of Product-of-Experts
 
 
 The content of the config is following:

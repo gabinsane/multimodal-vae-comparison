@@ -92,99 +92,105 @@ objective = getattr(objectives,
 
 def train(epoch, agg, lossmeter):
     model.train()
-    b_loss = 0
     loss_m = []
     kld_m = []
     partial_losses =  [[] for _ in range(args.modalities_num)]
-    for i, dataT in enumerate(train_loader):
+    for it, dataT in enumerate(train_loader):
         if int(args.modalities_num) > 1:
             data = unpack_data(dataT, device=device)
+            d_len = data[0].shape[0]
         else:
             data = unpack_data(dataT[0], device=device)
+            d_len = data.shape[0]
         optimizer.zero_grad()
         loss, kld, partial_l = objective(model, data, K=1, ltype=args.loss)
-        loss_m.append(loss)
-        kld_m.append(kld)
+        loss_m.append(loss/d_len)
+        kld_m.append(kld/d_len)
         for i,l in enumerate(partial_l):
-            partial_losses[i].append(l)
+            partial_losses[i].append(l/d_len)
         loss.backward()
         optimizer.step()
-        b_loss += loss.item()
-    progress_d = {"Epoch": epoch, "Train Loss": sum_det(loss_m)/len(data), "Train KLD": sum_det(kld_m)/len(data)}
+        print("Training iteration {}/{}, loss: {}".format(it, len(train_loader.dataset)/args.batch_size, int(loss/d_len)))
+    progress_d = {"Epoch": epoch, "Train Loss": get_loss_mean(loss_m), "Train KLD": get_loss_mean(kld_m)}
     for i, x in enumerate(partial_losses):
-        progress_d["Train Mod_{}".format(i)] = sum_det(x)/len(data)
+        progress_d["Train Mod_{}".format(i)] = get_loss_mean(x)
     lossmeter.update_train(progress_d)
-    agg['train_loss'].append(b_loss /len(data))
+    agg['train_loss'].append(get_loss_mean(loss_m))
     print('====> Epoch: {:03d} Train loss: {:.4f}'.format(epoch, agg['train_loss'][-1]))
 
 
 def detach(listtorch):
     return [np.asarray(l.detach().cpu()) for l in listtorch]
 
-def trest(epoch, data, agg, lossmeter):
+def trest(epoch, agg, lossmeter):
     model.eval()
-    b_loss = 0
     loss_m = []
     kld_m = []
     partial_losses =  [[] for _ in range(args.modalities_num)]
     with torch.no_grad():
-        loss, kld, partial_l = objective(model,  torch.tensor(data[:1000]).float(), K=1, ltype=args.loss)
-        loss_m.append(loss)
-        kld_m.append(kld)
-        for i, l in enumerate(partial_l):
-            partial_losses[i].append(l)
-        b_loss += loss.item()
-        #if i == 0 and epoch % args.viz_freq == 0:
-        model.reconstruct(torch.tensor(data).float(), runPath, epoch)
-        model.generate(runPath, epoch)
-        model.analyse(torch.tensor(data).float(), runPath, epoch)
-    progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(data[:1000]), "Test KLD": sum_det(kld_m)/len(data)}
-    for i, x in enumerate(partial_losses):
-        progress_d["Test Mod_{}".format(i)] = sum_det(x)/len(data[:1000])
-    lossmeter.update(progress_d)
-    agg['test_loss'].append(b_loss / len(data[:1000]))
-    print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))
-
-def vaetest(epoch, agg, lossmeter):
-    model.eval()
-    b_loss = 0
-    loss_m = []
-    kld_m = []
-    mod1_loss_m = []
-    mod2_loss_m = []
-    with torch.no_grad():
-        for i, dataT in enumerate(test_loader):
+        for ix, dataT in enumerate(test_loader):
             if int(args.modalities_num) > 1:
                 data = unpack_data(dataT, device=device)
+                d_len = data[0].shape[0]
             else:
                 data = unpack_data(dataT[0], device=device)
-            loss, kld, mod1_loss, mod2_loss = objective(model, data, K=1, ltype=args.loss)
-            loss_m.append(loss)
-            kld_m.append(kld)
-            mod1_loss_m.append(mod1_loss)
-            mod2_loss_m.append(mod2_loss)
-            b_loss += loss.item()
-            if i == 0 and epoch % args.viz_freq == 0:
-                if (int(args.modalities_num) == 1 and "attrs.pkl" in args.mod_path):
-                    pass
-                else:
-                    model.reconstruct(data, runPath, epoch)
-                    try:
-                         model.generate(runPath, epoch)
-                    except:
-                        pass
-                    model.analyse(data, runPath, epoch)
-    if int(args.modalities_num) > 1:
-        progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(test_loader.dataset),
-                      "Test {}1 Loss".format(args.mod1_type.upper()): sum_det(mod1_loss_m)/len(test_loader.dataset),
-                      "Test {}2 Loss".format(args.mod2_type.upper()): sum_det(mod2_loss_m)//len(test_loader.dataset), "Test KLD":sum_det(kld_m) / len(test_loader.dataset)}
-    else:
-          progress_d = {"Epoch": epoch, "Test Loss": np.mean(detach(loss_m)),
-                         "Test {} Loss".format(args.mod_type.upper()): np.mean(detach(mod1_loss_m)), "Test KLD": np.mean(detach(kld_m))}
-
+                d_len = data.shape[0]
+            loss, kld, partial_l = objective(model, data, K=1, ltype=args.loss)
+            loss_m.append(loss/d_len)
+            kld_m.append(kld/d_len)
+            for i, l in enumerate(partial_l):
+                partial_losses[i].append(l/d_len)
+            if ix == 0 and epoch % args.viz_freq == 0:
+                model.reconstruct(data, runPath, epoch)
+                model.generate(runPath, epoch)
+                model.analyse(data, runPath, epoch)
+    progress_d = {"Epoch": epoch, "Test Loss": get_loss_mean(loss_m), "Test KLD": get_loss_mean(kld_m)}
+    for i, x in enumerate(partial_losses):
+        progress_d["Test Mod_{}".format(i)] = get_loss_mean(x)
     lossmeter.update(progress_d)
-    agg['test_loss'].append(b_loss / len(test_loader.dataset))
+    agg['test_loss'].append(get_loss_mean(loss_m))
     print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))
+
+# def vaetest(epoch, agg, lossmeter):
+#     model.eval()
+#     b_loss = 0
+#     loss_m = []
+#     kld_m = []
+#     mod1_loss_m = []
+#     mod2_loss_m = []
+#     with torch.no_grad():
+#         for i, dataT in enumerate(test_loader):
+#             if int(args.modalities_num) > 1:
+#                 data = unpack_data(dataT, device=device)
+#             else:
+#                 data = unpack_data(dataT[0], device=device)
+#             loss, kld, mod1_loss, mod2_loss = objective(model, data, K=1, ltype=args.loss)
+#             loss_m.append(loss)
+#             kld_m.append(kld)
+#             mod1_loss_m.append(mod1_loss)
+#             mod2_loss_m.append(mod2_loss)
+#             b_loss += loss.item()
+#             if i == 0 and epoch % args.viz_freq == 0:
+#                 if (int(args.modalities_num) == 1 and "attrs.pkl" in args.mod_path):
+#                     pass
+#                 else:
+#                     model.reconstruct(data, runPath, epoch)
+#                     try:
+#                          model.generate(runPath, epoch)
+#                     except:
+#                         pass
+#                     model.analyse(data, runPath, epoch)
+#     if int(args.modalities_num) > 1:
+#         progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(test_loader.dataset),
+#                       "Test {}1 Loss".format(args.mod1_type.upper()): sum_det(mod1_loss_m)/len(test_loader.dataset),
+#                       "Test {}2 Loss".format(args.mod2_type.upper()): sum_det(mod2_loss_m)//len(test_loader.dataset), "Test KLD":sum_det(kld_m) / len(test_loader.dataset)}
+#     else:
+#           progress_d = {"Epoch": epoch, "Test Loss": np.mean(detach(loss_m)),
+#                          "Test {} Loss".format(args.mod_type.upper()): np.mean(detach(mod1_loss_m)), "Test KLD": np.mean(detach(kld_m))}
+#
+#     lossmeter.update(progress_d)
+#     agg['test_loss'].append(b_loss / len(test_loader.dataset))
+#     print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))
 
 
 def estimate_log_marginal(K):
@@ -199,40 +205,8 @@ def estimate_log_marginal(K):
     marginal_loglik /= len(test_loader.dataset)
     print('Marginal Log Likelihood (IWAE, K = {}): {:.4f}'.format(K, marginal_loglik))
 
-def sum_det(tn):
-    if isinstance(tn[0], int):
-        return 0
-    else:
-        return float(torch.stack(tn).sum().cpu().detach())
-
-# class Logger(object):
-#     """Saves training progress into csv"""
-#     def __init__(self, config, path):
-#         self.fields = ["Epoch", "Train Loss", "Test Loss", "Train Joint Loss", "Test Joint Loss", "Test KLD",
-#                        "Joint Mu", "Joint Logvar", "Train KLD", "Test IMG Loss", "Test TXT Loss", "Train IMG Loss", "TRAIN TXT Loss",
-#                        "Test IMG1 Loss", "Test TXT1 Loss", "Train IMG2 Loss", "TRAIN TXT2 Loss"
-#                        ]
-#         self.path = path
-#         for key in config.keys():
-#             self.fields.append("Train {} Loss".format(config[key]["name"]))
-#             self.fields.append("Test {} Loss".format(config[key]["name"]))
-#             self.fields.append("Mu {}".format(config[key]["name"]))
-#             self.fields.append("Logvar {}".format(config[key]["name"]))
-#         self.reset()
-#
-#     def reset(self):
-#         with open(os.path.join(self.path, "loss.csv"), mode='w') as csv_file:
-#             writer = csv.DictWriter(csv_file, fieldnames=self.fields)
-#             writer.writeheader()
-#
-#     def update_train(self, val_d):
-#         self.dic = val_d
-#
-#     def update(self, val_d):
-#         with open(os.path.join(self.path, "loss.csv"), mode='a') as csv_file:
-#             writer = csv.DictWriter(csv_file, fieldnames=self.fields)
-#             writer.writerow({**self.dic, **val_d})
-#         self.dic = {}
+def get_loss_mean(loss):
+    return round(float(torch.mean(torch.tensor(loss).detach().cpu())),3)
 
 def load_data(pth,  imsize=64):
         import os, glob, numpy as np, imageio
@@ -256,14 +230,13 @@ def load_data(pth,  imsize=64):
             return dataset
 
 if __name__ == '__main__':
-    testdata = load_data(args.mod_testdata)
     with Timer('MM-VAE') as t:
         agg = defaultdict(list)
         conf = {"A":{"name":"Image"}, "B":{"name":"ImageTxt"}}
         lossmeter = Logger(runPath, args)
         for epoch in range(1, int(args.epochs) + 1):
             train(epoch, agg, lossmeter)
-            trest(epoch, testdata, agg, lossmeter)
+            trest(epoch,agg, lossmeter)
             save_model(model, runPath + '/model.rar')
             if epoch % 100 == 0:
                 save_model(model, runPath + '/model_epoch{}.rar'.format(epoch))

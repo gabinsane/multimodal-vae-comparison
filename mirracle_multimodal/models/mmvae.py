@@ -103,13 +103,14 @@ class MMVAE_P(nn.Module):
             self.pz = prior_dist
             vae_mods = []
             for ix, vae in enumerate(vaes):
-                params["mod_type"] = params["mod{}_type".format(ix + 1)]
-                params["mod_path"] = params["mod{}_path".format(ix + 1)] if "mod{}_path".format(
-                    ix + 1) in params.keys() else ""
-                params["mod_numwords"] = int(params["mod{}_numwords".format(ix + 1)]) if "mod{}_numwords".format(
-                    ix + 1) in params.keys() else ""
-                params["mod_datadim"] = int(params["mod{}_datadim".format(ix + 1)]) if "mod{}_datadim".format(
-                    ix + 1) in params.keys() else ""
+                mod = str(ix + 1) if ix > 0 else ""
+                params["mod_type"] = params["mod{}_type".format(mod)]
+                params["mod_path"] = params["mod{}_path".format(mod) if "mod{}_path".format(
+                    mod) in params.keys() else ""]
+                params["mod_numwords"] = int(params["mod{}_numwords".format(mod)]) if "mod{}_numwords".format(
+                    mod) in params.keys() else ""
+                params["mod_datadim"] = int(params["mod{}_datadim".format(mod)]) if "mod{}_datadim".format(
+                    mod) in params.keys() else ""
                 vae_mods.append(vae(params))
             self.vaes = nn.ModuleList(vae_mods)
             self.modelName = None  # filled-in per sub-class

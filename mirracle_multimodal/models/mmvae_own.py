@@ -206,7 +206,7 @@ class POE(MMVAE_P):
             nn.Parameter(torch.zeros(1, params["n_latents"]), requires_grad=False),  # mu
             nn.Parameter(torch.zeros(1, params["n_latents"]), **grad)  # logvar
         ])
-        self.vaes[0].llik_scaling = prod(int(params["mod1_datadim"])) / prod(int(params["mod1_datadim"])) \
+        self.vaes[0].llik_scaling = prod(int(params["mod_datadim"])) / prod(int(params["mod_datadim"])) \
             if int(params["llik_scaling"]) == 0 else int(params["llik_scaling"])
         self.modelName = 'poe-dualmod'
 
