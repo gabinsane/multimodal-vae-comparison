@@ -11,7 +11,7 @@ from torchvision.utils import save_image, make_grid
 import pickle
 from utils import Constants, create_vocab, W2V
 from vis import plot_embeddings, plot_kls_df
-from .vae import VAE
+from .vae_core import VAE
 import cv2, os
 
 
@@ -343,89 +343,3 @@ def load_images(path, imsize=64):
                 images = (glob.glob(os.path.join(path, "*.png")))
                 dataset = generate(images)
                 return dataset
-
-
-class MIRR_VAE(VAE):
-    """ Universal VAE used for custom datasets. """
-
-    def __init__(self, params):
-        self.params = params
-        self.data_dim = params.data_dim1
-        self.data_type = params.data1
-        grad = False
-        self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, params.latent_dim), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, params.latent_dim), **grad)  # logvar
-        ])
-        self.modelName = 'vae_{}'.format(self.data_type)
-        self.llik_scaling = 1
-
-    @property
-    def pz_params(self):
-        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
-
-    def generate(self, runPath, epoch):
-        N, K = 36, 1
-        samples = super(UNIVAE, self).generate(N, K).cpu().squeeze()
-        # wrangle things so they come out tiled
-        #samples = samples.view(N, *samples.size()[1:])
-        r_l = []
-        for r, recons_list in enumerate(samples):
-                recon = recons_list.cpu()
-                recon = recon.reshape(64,64,3).unsqueeze(0)
-                if r_l == []:
-                        r_l = np.asarray(recon)
-                else:
-                        r_l = np.concatenate((r_l, np.asarray(recon)))
-        r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
-        cv2.imwrite('{}/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
-
-    def reconstruct(self, data, runPath, epoch):
-        recons_mat = super(UNIVAE, self).reconstruct(data[:8]).squeeze()
-        o_l = []
-        if "d.pkl" in self.pth:
-            _data = data[:8].cpu()
-            recon = recons_mat.cpu()
-            target, reconstruct = [], []
-            _data = _data.reshape(-1, 3, int(self.data_dim / 3))
-            recon = recon.reshape(-1, 3, int(self.data_dim / 3))
-            for s in _data:
-                seq = []
-                for w in s:
-                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w)), ])[0][0])
-                target.append(" ".join(seq))
-            for s in recon:
-                seq = []
-                prob = []
-                for w in s:
-                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
-                    prob.append("({})".format(str(round(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][1], 2))))
-                j = [" ".join((x, prob[y])) for y,x in enumerate(seq)]
-                reconstruct.append(" ".join(j))
-            output = open('{}/recon_{:03d}.txt'.format(runPath, epoch), "w")
-            output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
-            output.close()
-        else:
-            for r, recons_list in enumerate(recons_mat):
-                    _data = data[r].cpu()
-                    recon = recons_list.cpu()
-                    # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
-                    _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
-                    recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
-                    if o_l == []:
-                            o_l = np.asarray(_data)
-                            r_l = np.asarray(recon)
-                    else:
-                            o_l = np.concatenate((o_l, np.asarray(_data)))
-                            r_l = np.concatenate((r_l, np.asarray(recon)))
-            w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
-            cv2.imwrite('{}/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
-
-    def analyse(self, data, runPath, epoch):
-        try:
-            zemb, zsl, kls_df = super(UNIVAE, self).analyse(data, K=10)
-            labels = ['Prior', self.modelName.lower()]
-            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-            plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
-        except:
-            pass

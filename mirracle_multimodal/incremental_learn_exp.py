@@ -186,20 +186,21 @@ class DataSource():
         collected_d = self.traindata[self.iter - self.buffer_size:self.iter]
         if int(self.iter / self.buffer_size) > 1 and args.direct_sample_mixing == "true":
             for x in range(int(self.iter/self.buffer_size)-1):
-                previous_data = self.task_samples[x]
-                b = 0
-                for i in range(len(previous_data)):
-                    if (b*self.batch_size) >= len(collected_d):
-                        b = 0
-                    m = b*self.batch_size + self.batch_size-1
-                    while True:
-                        rand_insert = random.randint(b*self.batch_size, m)
-                        if rand_insert < len(collected_d):
-                            break
-                        if (b*self.batch_size + self.batch_size-1) >= len(collected_d):
-                            m = len(collected_d)
-                    collected_d = np.insert(collected_d, rand_insert, previous_data[i], axis=0)
-                    b += 1
+                if x < len(self.task_samples):
+                    previous_data = self.task_samples[x]
+                    b = 0
+                    for i in range(len(previous_data)):
+                        if (b*self.batch_size) >= len(collected_d):
+                            b = 0
+                        m = b*self.batch_size + self.batch_size-1
+                        while True:
+                            rand_insert = random.randint(b*self.batch_size, m)
+                            if rand_insert < len(collected_d):
+                                break
+                            if (b*self.batch_size + self.batch_size-1) >= len(collected_d):
+                                m = len(collected_d)
+                        collected_d = np.insert(collected_d, rand_insert, previous_data[i], axis=0)
+                        b += 1
             #np.random.shuffle(collected_d)
         collected_d = torch.tensor(collected_d).float()
         for x in range(self.repeats):

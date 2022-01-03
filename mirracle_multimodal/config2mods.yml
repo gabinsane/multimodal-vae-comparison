@@ -11,9 +11,9 @@
   pre_trained:
   llik_scaling: 0
   seed: 2
-  mod_type: img
-  mod_path: ../data/image
-  mod_datadim: 12288
+  mod1_type: img
+  mod1_path: ../data/image
+  mod1_datadim: 12288
   mod2_path: ../data/4096d.pkl
   mod2_datadim: 12288
   mod2_type: txt

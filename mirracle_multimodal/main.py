@@ -151,48 +151,6 @@ def trest(epoch, agg, lossmeter):
     agg['test_loss'].append(get_loss_mean(loss_m))
     print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))
 
-# def vaetest(epoch, agg, lossmeter):
-#     model.eval()
-#     b_loss = 0
-#     loss_m = []
-#     kld_m = []
-#     mod1_loss_m = []
-#     mod2_loss_m = []
-#     with torch.no_grad():
-#         for i, dataT in enumerate(test_loader):
-#             if int(args.modalities_num) > 1:
-#                 data = unpack_data(dataT, device=device)
-#             else:
-#                 data = unpack_data(dataT[0], device=device)
-#             loss, kld, mod1_loss, mod2_loss = objective(model, data, K=1, ltype=args.loss)
-#             loss_m.append(loss)
-#             kld_m.append(kld)
-#             mod1_loss_m.append(mod1_loss)
-#             mod2_loss_m.append(mod2_loss)
-#             b_loss += loss.item()
-#             if i == 0 and epoch % args.viz_freq == 0:
-#                 if (int(args.modalities_num) == 1 and "attrs.pkl" in args.mod_path):
-#                     pass
-#                 else:
-#                     model.reconstruct(data, runPath, epoch)
-#                     try:
-#                          model.generate(runPath, epoch)
-#                     except:
-#                         pass
-#                     model.analyse(data, runPath, epoch)
-#     if int(args.modalities_num) > 1:
-#         progress_d = {"Epoch": epoch, "Test Loss": sum_det(loss_m)/len(test_loader.dataset),
-#                       "Test {}1 Loss".format(args.mod1_type.upper()): sum_det(mod1_loss_m)/len(test_loader.dataset),
-#                       "Test {}2 Loss".format(args.mod2_type.upper()): sum_det(mod2_loss_m)//len(test_loader.dataset), "Test KLD":sum_det(kld_m) / len(test_loader.dataset)}
-#     else:
-#           progress_d = {"Epoch": epoch, "Test Loss": np.mean(detach(loss_m)),
-#                          "Test {} Loss".format(args.mod_type.upper()): np.mean(detach(mod1_loss_m)), "Test KLD": np.mean(detach(kld_m))}
-#
-#     lossmeter.update(progress_d)
-#     agg['test_loss'].append(b_loss / len(test_loader.dataset))
-#     print('====>             Test loss: {:.4f}'.format(agg['test_loss'][-1]))
-
-
 def estimate_log_marginal(K):
     """Compute an IWAE estimate of the log-marginal likelihood of test data."""
     model.eval()
