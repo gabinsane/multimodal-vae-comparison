@@ -111,20 +111,21 @@ def plot_results(compare, fig, log, ix, first=True):
         seed = pth.split("/")[-2][-1] if pth.split("/")[-2][-1] not in ["l", "e"] else "1"
         data = pd.read_csv(os.path.join(pth, "loss.csv"), delimiter=",")
         name = pth.split("/")[-4].upper().replace("O", "o")
-        label = "{} SEED {}".format(name, seed)
+        label = "{} buffer size".format(pth.split("_")[-1].split("/")[0]) if pth.split("_")[-1].split("/")[0] != "shuffled" else "Non-Incremental"
         try:
             ax.plot(data[log], label=label, color=plot_colors[ix])
-            ax.set_xlim(xmin=0, xmax=500)
-            ylim = [500, 2500] if pth.split("/")[-3] == "bce" else [7750,8250]
-            ax.set_ylim(ylim)
+            #ax.set_xlim(xmin=0, xmax=500)
+            #ylim = [0, 800] if pth.split("/")[-3] == "bce" else [7750,8250]
+            #plt.xlim(1000, 4000)
+            ax.set_ylim([200,1700])
             ax.grid()
             ax.legend(loc="upper right", title="Model")
         except:
             print("Not plotting {} for {}".format(log, pth))
             pass
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel(pth.split("/")[-3].upper(), fontweight='bold')
-    ax.set_title("SCS-IMG {}".format(name))
+    ax.set_xlabel("Epochs")
+    ax.set_ylabel("BCE Loss", fontweight='bold')
+    ax.set_title("Images - Test Loss")
     return fig
 
 def plot_convergence(paths):
@@ -178,17 +179,21 @@ def assemble_txtrecos(gt, txt, pth):
 
 trainloader, testloader = None, None
 paths = "/home/gabi/mirracle_multimodal/mmvae/results/single/img_24l_bce/0a/"
-dir_of_models = "/home/gabi/multimodalvae_backup/mirr_multimodal/mirracle_multimodal/mirracle_multimodal/results/IMBAL"
+dir_of_models = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/smaller_buffer"
 #cv_seeds(dir_of_models)
 if dir_of_models:
-    paths = glob(os.path.join(dir_of_models, "*/*/*/*/*"))
-    for path in paths:
-        if os.path.exists('{}/recon_1x1_500.txt'.format(path)):
-            with open('{}/recon_1x1_500.txt'.format(path)) as f:
-                txt = f.readlines()
-                gt_t = txt[0].split("|")
-                r_t = txt[1].split("|")
-                assemble_txtrecos(gt_t, r_t, '{}/recon_1x1_500.png'.format(path))
+    paths = sorted(glob(os.path.join(dir_of_models, "*/")))
+    log = ["Test Loss"]
+    fig = plt.figure()
+    fig = plot_results(paths, fig, log, 1, True)
+    plt.show()
+    # for path in paths:
+    #     if os.path.exists('{}/recon_1x1_500.txt'.format(path)):
+    #         with open('{}/recon_1x1_500.txt'.format(path)) as f:
+    #             txt = f.readlines()
+    #             gt_t = txt[0].split("|")
+    #             r_t = txt[1].split("|")
+    #             assemble_txtrecos(gt_t, r_t, '{}/recon_1x1_500.png'.format(path))
     # for p in paths:
     #     #if not "txt" in p and not 'img' in p:
     #     try:

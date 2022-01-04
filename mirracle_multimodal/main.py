@@ -1,7 +1,6 @@
 import argparse
-import sys
 import configparser
-import json
+import json, yaml
 from collections import defaultdict
 import warnings
 warnings.filterwarnings('ignore')
@@ -9,108 +8,101 @@ import numpy as np
 import torch
 from torch import optim
 import os
-import models
-import objectives
-import csv, yaml
+import models, objectives
 from utils import Logger, Timer, save_model, save_vars, unpack_data
 
 
 def parse_args():
-    conf_parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
-                                          add_help=False)
-    conf_parser.add_argument("-c", "--cfg", help="Specify config file", metavar="FILE")
-    args, remaining_argv = conf_parser.parse_known_args()
-    if args.cfg:
-        conf = configparser.SafeConfigParser()
-        conf.read([args.cfg])
-        defaults = dict(conf.items("general"))
-        defaults["cfg"] = args.cfg
-    parser = argparse.ArgumentParser(parents=[conf_parser])
-    parser.set_defaults(**defaults)
-    parser.add_argument('--viz_freq', type=int,
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--cfg", help="Specify config file", metavar="FILE")
+    parser.add_argument('--viz_freq', type=int, default=None,
                         help='frequency of visualization savings (number of iterations)')
-    parser.add_argument('--batch_size', type=int,
+    parser.add_argument('--batch_size', type=int, default=None,
                         help='Size of the training batch')
-    parser.add_argument('--modalities_num', type=int,
-                        help='number of modalities to train on')
-    parser.add_argument('--obj', type=str, metavar='O',
+    parser.add_argument('--obj', type=str, metavar='O', default=None,
                         help='objective to use (moe_elbo/poe_elbo_semi)')
-    parser.add_argument('--loss', type=str, metavar='O',
+    parser.add_argument('--loss', type=str, metavar='O', default=None,
                         help='loss to use (lprob/bce)')
-    parser.add_argument('--llik_scaling', type=float,
-                        help='likelihood scaling for reconstruction loss'
-                             ', set as 0 to use balance the mods and 1 to not')
-    parser.add_argument('--n_latents', type=int,
+    parser.add_argument('--n_latents', type=int, default=None,
                         help='latent vector dimensionality')
-    parser.add_argument('--pre_trained', type=str,
+    parser.add_argument('--pre_trained', type=str, default=None,
                         help='path to pre-trained model (train from scratch if empty)')
     parser.add_argument('--no_cuda', action='store_true', default=False,
                         help='disable CUDA usage')
-    parser.add_argument('--seed', type=int, metavar='S',
+    parser.add_argument('--seed', type=int, metavar='S', default=None,
                         help='seed number')
-    parser.add_argument('--exp_name', type=str,
+    parser.add_argument('--exp_name', type=str, default=None,
                         help='name of folder')
-    args = parser.parse_args(remaining_argv)
-    return args
+    args = parser.parse_args()
+    with open(args.cfg) as file: config = yaml.load(file)
+    for name, value in vars(args).items():
+        if value is not None and name != "cfg" and name in config.keys():
+            config[name] = value
+    modalities = []
+    for x in range(20):
+        if "modality_{}".format(x) in list(config.keys()):
+            modalities.append(config["modality_{}".format(x)])
+    return config, modalities, args
 
-args = parse_args()
-torch.manual_seed(args.seed)
-torch.cuda.manual_seed(args.seed)
-np.random.seed(args.seed)
+config, mods, args = parse_args()
+torch.manual_seed(config["seed"])
+torch.cuda.manual_seed(config["seed"])
+np.random.seed(config["seed"])
 torch.backends.cudnn.benchmark = True
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 device = torch.device("cuda" if args.cuda else "cpu")
 
-model = str(args.modalities_num) if args.modalities_num == 1 else "_".join((str(args.modalities_num), args.mixing))
-# load model
-modelC = getattr(models, 'VAE_{}'.format(model))
-model = modelC(vars(args)).to(device)
+model = "VAE" if len(mods) == 1 else config["mixing"].lower()
+modelC = getattr(models, model)
+params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods], [m["feature_dim"] for m in mods]]
+if len(mods) == 1:
+    params = [x[0] for x in params]
+model = modelC(*params, config["n_latents"]).to(device)
 
-if args.pre_trained:
-    print('Loading model {} from {}'.format(model.modelName, args.pre_trained))
-    model.load_state_dict(torch.load(args.pre_trained + '/model.rar'))
+if config["pre_trained"]:
+    print('Loading model {} from {}'.format(model.modelName, config["pre_trained"]))
+    model.load_state_dict(torch.load(config["pre_trained"] + '/model.rar'))
     model._pz_params = model._pz_params
 
 # set up run path
-runPath = os.path.join('results/', args.exp_name)
+runPath = os.path.join('results/', config["exp_name"])
 os.makedirs(runPath, exist_ok=True)
 print('Expt:', runPath)
 
 # save args to run
-with open('{}/args.json'.format(runPath), 'w') as fp:
-    json.dump(args.__dict__, fp)
-# -- also save object because we want to recover these for other things
-torch.save(args, '{}/args.rar'.format(runPath))
+with open('{}/config.json'.format(runPath), 'w') as fp:
+    json.dump(config, fp)
+
 # preparation for training
 optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
                        lr=1e-3, amsgrad=True)
-train_loader, test_loader = model.getDataLoaders(args.batch_size, device=device)
+train_loader, test_loader = model.getDataLoaders(config["batch_size"], device=device)
 objective = getattr(objectives,
                     ('m_' if hasattr(model, 'vaes') else '')
-                    + ("_".join((args.obj, args.mixing)) if hasattr(model, 'vaes') else args.obj))
+                    + ("_".join((config["obj"], config["mixing"])) if hasattr(model, 'vaes') else config["obj"]))
 
 def train(epoch, agg, lossmeter):
     model.train()
     loss_m = []
     kld_m = []
-    partial_losses =  [[] for _ in range(args.modalities_num)]
+    partial_losses =  [[] for _ in range(len(mods))]
     for it, dataT in enumerate(train_loader):
-        if int(args.modalities_num) > 1:
+        if len(mods) > 1:
             data = unpack_data(dataT, device=device)
             d_len = data[0].shape[0]
         else:
             data = unpack_data(dataT[0], device=device)
             d_len = data.shape[0]
         optimizer.zero_grad()
-        loss, kld, partial_l = objective(model, data, K=1, ltype=args.loss)
+        loss, kld, partial_l = objective(model, data, K=1, ltype=config["loss"])
         loss_m.append(loss/d_len)
         kld_m.append(kld/d_len)
         for i,l in enumerate(partial_l):
             partial_losses[i].append(l/d_len)
         loss.backward()
         optimizer.step()
-        print("Training iteration {}/{}, loss: {}".format(it, len(train_loader.dataset)/args.batch_size, int(loss/d_len)))
+        print("Training iteration {}/{}, loss: {}".format(it, int(len(train_loader.dataset)/config["batch_size"]), int(loss/d_len)))
     progress_d = {"Epoch": epoch, "Train Loss": get_loss_mean(loss_m), "Train KLD": get_loss_mean(kld_m)}
     for i, x in enumerate(partial_losses):
         progress_d["Train Mod_{}".format(i)] = get_loss_mean(x)
@@ -126,21 +118,21 @@ def trest(epoch, agg, lossmeter):
     model.eval()
     loss_m = []
     kld_m = []
-    partial_losses =  [[] for _ in range(args.modalities_num)]
+    partial_losses =  [[] for _ in range(len(mods))]
     with torch.no_grad():
         for ix, dataT in enumerate(test_loader):
-            if int(args.modalities_num) > 1:
+            if len(mods) > 1:
                 data = unpack_data(dataT, device=device)
                 d_len = data[0].shape[0]
             else:
                 data = unpack_data(dataT[0], device=device)
                 d_len = data.shape[0]
-            loss, kld, partial_l = objective(model, data, K=1, ltype=args.loss)
+            loss, kld, partial_l = objective(model, data, K=1, ltype=config["loss"])
             loss_m.append(loss/d_len)
             kld_m.append(kld/d_len)
             for i, l in enumerate(partial_l):
                 partial_losses[i].append(l/d_len)
-            if ix == 0 and epoch % args.viz_freq == 0:
+            if ix == 0 and epoch % config["viz_freq"] == 0:
                 model.reconstruct(data, runPath, epoch)
                 model.generate(runPath, epoch)
                 model.analyse(data, runPath, epoch)
@@ -191,8 +183,8 @@ if __name__ == '__main__':
     with Timer('MM-VAE') as t:
         agg = defaultdict(list)
         conf = {"A":{"name":"Image"}, "B":{"name":"ImageTxt"}}
-        lossmeter = Logger(runPath, args)
-        for epoch in range(1, int(args.epochs) + 1):
+        lossmeter = Logger(runPath, mods)
+        for epoch in range(1, int(config["epochs"]) + 1):
             train(epoch, agg, lossmeter)
             trest(epoch,agg, lossmeter)
             save_model(model, runPath + '/model.rar')

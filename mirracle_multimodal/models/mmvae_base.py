@@ -5,46 +5,41 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy import prod
 from utils import get_mean, kl_divergence
-from vis import embed_umap, tensors_to_df
-from vis import plot_embeddings, plot_kls_df
+from vis import embed_umap, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
 import numpy as np
 import cv2
+from .vae import VAE
 
 class MMVAE(nn.Module):
-    def __init__(self, prior_dist, params, *vaes):
+    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, n_latents):
         super(MMVAE, self).__init__()
         self.pz = prior_dist
         vae_mods = []
-        for ix, vae in enumerate(vaes):
-            params["mod_type"] = params["mod{}_type".format(ix + 1)]
-            params["mod_path"] = params["mod{}_path".format(ix + 1)] if "mod{}_path".format(
-                ix + 1) in params.keys() else ""
-            params["mod_numwords"] = params["mod{}_numwords".format(ix + 1)] if "mod{}_numwords".format(
-                ix + 1) in params.keys() else ""
-            params["mod_datadim"] = int(params["mod{}_datadim".format(ix + 1)]) if "mod{}_datadim".format(
-                ix + 1) in params.keys() else ""
-            vae_mods.append(vae(params))
+        for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
+            vae_mods.append(VAE(e, d, pth, fd, n_latents))
         self.vaes = nn.ModuleList(vae_mods)
         self.modelName = None  # filled-in per sub-class
-        self.params = params
-        grad = {'requires_grad': False}
         self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, params["n_latents"]), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, params["n_latents"]), **grad)  # logvar
+            nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
         ])
-        self.vaes[0].llik_scaling = prod(int(params["mod_datadim"])) / prod(int(params["mod_datadim"])) \
-            if int(params["llik_scaling"]) == 0 else int(params["llik_scaling"])
+        self.set_likelihood_scaling(feature_dims)
 
     @property
     def pz_params(self):
         return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
 
-    def getDataLoaders(self, batch_size, shuffle=False, device='cuda'):
+    def set_likelihood_scaling(self, feature_dims):
+        max_dimensionality = max([np.prod(x) for x in feature_dims])
+        for x in range(len(self.vaes)):
+            self.vaes[x].llik_scaling = max_dimensionality / np.prod(feature_dims[x])
+
+    def getDataLoaders(self, batch_size, device='cuda'):
         # load base datasets
-        t1, s1 = self.vaes[0].getDataLoaders(batch_size, shuffle, device)
-        t2, s2 = self.vaes[1].getDataLoaders(batch_size, shuffle, device)
+        t1, s1 = self.vaes[0].getDataLoaders(batch_size, device)
+        t2, s2 = self.vaes[1].getDataLoaders(batch_size, device)
         train_mnist_svhn = TensorDataset([t1.dataset,t2.dataset])
         test_mnist_svhn = TensorDataset([s1.dataset, s2.dataset])
 

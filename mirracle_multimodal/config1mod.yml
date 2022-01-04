@@ -1,27 +1,17 @@
-[general]
   n_latents: 12
   batch_size: 64
   epochs: 500
   obj: elbo
   loss: bce
   viz_freq: 20
-  mixing: poe
-  modalities_num: 1
+  mixing:
   exp_name: exp_01
   pre_trained:
-  llik_scaling: 0
   seed: 2
-  mod_type: img
-  mod_path: ../data/image
-  mod_datadim: 12288
-  mod2_path:
-  mod2_datadim:
-  mod2_type:
-  mod2_numwords:
-  mod3_type:
-  mod4_type:
-  mod5_type:
-  mod6_type:
-
+  modality_1:
+   encoder: CNN
+   decoder: CNN
+   path: ../data/image
+   feature_dim: [64,64,3]
 
 

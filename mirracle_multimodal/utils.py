@@ -1,19 +1,19 @@
 import math
 import os, csv
 import shutil
-import sys
 import time
 import torch
 import torch.distributions as dist
 import torch.nn.functional as F
 import numpy as np
 import random
+import glob, imageio
 from gensim.models import Word2Vec
 # Classes
 
 class W2V():
     def __init__(self, dim, path):
-        self.vec_dim = int(dim)
+        self.vec_dim = int(dim[0])
         self.model = self.get_w2v(self.vec_dim, path)
         self.max = None
         self.min = None
@@ -37,6 +37,28 @@ class W2V():
             print("Did not find {}".format(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim))))
             w = None
         return w
+
+def load_images(path, dim):
+    def generate(images):
+        dataset = np.zeros((len(images), dim[0], dim[1], dim[2]), dtype=np.float)
+        for i, image_path in enumerate(images):
+            image = imageio.imread(image_path)
+            dataset[i, :] = image / 255
+        return dataset.reshape(-1, dataset.shape[-1], dataset.shape[1], dataset.shape[2])
+
+    if any([os.path.isdir(x) for x in glob.glob(os.path.join(path, "*"))]):
+        subparts = (glob.glob(os.path.join(path, "./*")))
+        datasets = []
+        for s in subparts:
+            images = (glob.glob(os.path.join(s, "*.png")))
+            d = generate(images)
+            datasets.append(d)
+        return np.concatenate(datasets)
+    else:
+        images = (glob.glob(os.path.join(path, "*.png")))
+        dataset = generate(images)
+        return dataset
+
 
 def create_vocab(text, add_noise):
     # create vocabulary
@@ -120,11 +142,11 @@ class Constants(object):
 class Logger(object):
     """Saves training progress into csv"""
 
-    def __init__(self, path, args):
+    def __init__(self, path, mods):
         self.fields = ["Epoch", "Train Loss", "Test Loss", "Train KLD", "Test KLD"]
         self.path = path
         self.dic = {}
-        for m in range(args.modalities_num):
+        for m in range(len(mods)):
             self.fields.append("Train Mod_{}".format(m))
             self.fields.append("Test Mod_{}".format(m))
         self.reset()

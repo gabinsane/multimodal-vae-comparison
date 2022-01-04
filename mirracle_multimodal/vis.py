@@ -48,20 +48,15 @@ def own_cmap(n, copies=2):
 
 def embed_umap(data):
     """data should be on cpu, numpy"""
-    try:
-        embedding = UMAP(metric='euclidean',
-                         n_neighbors=40,)
-                         # angular_rp_forest=True,
-                         # random_state=torch.initial_seed(),
-                         #transform_seed=torch.initial_seed())
-        emb = embedding.fit_transform(data)
-    except:
-        embedding = UMAP(metric='euclidean',
-                         n_neighbors=10,)
-                         # angular_rp_forest=True,
-                         # random_state=torch.initial_seed(),
-                         #transform_seed=torch.initial_seed())
-        emb = embedding.fit_transform(data)
+    c = 1
+    x = 20
+    while c != 4:
+        try:
+            embedding = UMAP(metric='euclidean', n_neighbors=40,)
+            emb = embedding.fit_transform(data)
+        except:
+            c += 1
+            x += 10
     return emb
 
 def plot_embeddings(emb, emb_l, labels, filepath):

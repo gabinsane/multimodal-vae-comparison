@@ -3,11 +3,10 @@ import torch
 import torch.distributions as dist
 from .mmvae_base import MMVAE
 from torch.autograd import Variable
-from .vae_own import UNIVAE
 
 class MOE(MMVAE):
-    def __init__(self, params):
-        super(MOE, self).__init__(dist.Normal, params, UNIVAE, UNIVAE)
+    def __init__(self, encoders, decoders, data_paths, feature_dims, n_latents):
+        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, n_latents)
         self.modelName = 'moe'
 
     def forward(self, x, K=1):
@@ -32,8 +31,8 @@ class MOE(MMVAE):
 
 
 class POE(MMVAE):
-    def __init__(self, params):
-        super(POE, self).__init__(dist.Normal, params, UNIVAE, UNIVAE)
+    def __init__(self, encoders, decoders, data_paths,  feature_dims, n_latents):
+        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths,  feature_dims, n_latents)
         self.modelName = 'poe'
 
     def forward(self, inputs, both_qz=False, K=1):

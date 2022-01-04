@@ -1,0 +1,159 @@
+# Base VAE class definition
+import numpy as np
+import torch, cv2
+import torch.nn as nn
+import torch.distributions as dist
+from models import encoders, decoders
+from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_images
+from vis import embed_umap, tensors_to_df, plot_embeddings, plot_kls_df
+from torch.utils.data import DataLoader
+import pickle, os
+import torch.nn.functional as F
+
+class VAE(nn.Module):
+    def __init__(self, enc, dec, data_path, feature_dim, n_latents, prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
+        super(VAE, self).__init__()
+        self.pz = prior_dist
+        self.px_z = likelihood_dist
+        self.qz_x = post_dist
+        self._qz_x_params = None  # populated in `forward`
+        self.llik_scaling = 1.0
+        self.pth = data_path
+        self.data_dim = feature_dim
+        self.n_latents = n_latents
+        self.enc, self.dec = self.get_nework_classes(enc, dec)
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
+        ])
+        self.modelName = 'vae_{}'.format(os.path.basename(os.path.dirname(data_path)))
+        self.w2v = W2V(feature_dim, self.pth)
+
+    def get_nework_classes(self, enc, dec):
+       assert hasattr(encoders, "Enc_{}".format(enc)), "Did not find encoder {}".format(enc)
+       enc_obj = getattr(encoders, "Enc_{}".format(enc))(self.n_latents, self.data_dim)
+       assert hasattr(decoders, "Dec_{}".format(dec)), "Did not find decoder {}".format(enc)
+       dec_obj = getattr(decoders, "Dec_{}".format(dec))(self.n_latents, self.data_dim)
+       return enc_obj, dec_obj
+
+    @property
+    def pz_params(self):
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
+    @property
+    def qz_x_params(self):
+        if self._qz_x_params is None:
+            raise NameError("qz_x params not initalised yet!")
+        return self._qz_x_params
+
+    def getDataLoaders(self, batch_size,device="cuda"):
+        kwargs = {'num_workers': 1, 'pin_memory': True} if device == "cuda" else {}
+        if not ".pkl" in self.pth:
+            d = load_images(self.pth, self.data_dim)
+        else:
+            with open(self.pth, 'rb') as handle:
+                d = pickle.load(handle)
+                d = d.reshape(d.shape[0],-1)
+                d = self.w2v.normalize_w2v(d)
+                if len(d.shape) < 2:
+                    d = np.expand_dims(d, axis=1)
+        data_size = d.shape[0]
+        traindata = torch.Tensor(d[:int(data_size*(0.9))])
+        testdata = torch.Tensor(d[int(data_size*(0.9)):])
+        t_dataset = torch.utils.data.TensorDataset(traindata)
+        v_dataset = torch.utils.data.TensorDataset(testdata)
+        train = DataLoader(t_dataset, batch_size=batch_size, shuffle=False, **kwargs)
+        test = DataLoader(v_dataset, batch_size=batch_size, shuffle=False, **kwargs)
+        return train, test
+
+    def forward(self, x, K=1):
+        self._qz_x_params = self.enc(x)
+        qz_x = self.qz_x(*self._qz_x_params)
+        zs = qz_x.rsample(torch.Size([K]))
+        px_z = self.px_z(*self.dec(zs))
+        return qz_x, px_z, zs
+
+    def generate(self, runPath, epoch):
+        N, K = 36, 1
+        samples = self.generate_samples(N, K).cpu().squeeze()
+        r_l = []
+        for r, recons_list in enumerate(samples):
+                recon = recons_list.cpu().reshape(64,64,3).unsqueeze(0)
+                r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
+        r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
+        cv2.imwrite('{}/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
+
+    def reconstruct(self, data, runPath, epoch, N=8):
+        recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
+        if ".pkl" in self.pth:
+            _data = data[:N].cpu()
+            target, reconstruct = [], []
+            _data = _data.reshape(-1, self.data_dim[-1], self.data_dim[-2])
+            recon = recons_mat.reshape(-1, self.data_dim[-1], self.data_dim[-2])
+            for s in _data:
+                seq = []
+                [seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w)), ])[0][0]) for w in s]
+                target.append(" ".join(seq))
+            for s in recon:
+                seq, prob = [], []
+                for w in s:
+                    seq.append(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
+                    prob.append("({})".format(str(round(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][1], 2))))
+                j = [" ".join((x, prob[y])) for y,x in enumerate(seq)]
+                reconstruct.append(" ".join(j))
+            output = open('{}/recon_{:03d}.txt'.format(runPath, epoch), "w")
+            output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
+            output.close()
+        else:
+            o_l, r_l = [], []
+            for r, recons_list in enumerate(recons_mat):
+                    _data = data[r].cpu().reshape(-1, self.data_dim[0], self.data_dim[1], self.data_dim[2]) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
+                    recon = recons_list.cpu().reshape(-1, self.data_dim[0], self.data_dim[1], self.data_dim[2]) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
+                    o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)))
+                    r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
+            w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
+            cv2.imwrite('{}/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
+
+    def analyse(self, data, runPath, epoch):
+        zemb, zsl, kls_df = self.analyse_data(data, K=10)
+        labels = ['Prior', self.modelName.lower()]
+        plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
+        plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
+
+
+    def generate_samples(self, N, K):
+        self.eval()
+        with torch.no_grad():
+            pz = self.pz(*self.pz_params)
+            latents = pz.rsample(torch.Size([N]))
+            px_z = self.px_z(*self.dec(latents))
+            #data = px_z.sample(torch.Size([K]))
+            data = get_mean(px_z)
+        return data
+
+    def reconstruct_data(self, data):
+        self.eval()
+        with torch.no_grad():
+            qz_x = self.qz_x(*self.enc(data))
+            latents = qz_x.rsample()
+            px_z = self.px_z(*self.dec(latents.unsqueeze(0)))
+            recon = get_mean(px_z)
+        return recon
+
+    def analyse_data(self, data, K):
+        self.eval()
+        with torch.no_grad():
+            qz_x, _, zs = self.forward(data, K=K)
+            pz = self.pz(*self.pz_params)
+            zss = [pz.sample(torch.Size([K, data.size(0)])).view(-1, pz.batch_shape[-1]),
+                   zs.view(-1, zs.size(-1))]
+            zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss)]
+            kls_df = tensors_to_df(
+                [kl_divergence(qz_x, pz).cpu().numpy()],
+                head='KL',
+                keys=[r'KL$(q(z|x)\,||\,p(z))$'],
+                ax_names=['Dimensions', r'KL$(q\,||\,p)$']
+            )
+        return embed_umap(torch.cat(zss, 0).cpu().numpy()), \
+            torch.cat(zsl, 0).cpu().numpy(), \
+            kls_df
