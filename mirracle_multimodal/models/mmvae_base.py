@@ -37,15 +37,16 @@ class MMVAE(nn.Module):
             self.vaes[x].llik_scaling = max_dimensionality / np.prod(feature_dims[x])
 
     def getDataLoaders(self, batch_size, device='cuda'):
-        # load base datasets
-        t1, s1 = self.vaes[0].getDataLoaders(batch_size, device)
-        t2, s2 = self.vaes[1].getDataLoaders(batch_size, device)
-        train_mnist_svhn = TensorDataset([t1.dataset,t2.dataset])
-        test_mnist_svhn = TensorDataset([s1.dataset, s2.dataset])
-
+        trains, tests = [], []
+        for x in range(len(self.vaes)):
+            t, v = self.vaes[x].getDataLoaders(batch_size, device)
+            trains.append(t.dataset)
+            tests.append(v.dataset)
+        train_data = TensorDataset(trains)
+        test_data = TensorDataset(tests)
         kwargs = {'num_workers': 2, 'pin_memory': True} if device == 'cuda' else {}
-        train = DataLoader(train_mnist_svhn, batch_size=batch_size, shuffle=False, **kwargs)
-        test = DataLoader(test_mnist_svhn, batch_size=batch_size, shuffle=False, **kwargs)
+        train = DataLoader(train_data, batch_size=batch_size, shuffle=False, **kwargs)
+        test = DataLoader(test_data, batch_size=batch_size, shuffle=False, **kwargs)
         return train, test
 
     def generate_samples(self, N):
@@ -91,57 +92,47 @@ class MMVAE(nn.Module):
     def process_reconstructions(self, recons_mat, data, epoch, runPath):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                    try:
-                        _data = data[o][:8].cpu()
-                        if "d.pkl" in self.vaes[o].pth:
-                            target, reconstruct = [], []
-                            _data = _data.reshape(-1,3,int(self.vaes[o].data_dim/3))
-                            recon = recon.reshape(-1, 3, int(self.vaes[o].data_dim/3))
-                            for s in _data:
-                                seq = []
-                                for w in s:
-                                    seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
-                                target.append(" ".join(seq))
-                            for s in recon:
-                                seq = []
-                                for w in s:
-                                    seq.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0])
-                                reconstruct.append(" ".join(seq))
-                            output = open(os.path.join(runPath, 'recon_{}x{}_{}.txt'.format(r, o, epoch)), "w")
-                            if o == 0:
-                                reconstruct = ""
-                            if r == 0:
-                                target = ""
-                            output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
-                            output.close()
-                        recon = recon.squeeze(0).cpu()
-                        # resize mnist to 32 and colour. 0 => mnist, 1 => svhn
-                        _data = _data.reshape(-1, 64,64, 3) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
-                        recon = recon.reshape(-1, 64,64, 3) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
-                        o_l = []
-                        for x in range(_data.shape[0]):
-                            org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-                            rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-                            if o_l == []:
-                                o_l = org
-                                r_l = rec
-                            else:
-                                o_l = np.hstack((o_l, org))
-                                r_l = np.hstack((r_l, rec))
-                        w = np.vstack((o_l, r_l))
-                        if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
-                            w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
-                            w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-                            cv2.imwrite(os.path.join(runPath, 'recon_{}x{}_{}.png'.format(r, o, epoch)), w2)
-                    except:
-                        pass
+                _data = data[o][:8].cpu()
+                if "d.pkl" in self.vaes[o].pth:
+                    target, reconstruct = [], []
+                    _data = _data.reshape(-1,self.vaes[o].data_dim[1], self.vaes[o].data_dim[0])
+                    recon = recon.reshape(-1, self.vaes[o].data_dim[1], self.vaes[o].data_dim[0])
+                    for d, rec in zip(_data, recon):
+                        seq_d, seq_r = [], []
+                        [seq_d.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0]) for w in d]
+                        [seq_r.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0]) for w in rec]
+                        target.append(" ".join(seq_d))
+                        reconstruct.append(" ".join(seq_r))
+                    output = open(os.path.join(runPath, 'recon_{}x{}_{}.txt'.format(r, o, epoch)), "w")
+                    if o == 0: reconstruct = ""
+                    if r == 0: target = ""
+                    output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
+                    output.close()
+                else:
+                    recon = recon.squeeze(0).cpu()
+                    _data = _data.reshape(-1, 64,64, 3)
+                    recon = recon.reshape(-1, 64,64, 3)
+                    o_l, r_l = [], []
+                    for x in range(_data.shape[0]):
+                        org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                        rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                        o_l = org if o_l == [] else np.hstack((o_l, org))
+                        r_l = rec if r_l == [] else np.hstack((r_l, rec))
+                    w = np.vstack((o_l, r_l))
+                if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
+                    w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
+                    w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                    cv2.imwrite(os.path.join(runPath, 'recon_{}x{}_{}.png'.format(r, o, epoch)), w2)
 
 
     def analyse(self, data, runPath, epoch):
-        zemb, zsl, kls_df = self.analyse_data(data, K=10)
-        labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
-        plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{}.png'.format(runPath, epoch))
-        plot_kls_df(kls_df, '{}/kl_distance_{}.png'.format(runPath, epoch))
+        try:
+            zemb, zsl, kls_df = self.analyse_data(data, K=10)
+            labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
+            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{}.png'.format(runPath, epoch))
+            plot_kls_df(kls_df, '{}/kl_distance_{}.png'.format(runPath, epoch))
+        except:
+            pass
 
 
     def analyse_data(self, data, K):

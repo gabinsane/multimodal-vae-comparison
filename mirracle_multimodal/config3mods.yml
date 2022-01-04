@@ -18,6 +18,11 @@ modality_2:
   decoder: FCNN
   path:  ../data/3d.pkl
   feature_dim: [3, 3]
+modality_3:
+  encoder: FCNN
+  decoder: FCNN
+  path:  ../data/4096d.pkl
+  feature_dim: [4096, 3]
 
 
 

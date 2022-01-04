@@ -48,15 +48,13 @@ def own_cmap(n, copies=2):
 
 def embed_umap(data):
     """data should be on cpu, numpy"""
-    c = 1
-    x = 20
-    while c != 4:
+    x = 40
+    while x != 10:
         try:
-            embedding = UMAP(metric='euclidean', n_neighbors=40,)
+            embedding = UMAP(metric='euclidean', n_neighbors=x,)
             emb = embedding.fit_transform(data)
         except:
-            c += 1
-            x += 10
+            x -= 15
     return emb
 
 def plot_embeddings(emb, emb_l, labels, filepath):

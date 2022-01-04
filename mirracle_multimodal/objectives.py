@@ -74,7 +74,7 @@ def dreg(model, x, K, regs=None):
             zs.register_hook(lambda grad: grad_wt.unsqueeze(-1) * grad)
     return (grad_wt * lw).sum()
 
-def m_elbo_moe(model, x, K=1, ltype="lprob"):
+def m_elbo_moe(model, x, ltype="lprob"):
     """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
@@ -90,7 +90,8 @@ def m_elbo_moe(model, x, K=1, ltype="lprob"):
                   lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
             lpx_zs.append((lwt.exp() * lpx_z))
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    return -obj.sum(), torch.stack(klds).mean(0).sum(), [-lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[3].sum()]
+    individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
+    return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 def m_elbo_poe_fully(model, x, K, ltype="lprob"):
     """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
@@ -105,8 +106,8 @@ def m_elbo_poe_fully(model, x, K, ltype="lprob"):
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
     return -obj.sum(), torch.stack(klds).mean(0).sum(),[-lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[1].sum()]
 
-def m_elbo_poe(model, x, K, ltype="lprob"):
-    lpx_zs, klds, elbos = [[], []], [], []
+def m_elbo_poe(model, x, ltype="lprob"):
+    lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
         mods = [None for _ in range(len(x))]
         if m == len(x):
@@ -124,7 +125,8 @@ def m_elbo_poe(model, x, K, ltype="lprob"):
                 lpx_zs[m].append(lpx_z)
         elbo = (torch.stack(loc_lpx_z).sum(0) - kld.sum(-1).sum())
         elbos.append(elbo)
-    return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), [-torch.stack(lpx_zs[0]).sum() / model.vaes[0].llik_scaling, -torch.stack(lpx_zs[1]).sum()]
+    individual_losses = [-torch.stack(m).sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
+    return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 
 def _m_iwae(model, x, K=1):

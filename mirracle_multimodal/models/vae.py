@@ -26,7 +26,7 @@ class VAE(nn.Module):
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
         ])
-        self.modelName = 'vae_{}'.format(os.path.basename(os.path.dirname(data_path)))
+        self.modelName = 'vae_{}'.format(os.path.basename(data_path))
         self.w2v = W2V(feature_dim, self.pth)
 
     def get_nework_classes(self, enc, dec):

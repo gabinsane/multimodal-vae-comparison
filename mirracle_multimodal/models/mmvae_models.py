@@ -34,6 +34,7 @@ class POE(MMVAE):
     def __init__(self, encoders, decoders, data_paths,  feature_dims, n_latents):
         super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths,  feature_dims, n_latents)
         self.modelName = 'poe'
+        self.n_latents = n_latents
 
     def forward(self, inputs, both_qz=False, K=1):
         mu, logvar, single_params = self.infer(inputs)
@@ -48,7 +49,7 @@ class POE(MMVAE):
 
     def infer(self,inputs):
         # initialize the universal prior expert
-        mu, logvar = self.prior_expert((1, next(x for x in inputs if x is not None).shape[0], self.params["n_latents"]), use_cuda=True)
+        mu, logvar = self.prior_expert((1, next(x for x in inputs if x is not None).shape[0], self.n_latents), use_cuda=True)
         for ix, modality in enumerate(inputs):
             if modality is not None:
                 mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda"))

@@ -95,7 +95,7 @@ def train(epoch, agg, lossmeter):
             data = unpack_data(dataT[0], device=device)
             d_len = data.shape[0]
         optimizer.zero_grad()
-        loss, kld, partial_l = objective(model, data, K=1, ltype=config["loss"])
+        loss, kld, partial_l = objective(model, data, ltype=config["loss"])
         loss_m.append(loss/d_len)
         kld_m.append(kld/d_len)
         for i,l in enumerate(partial_l):
@@ -127,7 +127,7 @@ def trest(epoch, agg, lossmeter):
             else:
                 data = unpack_data(dataT[0], device=device)
                 d_len = data.shape[0]
-            loss, kld, partial_l = objective(model, data, K=1, ltype=config["loss"])
+            loss, kld, partial_l = objective(model, data, ltype=config["loss"])
             loss_m.append(loss/d_len)
             kld_m.append(kld/d_len)
             for i, l in enumerate(partial_l):
