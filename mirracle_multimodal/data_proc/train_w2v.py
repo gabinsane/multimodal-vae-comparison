@@ -12,7 +12,6 @@ def train_word2vec(text, vector_size=9):
     total_examples = model_2.corpus_count
     model_2.train(text.tolist(), total_examples=total_examples, epochs=200)
     model.save("../data/word2vec{}d.model".format(vector_size))
-    #pca(model)
 
 def pca(model):
     X = model.wv.vectors

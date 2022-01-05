@@ -3,7 +3,7 @@ batch_size: 64
 epochs: 500
 obj: elbo
 loss: bce
-viz_freq: 10
+viz_freq: 20
 mixing: poe
 exp_name: exp_01
 pre_trained:

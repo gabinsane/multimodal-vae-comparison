@@ -208,8 +208,8 @@ def load_images(path, imsize=64, size=math.inf):
     return dataset
 
 if __name__ == "__main__":
-    os.makedirs("../data", exist_ok=True)
-    target_dir = "../data"
+    os.makedirs("../../data", exist_ok=True)
+    target_dir = "../../data"
     if not args.vecs_only:
         make_attrs(target_dir)
         os.makedirs(os.path.join(target_dir, "image"), exist_ok=True)
@@ -220,7 +220,7 @@ if __name__ == "__main__":
        os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
        make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
     elif args.type == "img-vec":
-       word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "{}d.pkl".format(WORD_EMBEDDING_SIZE)))
+       word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "word2vec{}d.pkl".format(WORD_EMBEDDING_SIZE)))
        if not args.vecs_only:
         make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
     print("\nAll done. Data saved in mirracle_multimodal/data")

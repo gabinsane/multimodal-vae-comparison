@@ -1,13 +1,13 @@
 # visualisation related functions
-import warnings
+import warnings, os
 warnings.filterwarnings("ignore")
 import matplotlib.colors as colors
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
-import torch
+import pandas as pd
+from sklearn.manifold import TSNE
 from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
 from umap import UMAP
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -45,16 +45,33 @@ def own_cmap(n, copies=2):
     cmap = colors.LinearSegmentedColormap.from_list('mmdgm_cmap', cmap_array)
     return cmap, cmap_array, marks
 
+def t_sne(data, runPath, epoch):
+    tsne = TSNE(n_components=2, verbose=1, random_state=123)
+    data_labels, c1, c2 = [], [], []
+    for ind, mod in enumerate(data):
+        z = tsne.fit_transform(mod.cpu().numpy())
+        df = pd.DataFrame()
+        c1.append(z[:, 0])
+        c2.append(z[:, 1])
+        data_labels.append(["Modality {}".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
+    df["comp-1"] = np.concatenate(c1)
+    df["comp-2"] = np.concatenate(c2)
+    df["y"] = np.concatenate(data_labels)
+    p = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = sns.color_palette("hls", len(data)), data = df).set(title="T-SNE projection")
+    plt.savefig(os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)))
+    plt.clf()
+
 
 def embed_umap(data):
     """data should be on cpu, numpy"""
-    x = 40
+    x = 55
     while x != 10:
         try:
             embedding = UMAP(metric='euclidean', n_neighbors=x,)
             emb = embedding.fit_transform(data)
         except:
             x -= 15
+    print("Succeeded with {} neighbors".format(x))
     return emb
 
 def plot_embeddings(emb, emb_l, labels, filepath):

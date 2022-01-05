@@ -2,10 +2,6 @@ import torch, numpy as np
 import torch.nn as nn
 from utils import Constants, create_vocab, W2V
 
-
-# Constants
-dataSize = torch.Size([3,64,64])
-
 class Dec_CNN(nn.Module):
     """Parametrizes p(x|z).
     @param n_latents: integer
@@ -14,6 +10,7 @@ class Dec_CNN(nn.Module):
     def __init__(self, latent_dim, data_dim):
         super(Dec_CNN, self).__init__()
         latent_dim = latent_dim
+        self.datadim = data_dim
 
         # Layer parameters
         hid_channels = 32
@@ -54,7 +51,7 @@ class Dec_CNN(nn.Module):
         x = torch.relu(self.convT1(x))
         x = torch.relu(self.convT2(x))
         x = (self.convT3(x))
-        d = torch.sigmoid(x.view(*z.size()[:-1], *dataSize))  # reshape data
+        d = torch.sigmoid(x.view(*z.size()[:-1], *self.datadim))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d.squeeze(), torch.tensor(0.75).to(z.device)
 

@@ -87,7 +87,7 @@ class POE(MMVAE):
     def reconstruct(self, data, runPath, epoch, N=8):
         recons_mat = []
         for ix, i in enumerate(data):
-            input_mat = [None, None]
+            input_mat = [None] * len(data)
             input_mat[ix] = i[:N]
             rec = super(POE, self).reconstruct(input_mat)
             recons_mat.append(rec)

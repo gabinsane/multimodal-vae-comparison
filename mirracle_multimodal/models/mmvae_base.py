@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy import prod
 from utils import get_mean, kl_divergence
-from vis import embed_umap, tensors_to_df, plot_embeddings, plot_kls_df
+from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
 import numpy as np
@@ -60,99 +60,83 @@ class MMVAE(nn.Module):
                 data.append(px_z.mean.view(-1, *px_z.mean.size()[2:]))
         return data  # list of generations---one for each modality
 
-    def generate(self, runPath, epoch):
-        N = 36
-        samples_list = self.generate_samples(N)
-        for i, samples in enumerate(samples_list):
-            if samples.shape[0] != N:
-                samples = samples.reshape(N, 64,64,3)
-            try:
+    def generate(self, runPath, epoch, N=36):
+        for i, samples in enumerate(self.generate_samples(N)):
+            samples = samples.reshape(N, *self.vaes[i].data_dim)
+            if "image" in self.vaes[i].pth:
                 r_l = []
                 for r, recons_list in enumerate(samples):
                     recon = recons_list.cpu()
-                    recon = recon.reshape(64, 64, 3).unsqueeze(0)
-                    if r_l == []:
-                        r_l = np.asarray(recon)
-                    else:
-                        r_l = np.concatenate((r_l, np.asarray(recon)))
-                r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),
-                                 np.hstack(r_l[24:30]), np.hstack(r_l[30:36])))
-                cv2.imwrite('{}/gen_samples_{}_{}.png'.format(runPath, i, epoch), r_l * 255)
-            except:
-                pass
+                    recon = recon.reshape(*self.vaes[i].data_dim).unsqueeze(0)
+                    r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
+                r_l = np.vstack((np.hstack(r_l[:int(N/6)]), np.hstack(r_l[int(N/6):int(N/3)]), np.hstack(r_l[int(N/3):int(N/2)]), np.hstack(r_l[int(N/2):int(2*N/3)]),
+                                 np.hstack(r_l[int(2*N/3):int(5*N/6)]), np.hstack(r_l[int(5*N/6):N])))
+                cv2.imwrite('{}/visuals/gen_samples_epoch_{}_m{}.png'.format(runPath, epoch, i), r_l * 255)
 
     def reconstruct(self, data):
         self.eval()
         with torch.no_grad():
             _, px_zs, _ = self.forward(data)
-            # cross-modal matrix of reconstructions
-            recons = [[get_mean(px_z) for px_z in r] for r in px_zs]
+            recons = [[get_mean(px_z) for px_z in r] for r in px_zs] if any(isinstance(i, list) for i in px_zs) \
+                     else [get_mean(px_z) for px_z in px_zs]
         return recons
 
-    def process_reconstructions(self, recons_mat, data, epoch, runPath):
+    def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                _data = data[o][:8].cpu()
-                if "d.pkl" in self.vaes[o].pth:
+                _data = data[o][:N].cpu()
+                if "word2vec" in self.vaes[o].pth:
                     target, reconstruct = [], []
-                    _data = _data.reshape(-1,self.vaes[o].data_dim[1], self.vaes[o].data_dim[0])
-                    recon = recon.reshape(-1, self.vaes[o].data_dim[1], self.vaes[o].data_dim[0])
+                    recon = recon.reshape(N, self.vaes[o].data_dim[-1], -1)
+                    _data = _data.reshape(N, self.vaes[o].data_dim[-1], -1)
                     for d, rec in zip(_data, recon):
                         seq_d, seq_r = [], []
                         [seq_d.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0]) for w in d]
                         [seq_r.append(self.vaes[o].w2v.model.wv.most_similar(positive=[self.vaes[o].w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][0]) for w in rec]
                         target.append(" ".join(seq_d))
                         reconstruct.append(" ".join(seq_r))
-                    output = open(os.path.join(runPath, 'recon_{}x{}_{}.txt'.format(r, o, epoch)), "w")
-                    if o == 0: reconstruct = ""
-                    if r == 0: target = ""
+                    output = open(os.path.join(runPath, "visuals/",'recon_epoch{}_m{}xm{}.txt'.format(epoch, r, o)), "w")
                     output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
                     output.close()
-                else:
+                elif "image" in self.vaes[o].pth:
                     recon = recon.squeeze(0).cpu()
-                    _data = _data.reshape(-1, 64,64, 3)
-                    recon = recon.reshape(-1, 64,64, 3)
+                    _data = _data.reshape(N, *self.vaes[o].data_dim)
+                    recon = recon.reshape(N, *self.vaes[o].data_dim)
                     o_l, r_l = [], []
                     for x in range(_data.shape[0]):
                         org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                         rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                         o_l = org if o_l == [] else np.hstack((o_l, org))
                         r_l = rec if r_l == [] else np.hstack((r_l, rec))
-                    w = np.vstack((o_l, r_l))
-                if not (r == 1 and o == 1 and "d.pkl" in self.vaes[1].pth):
-                    w2 =cv2.cvtColor(w*255, cv2.COLOR_BGR2RGB)
-                    w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-                    cv2.imwrite(os.path.join(runPath, 'recon_{}x{}_{}.png'.format(r, o, epoch)), w2)
 
+                    w2 =cv2.cvtColor(np.vstack((o_l, r_l))*255, cv2.COLOR_BGR2RGB)
+                    w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                    cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
 
     def analyse(self, data, runPath, epoch):
-        try:
-            zemb, zsl, kls_df = self.analyse_data(data, K=10)
-            labels = ['Prior', *[vae.modelName.lower() for vae in self.vaes]]
-            plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{}.png'.format(runPath, epoch))
-            plot_kls_df(kls_df, '{}/kl_distance_{}.png'.format(runPath, epoch))
-        except:
-            pass
+        zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch)
+        plot_kls_df(kls_df, '{}/visuals/kl_distance_{}.png'.format(runPath, epoch))
 
-
-    def analyse_data(self, data, K):
+    def analyse_data(self, data, K, runPath, epoch):
         self.eval()
         with torch.no_grad():
             qz_xs, _, zss = self.forward(data, K=K)
             pz = self.pz(*self.pz_params)
-            zss = [pz.sample(torch.Size([K, data[0].size(0)])).view(-1, pz.batch_shape[-1]),
+            zss_sampled = [pz.sample(torch.Size([K, data[0].size(0)])).view(-1, pz.batch_shape[-1]),
                    *[zs.view(-1, zs.size(-1)) for zs in zss]]
-            zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss)]
-            kls_df = tensors_to_df(
-                [*[kl_divergence(qz_x, pz).cpu().numpy() for qz_x in qz_xs],
-                 *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p)).cpu().numpy()
-                   for p, q in combinations(qz_xs, 2)]],
-                head='KL',
-                keys=[*[r'KL$(q(z|x_{})\,||\,p(z))$'.format(i) for i in range(len(qz_xs))],
-                      *[r'J$(q(z|x_{})\,||\,q(z|x_{}))$'.format(i, j)
-                        for i, j in combinations(range(len(qz_xs)), 2)]],
-                ax_names=['Dimensions', r'KL$(q\,||\,p)$']
-            )
-        return embed_umap(torch.cat(zss, 0).cpu().numpy()), \
-            torch.cat(zsl, 0).cpu().numpy(), \
-            kls_df
+            zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss_sampled)]
+            if isinstance(qz_xs, list):
+                kls_df = tensors_to_df(
+                    [*[kl_divergence(qz_x, pz).cpu().numpy() for qz_x in qz_xs],
+                     *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p)).cpu().numpy()
+                       for p, q in combinations(qz_xs, 2)]],
+                    head='KL',
+                    keys=[*[r'KL$(q(z|x_{})\,||\,p(z))$'.format(i) for i in range(len(qz_xs))],
+                          *[r'J$(q(z|x_{})\,||\,q(z|x_{}))$'.format(i, j)
+                            for i, j in combinations(range(len(qz_xs)), 2)]],
+                    ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
+            else:
+                kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
+                    keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
+        t_sne(zss_sampled[1:], runPath, epoch)
+        return torch.cat(zsl, 0).cpu().numpy(), kls_df

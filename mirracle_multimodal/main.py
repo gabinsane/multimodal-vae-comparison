@@ -68,6 +68,7 @@ if config["pre_trained"]:
 # set up run path
 runPath = os.path.join('results/', config["exp_name"])
 os.makedirs(runPath, exist_ok=True)
+os.makedirs(os.path.join(runPath, "visuals"), exist_ok=True)
 print('Expt:', runPath)
 
 # save args to run

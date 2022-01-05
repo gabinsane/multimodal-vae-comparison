@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.distributions as dist
 from models import encoders, decoders
 from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_images
-from vis import embed_umap, tensors_to_df, plot_embeddings, plot_kls_df
+from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 import pickle, os
 import torch.nn.functional as F
@@ -27,7 +27,8 @@ class VAE(nn.Module):
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
         ])
         self.modelName = 'vae_{}'.format(os.path.basename(data_path))
-        self.w2v = W2V(feature_dim, self.pth)
+        if "word2vec" in self.pth:
+            self.w2v = W2V(feature_dim, self.pth)
 
     def get_nework_classes(self, enc, dec):
        assert hasattr(encoders, "Enc_{}".format(enc)), "Did not find encoder {}".format(enc)
@@ -78,10 +79,10 @@ class VAE(nn.Module):
         samples = self.generate_samples(N, K).cpu().squeeze()
         r_l = []
         for r, recons_list in enumerate(samples):
-                recon = recons_list.cpu().reshape(64,64,3).unsqueeze(0)
+                recon = recons_list.cpu().reshape(*self.data_dim).unsqueeze(0)
                 r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
         r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
-        cv2.imwrite('{}/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
+        cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
 
     def reconstruct(self, data, runPath, epoch, N=8):
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
@@ -101,7 +102,7 @@ class VAE(nn.Module):
                     prob.append("({})".format(str(round(self.w2v.model.wv.most_similar(positive=[self.w2v.unnormalize_w2v(np.asarray(w.cpu())), ])[0][1], 2))))
                 j = [" ".join((x, prob[y])) for y,x in enumerate(seq)]
                 reconstruct.append(" ".join(j))
-            output = open('{}/recon_{:03d}.txt'.format(runPath, epoch), "w")
+            output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
             output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
             output.close()
         else:
@@ -112,14 +113,11 @@ class VAE(nn.Module):
                     o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)))
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
             w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
-            cv2.imwrite('{}/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
+            cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
 
     def analyse(self, data, runPath, epoch):
-        zemb, zsl, kls_df = self.analyse_data(data, K=10)
-        labels = ['Prior', self.modelName.lower()]
-        plot_embeddings(zemb, zsl, labels, '{}/emb_umap_{:03d}.png'.format(runPath, epoch))
-        plot_kls_df(kls_df, '{}/kl_distance_{:03d}.png'.format(runPath, epoch))
-
+        zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch)
+        plot_kls_df(kls_df, '{}/visuals/kl_distance_{:03d}.png'.format(runPath, epoch))
 
     def generate_samples(self, N, K):
         self.eval()
@@ -140,7 +138,7 @@ class VAE(nn.Module):
             recon = get_mean(px_z)
         return recon
 
-    def analyse_data(self, data, K):
+    def analyse_data(self, data, K, runPath, epoch):
         self.eval()
         with torch.no_grad():
             qz_x, _, zs = self.forward(data, K=K)
@@ -154,6 +152,5 @@ class VAE(nn.Module):
                 keys=[r'KL$(q(z|x)\,||\,p(z))$'],
                 ax_names=['Dimensions', r'KL$(q\,||\,p)$']
             )
-        return embed_umap(torch.cat(zss, 0).cpu().numpy()), \
-            torch.cat(zsl, 0).cpu().numpy(), \
-            kls_df
+        t_sne(zss[1:], runPath, epoch)
+        return torch.cat(zsl, 0).cpu().numpy(), kls_df

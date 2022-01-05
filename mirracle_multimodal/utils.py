@@ -31,12 +31,12 @@ class W2V():
         return d
 
     def get_w2v(self, data_dim, path):
-        try:
-            w = Word2Vec.load(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim)))
-        except:
+        if not os.path.exists(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim))):
             print("Did not find {}".format(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim))))
-            w = None
-        return w
+            return None
+        else:
+            w = Word2Vec.load(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim)))
+            return w
 
 def load_images(path, dim):
     def generate(images):
