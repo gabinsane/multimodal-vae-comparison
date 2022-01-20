@@ -16,11 +16,25 @@ def compute_microbatch_split(x, K):
     return min(B, S)
 
 def loss_fn(output, target, ltype):
+    target = target[0].float() if isinstance(target, list) else target
+    target = target.reshape(*output.loc.shape)
     if ltype == "bce":
-        loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cpu(), target.cpu(), reduction="sum").cuda()
+        output = output.loc
+        assert torch.min(target.reshape(-1)) >= 0 and torch.max(target.reshape(-1)) <= 1, "Cannot use bce on data which is not normalised"
+        loss = -torch.nn.functional.binary_cross_entropy(output.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
     else:
-        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum(-1).sum(-1).sum(-1)
+        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
     return loss
+
+def normalize(target, data=None):
+    t_size= target.size()
+    maxv, minv = torch.max(target.reshape(-1)), torch.min(target.view(-1))
+    output = [torch.div(torch.add(target.reshape(-1), torch.abs(minv)), (maxv-minv)).reshape(t_size)]
+    if data is not None:
+        d_size = data.size()
+        data_norm = torch.clamp(torch.div(torch.add(data.reshape(-1), torch.abs(minv)), (maxv-minv)), min=0, max=1)
+        output.append(data_norm.reshape(d_size))
+    return output
 
 
 def elbo(model, x, K=1, ltype="lprob"):

@@ -11,6 +11,11 @@ import os
 import models, objectives
 from utils import Logger, Timer, save_model, save_vars, unpack_data
 
+def pad_seq_data(data, masks):
+    for i, _ in enumerate(data):
+        if masks[i] is not None:
+            data[i].append(masks[i])
+    return data
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -90,11 +95,22 @@ def train(epoch, agg, lossmeter):
     partial_losses =  [[] for _ in range(len(mods))]
     for it, dataT in enumerate(train_loader):
         if len(mods) > 1:
-            data = unpack_data(dataT, device=device)
-            d_len = data[0].shape[0]
+            if isinstance(dataT[0], list):
+                data = unpack_data(dataT, device=device)
+                d_len = data[0].shape[0]
+            else:
+                data, masks = dataT
+                data = [[list(torch.transpose(data.to(device), 0,1))[i]] for i in range(len(masks))]
+                data = pad_seq_data(data, masks)
+                d_len = data[0][0].shape[0]
         else:
-            data = unpack_data(dataT[0], device=device)
-            d_len = data.shape[0]
+            if isinstance(dataT, tuple):
+                data, masks = dataT
+                data = [data.to(device), masks]
+                d_len = len(data[0])
+            else:
+                data = unpack_data(dataT[0], device=device)
+                d_len = data.shape[0]
         optimizer.zero_grad()
         loss, kld, partial_l = objective(model, data, ltype=config["loss"])
         loss_m.append(loss/d_len)
@@ -123,11 +139,22 @@ def trest(epoch, agg, lossmeter):
     with torch.no_grad():
         for ix, dataT in enumerate(test_loader):
             if len(mods) > 1:
-                data = unpack_data(dataT, device=device)
-                d_len = data[0].shape[0]
+                if isinstance(dataT[0], list):
+                    data = unpack_data(dataT, device=device)
+                    d_len = data[0].shape[0]
+                else:
+                    data, masks = dataT
+                    data = [[list(torch.transpose(data.to(device), 0, 1))[i]] for i in range(len(masks))]
+                    data = pad_seq_data(data, masks)
+                    d_len = data[0][0].shape[0]
             else:
-                data = unpack_data(dataT[0], device=device)
-                d_len = data.shape[0]
+                if isinstance(dataT, tuple):
+                    data, masks = dataT
+                    data = [data.to(device), masks]
+                    d_len = len(data[0])
+                else:
+                    data = unpack_data(dataT[0], device=device)
+                    d_len = data.shape[0]
             loss, kld, partial_l = objective(model, data, ltype=config["loss"])
             loss_m.append(loss/d_len)
             kld_m.append(kld/d_len)

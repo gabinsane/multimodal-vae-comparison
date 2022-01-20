@@ -4,7 +4,7 @@ import torch, cv2
 import torch.nn as nn
 import torch.distributions as dist
 from models import encoders, decoders
-from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_images
+from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_images, lengths_to_mask
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 import pickle, os
@@ -13,6 +13,7 @@ import torch.nn.functional as F
 class VAE(nn.Module):
     def __init__(self, enc, dec, data_path, feature_dim, n_latents, prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
         super(VAE, self).__init__()
+        self.device = None
         self.pz = prior_dist
         self.px_z = likelihood_dist
         self.qz_x = post_dist
@@ -21,6 +22,7 @@ class VAE(nn.Module):
         self.pth = data_path
         self.data_dim = feature_dim
         self.n_latents = n_latents
+        self.enc_name, self.dec_name = enc, dec
         self.enc, self.dec = self.get_nework_classes(enc, dec)
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
@@ -48,21 +50,31 @@ class VAE(nn.Module):
         return self._qz_x_params
 
     def getDataLoaders(self, batch_size,device="cuda"):
+        self.device = device
         kwargs = {'num_workers': 1, 'pin_memory': True} if device == "cuda" else {}
         if not ".pkl" in self.pth:
-            d = load_images(self.pth, self.data_dim)
+            if "image" in self.pth:
+                d = load_images(self.pth, self.data_dim)
+            else: raise Exception("If {} is an image dataset, please include 'image' in it's name. "
+                                  "For other data types you should use .pkl or write your own dataLoader'".format(self.pth))
         else:
             with open(self.pth, 'rb') as handle:
                 d = pickle.load(handle)
+            if "word2vec" in self.pth:
                 d = d.reshape(d.shape[0],-1)
-                d = self.w2v.normalize_w2v(d)
-                if len(d.shape) < 2:
-                    d = np.expand_dims(d, axis=1)
-        data_size = d.shape[0]
-        traindata = torch.Tensor(d[:int(data_size*(0.9))])
-        testdata = torch.Tensor(d[int(data_size*(0.9)):])
-        t_dataset = torch.utils.data.TensorDataset(traindata)
-        v_dataset = torch.utils.data.TensorDataset(testdata)
+                #d = self.w2v.normalize_w2v(d)
+                if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
+            elif self.enc.name == "Transformer":
+                d = [torch.from_numpy(x.astype(np.float)) for x in d]
+                if len(d[0].shape) < 3:
+                    d = [torch.unsqueeze(i, dim=1) for i in d]
+                kwargs["collate_fn"] = self.seq_collate_fn
+
+        t_dataset = d[:int(len(d)*(0.9))]
+        v_dataset = d[int(len(d)*(0.9)):]
+        if self.enc.name != "Transformer":
+            t_dataset = torch.utils.data.TensorDataset(torch.tensor(t_dataset))
+            v_dataset = torch.utils.data.TensorDataset(torch.tensor(v_dataset))
         train = DataLoader(t_dataset, batch_size=batch_size, shuffle=False, **kwargs)
         test = DataLoader(v_dataset, batch_size=batch_size, shuffle=False, **kwargs)
         return train, test
@@ -71,8 +83,15 @@ class VAE(nn.Module):
         self._qz_x_params = self.enc(x)
         qz_x = self.qz_x(*self._qz_x_params)
         zs = qz_x.rsample(torch.Size([K]))
-        px_z = self.px_z(*self.dec(zs))
+        if self.dec_name == "Transformer":
+            px_z = self.px_z(*self.dec([zs, x[1]] if x is not None else [zs, None]))
+        else: px_z = self.px_z(*self.dec(zs))
         return qz_x, px_z, zs
+
+    def seq_collate_fn(self, batch):
+        new_batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.0)
+        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in batch]))).to(self.device)
+        return new_batch, masks
 
     def generate(self, runPath, epoch):
         N, K = 36, 1

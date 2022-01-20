@@ -22,7 +22,10 @@ class MOE(MMVAE):
         for e, zs in enumerate(zss):
             for d, vae in enumerate(self.vaes):
                 if e != d:  # fill-in off-diagonal
-                    px_zs[e][d] = vae.px_z(*vae.dec(zs))
+                    if self.vaes[d].dec_name == "Transformer":
+                        px_zs[e][d] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None] ))
+                    else:
+                        px_zs[e][d] = vae.px_z(*vae.dec(zs))
         return qz_xs, px_zs, zss
 
     def reconstruct(self, data, runPath, epoch, N=8):
@@ -36,23 +39,30 @@ class POE(MMVAE):
         self.modelName = 'poe'
         self.n_latents = n_latents
 
-    def forward(self, inputs, both_qz=False, K=1):
+    def forward(self, inputs, both_qz=False):
         mu, logvar, single_params = self.infer(inputs)
         recons = []
         qz_x = dist.Normal(*[mu, logvar])
         z = qz_x.rsample(torch.Size([1]))
         for ind, vae in enumerate(self.vaes):
-               recons.append(vae.px_z(*vae.dec(z)))
+            if vae.dec_name == "Transformer":
+               z_dec = [z, inputs[ind][1]] if inputs[ind] is not None else [z, None]
+            else: z_dec = z
+            recons.append(vae.px_z(*vae.dec(z_dec)))
         z = [z] if not both_qz else [z * len(recons)]
         qz_x = qz_x if not both_qz else [dist.Normal(*[single_params[0][0], single_params[1][0]]), dist.Normal(*[single_params[0][1], single_params[1][1]])]
         return qz_x, recons, z
 
     def infer(self,inputs):
+        for x in inputs:
+            if x is not None:
+                batch_size = x.shape[0] if not isinstance(x, list) else x[0].shape[0]
+                break
         # initialize the universal prior expert
-        mu, logvar = self.prior_expert((1, next(x for x in inputs if x is not None).shape[0], self.n_latents), use_cuda=True)
+        mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
         for ix, modality in enumerate(inputs):
             if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda"))
+                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
                 mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
                 logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
         mu_before, logvar_before = mu, logvar

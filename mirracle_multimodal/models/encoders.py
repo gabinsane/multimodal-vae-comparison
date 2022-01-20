@@ -11,6 +11,7 @@ class Enc_CNN(nn.Module):
     """
     def __init__(self, latent_dim, data_dim):
         super(Enc_CNN, self).__init__()
+        self.name = "CNN"
         hid_channels = 32
         kernel_size = 4
         hidden_dim = 256
@@ -26,7 +27,7 @@ class Enc_CNN(nn.Module):
 
         # If input image is 64x64 do fourth convolution
         self.conv_64 = torch.nn.DataParallel(nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs))
-
+        self.pooling = torch.nn.AvgPool2d(kernel_size)
         # Fully connected layers
         self.lin1 = torch.nn.DataParallel(nn.Linear(np.product(self.reshape), hidden_dim))
         self.lin2 = torch.nn.DataParallel(nn.Linear(hidden_dim, hidden_dim))
@@ -38,7 +39,7 @@ class Enc_CNN(nn.Module):
     def forward(self, x):
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
         # Convolutional layers with ReLu activations
-        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv1(x.float()))
         x = torch.relu(self.conv2(x))
         x = torch.relu(self.conv3(x))
         x = torch.relu(self.conv_64(x))
@@ -56,9 +57,10 @@ class Enc_CNN(nn.Module):
         return mu, lv
 
 # Classes
-class Enc_FCNN(nn.Module):
+class Enc_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
-        super(Enc_FCNN, self).__init__()
+        super(Enc_FNN, self).__init__()
+        self.name = "FNN"
         self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
         self.lin2 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
@@ -74,3 +76,69 @@ class Enc_FCNN(nn.Module):
         lv = self.fc22(e)
         lv =  F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
+
+class Enc_Transformer(nn.Module):
+    """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
+    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
+        super(Enc_Transformer, self).__init__()
+        self.name = "Transformer"
+        self.njoints = data_dim[1]
+        self.nfeats = data_dim[2]
+        self.latent_dim = latent_dim
+
+        self.ff_size = ff_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.activation = activation
+
+        self.input_feats = self.njoints * self.nfeats
+        self.mu_layer = nn.Linear(self.latent_dim, self.latent_dim)
+        self.sigma_layer = nn.Linear(self.latent_dim, self.latent_dim)
+
+        self.skelEmbedding = nn.Linear(self.input_feats, self.latent_dim)
+        self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
+        seqTransEncoderLayer = nn.TransformerEncoderLayer(d_model=self.latent_dim,
+                                                          nhead=self.num_heads,
+                                                          dim_feedforward=self.ff_size,
+                                                          dropout=self.dropout,
+                                                          activation=self.activation)
+        self.seqTransEncoder = nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers)
+
+    def forward(self, batch):
+        x, mask = batch[0].float(), batch[1]
+        bs, nframes, njoints, nfeats = x.shape
+        x = x.permute((1, 0, 2, 3)).reshape(nframes, bs, njoints * nfeats)
+        # embedding of the skeleton
+        x = self.skelEmbedding(x)
+        # add positional encoding
+        x = self.sequence_pos_encoder(x)
+        # transformer layers
+        final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
+        # get the average of the output
+        z = final.mean(axis=0)
+        # extract mu and logvar
+        mu = self.mu_layer(z)
+        logvar = self.sigma_layer(z)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        return mu, logvar
+
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, dropout=0.1, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-np.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        # not used in the final model
+        x = x + self.pe[:x.shape[0], :]
+        return self.dropout(x)

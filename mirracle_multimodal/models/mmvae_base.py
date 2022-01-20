@@ -4,7 +4,7 @@ import torch, os
 import torch.nn as nn
 import torch.nn.functional as F
 from numpy import prod
-from utils import get_mean, kl_divergence
+from utils import get_mean, kl_divergence, lengths_to_mask
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
@@ -15,8 +15,10 @@ from .vae import VAE
 class MMVAE(nn.Module):
     def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, n_latents):
         super(MMVAE, self).__init__()
+        self.device = None
         self.pz = prior_dist
         vae_mods = []
+        self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
             vae_mods.append(VAE(e, d, pth, fd, n_latents))
         self.vaes = nn.ModuleList(vae_mods)
@@ -36,7 +38,21 @@ class MMVAE(nn.Module):
         for x in range(len(self.vaes)):
             self.vaes[x].llik_scaling = max_dimensionality / np.prod(feature_dims[x])
 
+    def seq_collate_fn(self, batch):
+        new_batch, masks = [], []
+        for i, e in enumerate(self.encoders):
+            m = [x[i] for x in batch]
+            if e == "Transformer":
+                masks.append(lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in m]))).to(self.device))
+                m = torch.nn.utils.rnn.pad_sequence(m, batch_first=True, padding_value=0.0)
+            else:
+                masks.append(None)
+            new_batch.append(torch.tensor(m).unsqueeze(1))
+        new_batch = torch.cat(new_batch, dim=1)
+        return new_batch, masks
+
     def getDataLoaders(self, batch_size, device='cuda'):
+        self.device = device
         trains, tests = [], []
         for x in range(len(self.vaes)):
             t, v = self.vaes[x].getDataLoaders(batch_size, device)
@@ -45,6 +61,7 @@ class MMVAE(nn.Module):
         train_data = TensorDataset(trains)
         test_data = TensorDataset(tests)
         kwargs = {'num_workers': 2, 'pin_memory': True} if device == 'cuda' else {}
+        if "Transformer" in self.encoders: kwargs["collate_fn"] = self.seq_collate_fn
         train = DataLoader(train_data, batch_size=batch_size, shuffle=False, **kwargs)
         test = DataLoader(test_data, batch_size=batch_size, shuffle=False, **kwargs)
         return train, test
@@ -109,7 +126,7 @@ class MMVAE(nn.Module):
                         o_l = org if o_l == [] else np.hstack((o_l, org))
                         r_l = rec if r_l == [] else np.hstack((r_l, rec))
 
-                    w2 =cv2.cvtColor(np.vstack((o_l, r_l))*255, cv2.COLOR_BGR2RGB)
+                    w2 =cv2.cvtColor(np.vstack((o_l*255, r_l*255)).astype('uint8'), cv2.COLOR_BGR2RGB)
                     w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                     cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
 

@@ -60,6 +60,12 @@ def load_images(path, dim):
         return dataset
 
 
+def lengths_to_mask(lengths):
+    max_len = max(lengths)
+    mask = torch.arange(max_len, device=lengths.device).expand(len(lengths), max_len) < lengths.unsqueeze(1)
+    return mask
+
+
 def create_vocab(text, add_noise):
     # create vocabulary
     vocab = Vocabulary('training')
