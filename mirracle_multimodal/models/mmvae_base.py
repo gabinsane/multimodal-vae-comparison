@@ -73,14 +73,17 @@ class MMVAE(nn.Module):
             pz = self.pz(*self.pz_params)
             latents = pz.rsample(torch.Size([N]))
             for d, vae in enumerate(self.vaes):
-                px_z = vae.px_z(*vae.dec(latents))
+                if vae.dec_name == "Transformer":
+                    px_z = vae.px_z(*vae.dec([latents, None]))
+                else:
+                    px_z = vae.px_z(*vae.dec(latents))
                 data.append(px_z.mean.view(-1, *px_z.mean.size()[2:]))
         return data  # list of generations---one for each modality
 
     def generate(self, runPath, epoch, N=36):
         for i, samples in enumerate(self.generate_samples(N)):
-            samples = samples.reshape(N, *self.vaes[i].data_dim)
             if "image" in self.vaes[i].pth:
+                samples = samples.reshape(N, *self.vaes[i].data_dim)
                 r_l = []
                 for r, recons_list in enumerate(samples):
                     recon = recons_list.cpu()
@@ -101,7 +104,7 @@ class MMVAE(nn.Module):
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                _data = data[o][:N].cpu()
+                _data = data[o][:N].cpu() if not isinstance(data[o], list) else None
                 if "word2vec" in self.vaes[o].pth:
                     target, reconstruct = [], []
                     recon = recon.reshape(N, self.vaes[o].data_dim[-1], -1)
@@ -139,7 +142,7 @@ class MMVAE(nn.Module):
         with torch.no_grad():
             qz_xs, _, zss = self.forward(data, K=K)
             pz = self.pz(*self.pz_params)
-            zss_sampled = [pz.sample(torch.Size([K, data[0].size(0)])).view(-1, pz.batch_shape[-1]),
+            zss_sampled = [pz.sample(torch.Size([K, len(data[0])])).view(-1, pz.batch_shape[-1]),
                    *[zs.view(-1, zs.size(-1)) for zs in zss]]
             zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss_sampled)]
             if isinstance(qz_xs, list):
