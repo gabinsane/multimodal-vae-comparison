@@ -63,17 +63,17 @@ class Dec_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         super(Dec_FNN, self).__init__()
         self.name = "FNN"
-        self.hidden_dim = 20
+        self.hidden_dim = 30
         self.data_dim = data_dim
         self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, np.prod(data_dim)))
 
     def forward(self, z):
         p = torch.relu(self.lin1(z))
-        #p = torch.relu(self.lin2(p))
-        #p = torch.relu(self.lin3(p))
+        p = torch.relu(self.lin2(p))
+        p = torch.relu(self.lin3(p))
         d = (self.fc3(p))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale

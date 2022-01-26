@@ -16,14 +16,16 @@ def compute_microbatch_split(x, K):
     return min(B, S)
 
 def loss_fn(output, target, ltype):
-    target = target[0].float() if isinstance(target, list) else target
+    if len(target) == 2:
+        target = target[0]
+    target = torch.stack(target).float() if isinstance(target, list) else target
     target = target.reshape(*output.loc.shape)
     if ltype == "bce":
         output = output.loc
         assert torch.min(target.reshape(-1)) >= 0 and torch.max(target.reshape(-1)) <= 1, "Cannot use bce on data which is not normalised"
         loss = -torch.nn.functional.binary_cross_entropy(output.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
     else:
-        loss = output.log_prob(target).view(*output.batch_shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
+        loss = output.log_prob(target.cuda()).view(*output.batch_shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
     return loss
 
 def normalize(target, data=None):

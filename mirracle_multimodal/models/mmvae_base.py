@@ -12,6 +12,8 @@ import numpy as np
 import cv2
 from .vae import VAE
 
+module_types = {"moe":VAE, "poe":VAE}
+
 class MMVAE(nn.Module):
     def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, n_latents):
         super(MMVAE, self).__init__()
@@ -20,7 +22,7 @@ class MMVAE(nn.Module):
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
-            vae_mods.append(VAE(e, d, pth, fd, n_latents))
+            vae_mods.append(module_types[self.modelName](e, d, pth, fd, n_latents))
         self.vaes = nn.ModuleList(vae_mods)
         self.modelName = None  # filled-in per sub-class
         self._pz_params = nn.ParameterList([
@@ -44,11 +46,11 @@ class MMVAE(nn.Module):
             m = [x[i] for x in batch]
             if e == "Transformer":
                 masks.append(lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in m]))).to(self.device))
-                m = torch.nn.utils.rnn.pad_sequence(m, batch_first=True, padding_value=0.0)
+                m = list(torch.nn.utils.rnn.pad_sequence(m, batch_first=True, padding_value=0.0))
             else:
                 masks.append(None)
-            new_batch.append(torch.tensor(m).unsqueeze(1))
-        new_batch = torch.cat(new_batch, dim=1)
+            new_batch.append([m])
+        #new_batch = torch.stack(new_batch, dim=0)
         return new_batch, masks
 
     def getDataLoaders(self, batch_size, device='cuda'):

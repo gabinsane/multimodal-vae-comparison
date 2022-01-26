@@ -29,8 +29,7 @@ class VAE(nn.Module):
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
         ])
         self.modelName = 'vae_{}'.format(os.path.basename(data_path))
-        if "word2vec" in self.pth:
-            self.w2v = W2V(feature_dim, self.pth)
+        self.w2v = W2V(feature_dim, self.pth) if "word2vec" in self.pth else None
 
     def get_nework_classes(self, enc, dec):
        assert hasattr(encoders, "Enc_{}".format(enc)), "Did not find encoder {}".format(enc)
@@ -65,11 +64,13 @@ class VAE(nn.Module):
                 #d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
             elif self.enc.name == "Transformer":
-                d = [torch.from_numpy(x.astype(np.float)) for x in d]
+                d = [torch.from_numpy(np.asarray(x[::3]).astype(np.float)) for x in d]
                 if len(d[0].shape) < 3:
                     d = [torch.unsqueeze(i, dim=1) for i in d]
                 kwargs["collate_fn"] = self.seq_collate_fn
-
+            else:
+                d = [torch.from_numpy(np.asarray(x[::3]).astype(np.float)) for x in d]
+                d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
         t_dataset = d[:int(len(d)*(0.9))]
         v_dataset = d[int(len(d)*(0.9)):]
         if self.enc.name != "Transformer":
@@ -97,15 +98,16 @@ class VAE(nn.Module):
         N, K = 36, 1
         samples = self.generate_samples(N, K).cpu().squeeze()
         r_l = []
-        for r, recons_list in enumerate(samples):
-                recon = recons_list.cpu().reshape(*self.data_dim).unsqueeze(0)
-                r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
-        r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
-        cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
+        if "image" in self.pth:
+            for r, recons_list in enumerate(samples):
+                    recon = recons_list.cpu().reshape(*self.data_dim).unsqueeze(0)
+                    r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
+            r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
+            cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
 
     def reconstruct(self, data, runPath, epoch, N=8):
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
-        if ".pkl" in self.pth:
+        if ".pkl" in self.pth and self.w2v:
             _data = data[:N].cpu()
             target, reconstruct = [], []
             _data = _data.reshape(-1, self.data_dim[-1], self.data_dim[-2])
@@ -124,7 +126,7 @@ class VAE(nn.Module):
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
             output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
             output.close()
-        else:
+        elif "image" in self.pth:
             o_l, r_l = [], []
             for r, recons_list in enumerate(recons_mat):
                     _data = data[r].cpu().reshape(-1, self.data_dim[0], self.data_dim[1], self.data_dim[2]) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)

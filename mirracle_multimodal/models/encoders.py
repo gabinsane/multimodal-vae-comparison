@@ -3,6 +3,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils import Constants, create_vocab, W2V
 
+def unpack(d):
+    if isinstance(d, list):
+        while len(d) == 1:
+            d = d[0]
+        d = torch.tensor(d)
+    return d
+
+
 # Classes
 class Enc_CNN(nn.Module):
     """Parametrizes q(z|x).
@@ -61,18 +69,19 @@ class Enc_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         super(Enc_FNN, self).__init__()
         self.name = "FNN"
-        self.hidden_dim = 300
+        self.hidden_dim = 30
         self.lin1 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
 
         self.fc21 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
         self.fc22 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
 
     def forward(self, x):
-        e = torch.relu(self.lin1(x))
-        #e = torch.relu(self.lin2(e))
-        #e = torch.relu(self.lin3(e))
+        x = (x).float()
+        e = torch.relu(self.lin1(x.view(x.shape[0], -1)))
+        e = torch.relu(self.lin2(e))
+        e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
         lv =  F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
@@ -106,13 +115,13 @@ class Enc_Transformer(nn.Module):
         self.seqTransEncoder = nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers)
 
     def forward(self, batch):
-        x, mask = batch[0].float(), batch[1]
+        x, mask = (batch[0]).float(), batch[1]
         bs, nframes, njoints, nfeats = x.shape
         x = x.permute((1, 0, 2, 3)).reshape(nframes, bs, njoints * nfeats)
         # embedding of the skeleton
-        x = self.skelEmbedding(x)
+        x = self.skelEmbedding(x.cuda())
         # add positional encoding
-        x = self.sequence_pos_encoder(x)
+        #x = self.sequence_pos_encoder(x)
         # transformer layers
         final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
         # get the average of the output

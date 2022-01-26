@@ -5,9 +5,11 @@ from .mmvae_base import MMVAE
 from torch.autograd import Variable
 
 class MOE(MMVAE):
+    """Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae"""
     def __init__(self, encoders, decoders, data_paths, feature_dims, n_latents):
-        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, n_latents)
         self.modelName = 'moe'
+        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, n_latents)
+
 
     def forward(self, x, K=1):
         qz_xs, zss = [], []
@@ -34,12 +36,13 @@ class MOE(MMVAE):
 
 
 class POE(MMVAE):
+    """Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public"""
     def __init__(self, encoders, decoders, data_paths,  feature_dims, n_latents):
-        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths,  feature_dims, n_latents)
         self.modelName = 'poe'
+        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths,  feature_dims, n_latents)
         self.n_latents = n_latents
 
-    def forward(self, inputs, both_qz=False):
+    def forward(self, inputs, both_qz=False, K=1):
         mu, logvar, single_params = self.infer(inputs)
         recons = []
         qz_x = dist.Normal(*[mu, logvar])
@@ -56,7 +59,7 @@ class POE(MMVAE):
     def infer(self,inputs):
         for x in inputs:
             if x is not None:
-                batch_size = x.shape[0] if not isinstance(x, list) else x[0].shape[0]
+                batch_size = len(x)
                 break
         # initialize the universal prior expert
         mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
@@ -101,4 +104,33 @@ class POE(MMVAE):
             input_mat[ix] = i[:N]
             rec = super(POE, self).reconstruct(input_mat)
             recons_mat.append(rec)
+        self.process_reconstructions(recons_mat, data, epoch, runPath)
+
+class DMBN(MMVAE):
+    """Deep Modality Blending Networks https://github.com/myunusseker/Deep-Modality-Blending-Networks"""
+    def __init__(self, encoders, decoders, data_paths, feature_dims, n_latents):
+        self.modelName = 'dmbn'
+        super(DMBN, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, n_latents)
+
+    def forward(self, x, K=1):
+        qz_xs, zss = [], []
+        # initialise cross-modal matrix
+        px_zs = [[None for _ in range(len(self.vaes))] for _ in range(len(self.vaes))]
+        for m, vae in enumerate(self.vaes):
+            if x[m] is not None:
+                qz_x, px_z, zs = vae(x[m], K=K)
+                qz_xs.append(qz_x)
+                zss.append(zs)
+                px_zs[m][m] = px_z  # fill-in diagonal
+        for e, zs in enumerate(zss):
+            for d, vae in enumerate(self.vaes):
+                if e != d:  # fill-in off-diagonal
+                    if self.vaes[d].dec_name == "Transformer":
+                        px_zs[e][d] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None] ))
+                    else:
+                        px_zs[e][d] = vae.px_z(*vae.dec(zs))
+        return qz_xs, px_zs, zss
+
+    def reconstruct(self, data, runPath, epoch, N=8):
+        recons_mat = super(MOE, self).reconstruct([d[:N] for d in data])
         self.process_reconstructions(recons_mat, data, epoch, runPath)
