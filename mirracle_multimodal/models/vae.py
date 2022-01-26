@@ -145,26 +145,30 @@ class VAE(nn.Module):
         with torch.no_grad():
             pz = self.pz(*self.pz_params)
             latents = pz.rsample(torch.Size([N]))
-            px_z = self.px_z(*self.dec(latents))
+            if self.enc_name == "Transformer":
+                px_z = self.px_z(*self.dec([latents, None]))
+            else:
+                px_z = self.px_z(*self.dec(latents))
             #data = px_z.sample(torch.Size([K]))
             data = get_mean(px_z)
         return data
 
     def reconstruct_data(self, data):
         self.eval()
-        with torch.no_grad():
-            qz_x = self.qz_x(*self.enc(data))
-            latents = qz_x.rsample()
-            px_z = self.px_z(*self.dec(latents.unsqueeze(0)))
-            recon = get_mean(px_z)
-        return recon
+        if self.enc_name != "Transformer":
+            with torch.no_grad():
+                qz_x = self.qz_x(*self.enc(data))
+                latents = qz_x.rsample()
+                px_z = self.px_z(*self.dec(latents.unsqueeze(0)))
+                recon = get_mean(px_z)
+            return recon
 
     def analyse_data(self, data, K, runPath, epoch):
         self.eval()
         with torch.no_grad():
             qz_x, _, zs = self.forward(data, K=K)
             pz = self.pz(*self.pz_params)
-            zss = [pz.sample(torch.Size([K, data.size(0)])).view(-1, pz.batch_shape[-1]),
+            zss = [pz.sample(torch.Size([K, len(data)])).view(-1, pz.batch_shape[-1]),
                    zs.view(-1, zs.size(-1))]
             zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss)]
             kls_df = tensors_to_df(

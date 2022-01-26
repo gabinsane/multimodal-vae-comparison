@@ -160,7 +160,7 @@ def trest(epoch, agg, lossmeter):
             for i, l in enumerate(partial_l):
                 partial_losses[i].append(l/d_len)
             if ix == 0 and epoch % config["viz_freq"] == 0:
-                model.reconstruct(data, runPath, epoch)
+                #model.reconstruct(data, runPath, epoch)
                 model.generate(runPath, epoch)
                 model.analyse(data, runPath, epoch)
     progress_d = {"Epoch": epoch, "Test Loss": get_loss_mean(loss_m), "Test KLD": get_loss_mean(kld_m)}
