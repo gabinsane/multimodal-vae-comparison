@@ -121,7 +121,7 @@ class Enc_Transformer(nn.Module):
         # embedding of the skeleton
         x = self.skelEmbedding(x.cuda())
         # add positional encoding
-        #x = self.sequence_pos_encoder(x)
+        x = self.sequence_pos_encoder(x)
         # transformer layers
         final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
         # get the average of the output

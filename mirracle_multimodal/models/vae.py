@@ -64,7 +64,7 @@ class VAE(nn.Module):
                 #d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
             elif self.enc.name == "Transformer":
-                d = [torch.from_numpy(np.asarray(x[::3]).astype(np.float)) for x in d]
+                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d]
                 if len(d[0].shape) < 3:
                     d = [torch.unsqueeze(i, dim=1) for i in d]
                 kwargs["collate_fn"] = self.seq_collate_fn
