@@ -92,16 +92,16 @@ class Dec_Transformer(nn.Module):
         self.dropout = dropout
         self.activation = activation
         self.input_feats = self.njoints * self.nfeats
-        self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
+        self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.latent_dim, self.dropout))
 
-        seqTransDecoderLayer = nn.TransformerDecoderLayer(d_model=self.latent_dim,
+        seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.latent_dim,
                                                           nhead=self.num_heads,
                                                           dim_feedforward=self.ff_size,
                                                           dropout=self.dropout,
-                                                          activation=activation)
-        self.seqTransDecoder = nn.TransformerDecoder(seqTransDecoderLayer,
-                                                     num_layers=self.num_layers)
-        self.finallayer = nn.Linear(self.latent_dim, self.input_feats)
+                                                          activation=activation))
+        self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
+                                                     num_layers=self.num_layers))
+        self.finallayer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.input_feats))
 
     def forward(self, batch):
         z, mask = batch[0], batch[1]

@@ -102,17 +102,17 @@ class Enc_Transformer(nn.Module):
         self.activation = activation
 
         self.input_feats = self.njoints * self.nfeats
-        self.mu_layer = nn.Linear(self.latent_dim, self.latent_dim)
-        self.sigma_layer = nn.Linear(self.latent_dim, self.latent_dim)
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+        self.sigma_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
 
-        self.skelEmbedding = nn.Linear(self.input_feats, self.latent_dim)
+        self.skelEmbedding = torch.nn.DataParallel(nn.Linear(self.input_feats, self.latent_dim))
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
-        seqTransEncoderLayer = nn.TransformerEncoderLayer(d_model=self.latent_dim,
+        seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.latent_dim,
                                                           nhead=self.num_heads,
                                                           dim_feedforward=self.ff_size,
                                                           dropout=self.dropout,
-                                                          activation=self.activation)
-        self.seqTransEncoder = nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers)
+                                                          activation=self.activation))
+        self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
 
     def forward(self, batch):
         x, mask = (batch[0]).float(), batch[1]
