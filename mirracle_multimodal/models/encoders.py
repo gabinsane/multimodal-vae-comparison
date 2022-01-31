@@ -2,6 +2,7 @@ import torch, numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from utils import Constants, create_vocab, W2V
+from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock
 
 def unpack(d):
     if isinstance(d, list):
@@ -9,7 +10,6 @@ def unpack(d):
             d = d[0]
         d = torch.tensor(d)
     return d
-
 
 # Classes
 class Enc_CNN(nn.Module):
@@ -69,9 +69,9 @@ class Enc_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         super(Enc_FNN, self).__init__()
         self.name = "FNN"
-        self.hidden_dim = 30
+        self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
         self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
 
         self.fc21 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
@@ -85,6 +85,27 @@ class Enc_FNN(nn.Module):
         lv = self.fc22(e)
         lv =  F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
+
+
+class Enc_Audio(nn.Module):
+    def __init__(self, latent_dim, data_dim=1):
+        super(Enc_Audio, self).__init__()
+        self.name = "AudioConv"
+        self.latent_dim = latent_dim
+        self.TCN = ConvNet(data_dim[0], [128, 128, 96, 96, 64], dropout=0)
+        self.share_mean = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
+        self.share_logvar = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
+
+    def forward(self, inputs):
+        """Args:
+            inputs: input tensor of shape: (B, T, C)
+        """
+        output = self.TCN(inputs.float()).permute(0,2,1)
+        x = output.reshape(inputs.shape[0], -1)
+        mu = self.share_mean(x)
+        logvar = self.share_logvar(x)
+        return mu, logvar
+
 
 class Enc_Transformer(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
@@ -131,23 +152,3 @@ class Enc_Transformer(nn.Module):
         logvar = self.sigma_layer(z)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
-
-
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-np.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
-
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        # not used in the final model
-        x = x + self.pe[:x.shape[0], :]
-        return self.dropout(x)

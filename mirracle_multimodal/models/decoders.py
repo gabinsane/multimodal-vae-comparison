@@ -1,6 +1,7 @@
 import torch, numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+from models.nn_modules import PositionalEncoding, DeconvNet
 from utils import Constants, create_vocab, W2V
 
 class Dec_CNN(nn.Module):
@@ -78,6 +79,25 @@ class Dec_FNN(nn.Module):
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
+class Dec_Audio(nn.Module):
+    def __init__(self, latent_dim, data_dim=1):
+        super(Dec_Audio, self).__init__()
+        self.name = "AudioConv"
+        self.latent_dim = latent_dim
+        self.reshape = (64, 3)
+        self.data_dim = data_dim
+        self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, np.product(self.reshape)))
+        self.TCN = DeconvNet(self.reshape[0], [64,96,96,128,128], dropout=0)
+        self.output_layer = nn.Sequential(nn.Linear(128*3, np.prod(data_dim)))
+
+    def forward(self, z):
+        """Args: z: input tensor of shape: (B, T, C)
+        """
+        out = torch.relu(self.lin1(z))
+        output = self.TCN(out.float().reshape(-1, *self.reshape))
+        x = output.reshape(-1, 128*3)
+        output = self.output_layer(x)
+        return output.reshape(-1, *self.data_dim), torch.tensor(0.75).to(z.device)
 
 class Dec_Transformer(nn.Module):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=4, dropout=0.1, activation="gelu"):
@@ -122,23 +142,3 @@ class Dec_Transformer(nn.Module):
         output[~mask.T] = 0
         output = output.permute(1, 0, 2, 3)
         return output.to(z.device), torch.tensor(0.75).to(z.device)
-
-
-class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-np.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
-
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        # not used in the final model
-        x = x + self.pe[:x.shape[0], :]
-        return self.dropout(x)
