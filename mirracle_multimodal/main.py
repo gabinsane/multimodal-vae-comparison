@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from torch import optim
 import os
+from infer import plot_loss, eval_reconstruct, eval_sample
 import models, objectives
 from utils import Logger, Timer, save_model, save_vars, unpack_data
 
@@ -217,3 +218,6 @@ if __name__ == '__main__':
             save_model(model, runPath + '/model.rar')
             if epoch % 100 == 0:
                 save_model(model, runPath + '/model_epoch{}.rar'.format(epoch))
+        plot_loss(runPath)
+        eval_sample(runPath)
+        eval_reconstruct(runPath)

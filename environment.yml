@@ -82,5 +82,9 @@ dependencies:
     - visdom==0.1.8.9
     - wcwidth==0.2.5
     - websocket-client==0.57.0
+    - pyttsx3==2.9.0
+    - sounddevice==0.4.4
+    - soundfile
+    - pydub
 prefix: /home/gabi/anaconda3/envs/moevae
 

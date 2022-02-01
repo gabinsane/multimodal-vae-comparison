@@ -68,8 +68,8 @@ class VAE(nn.Module):
                 if len(d[0].shape) < 3:
                     d = [torch.unsqueeze(i, dim=1) for i in d]
                 kwargs["collate_fn"] = self.seq_collate_fn
-            else:
-                d = [torch.from_numpy(np.asarray(x[::3]).astype(np.float)) for x in d]
+            elif self.enc.name == "Audio":
+                d = [torch.from_numpy(np.asarray(x).astype(np.int16)) for x in d]
                 d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
         t_dataset = d[:int(len(d)*(0.9))]
         v_dataset = d[int(len(d)*(0.9)):]
