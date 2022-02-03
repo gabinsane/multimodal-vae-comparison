@@ -86,7 +86,7 @@ with open('{}/config.json'.format(runPath), 'w') as fp:
 
 # preparation for training
 optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                       lr=1e-4, amsgrad=True)
+                       lr=1e-3, amsgrad=True)
 train_loader, test_loader = model.getDataLoaders(config["batch_size"], device=device)
 objective = getattr(objectives,
                     ('m_' if hasattr(model, 'vaes') else '')

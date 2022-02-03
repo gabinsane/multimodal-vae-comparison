@@ -15,17 +15,21 @@ def compute_microbatch_split(x, K):
     assert (S > 0), "Cannot fit individual data in memory, consider smaller K"
     return min(B, S)
 
-def loss_fn(output, target, ltype):
+def loss_fn(output, target, ltype, mod_type=None):
     if len(target) == 2:
         target = target[0]
     target = torch.stack(target).float() if isinstance(target, list) else target
-    target = target.reshape(*output.loc.shape)
+    if mod_type == "Transformer":
+        output.loc = output.loc[:,:target.shape[1]]
+        output.scale = output.scale[:, :target.shape[1]]
+    else:
+        target = target.reshape(*output.loc.shape)
     if ltype == "bce":
         output = output.loc
         assert torch.min(target.reshape(-1)) >= 0 and torch.max(target.reshape(-1)) <= 1, "Cannot use bce on data which is not normalised"
         loss = -torch.nn.functional.binary_cross_entropy(output.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
     else:
-        loss = output.log_prob(target.cuda()).view(*output.batch_shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
+        loss = output.log_prob(target.cuda()).view(*target.shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
     return loss
 
 def normalize(target, data=None):
@@ -103,7 +107,8 @@ def m_elbo_moe(model, x, ltype="lprob"):
                   lwt = torch.tensor(0.0).cuda()
             else:
                   zs = zss[d].detach()
-                  lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
+                  qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
+                  lwt = (qz_x.log_prob(zs)- qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
             lpx_zs.append((lwt.exp() * lpx_z))
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
@@ -122,7 +127,7 @@ def m_elbo_poe_fully(model, x, K, ltype="lprob"):
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
     return -obj.sum(), torch.stack(klds).mean(0).sum(),[-lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[1].sum()]
 
-def m_elbo_poe(model, x, ltype="lprob"):
+def m_elbo_poe(model, x, ltype="lprob", ):
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
         mods = [None for _ in range(len(x))]
@@ -135,7 +140,7 @@ def m_elbo_poe(model, x, ltype="lprob"):
         klds.append(kld.sum(-1))
         loc_lpx_z = []
         for d in range(len(px_zs)):
-            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype) * model.vaes[d].llik_scaling
+            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling
             loc_lpx_z.append(lpx_z)
             if d == m:
                 lpx_zs[m].append(lpx_z)

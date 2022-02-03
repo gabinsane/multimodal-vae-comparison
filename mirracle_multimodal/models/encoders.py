@@ -100,10 +100,12 @@ class Enc_Audio(nn.Module):
         """Args:
             inputs: input tensor of shape: (B, T, C)
         """
+        inputs = torch.stack(inputs).cuda() if isinstance(inputs, list) else inputs
         output = self.TCN(inputs.float()).permute(0,2,1)
         x = output.reshape(inputs.shape[0], -1)
         mu = self.share_mean(x)
         logvar = self.share_logvar(x)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
 
@@ -136,7 +138,11 @@ class Enc_Transformer(nn.Module):
         self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
 
     def forward(self, batch):
-        x, mask = (batch[0]).float(), batch[1]
+        if isinstance(batch[0], list):
+            x = torch.stack(batch[0]).float()
+        else:
+            x = (batch[0]).float()
+        mask = batch[1]
         bs, nframes, njoints, nfeats = x.shape
         x = x.permute((1, 0, 2, 3)).reshape(nframes, bs, njoints * nfeats)
         # embedding of the skeleton

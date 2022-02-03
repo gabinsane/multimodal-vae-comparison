@@ -84,9 +84,7 @@ class ResidualBlock(nn.Module):
             padding=padding,
             dilation=dilation,
         )
-        self.relu1 = nn.ReLU()
-        self.dropout1 = nn.Dropout(dropout)
-
+        self.af = nn.Sigmoid()
         self.conv2 = nn.Conv1d(
             n_outputs,
             n_outputs,
@@ -95,21 +93,17 @@ class ResidualBlock(nn.Module):
             padding=padding,
             dilation=dilation,
         )
-        self.relu2 = nn.ReLU()
-        self.dropout2 = nn.Dropout(dropout)
-
         self.net = nn.Sequential(
-            self.conv1, self.relu1, self.dropout1, self.conv2, self.relu2, self.dropout2
+            self.conv1, self.af, nn.Dropout(dropout), self.conv2, self.af, nn.Dropout(dropout)
         )
         self.downsample = (
             nn.Conv1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         )
-        self.relu = nn.ReLU()
 
     def forward(self, x):
         out = self.net(x)
         res = x if self.downsample is None else self.downsample(x)
-        return self.relu(out + res)
+        return self.af(out + res)
 
 class ResidualBlockDeconv(nn.Module):
     def __init__(
@@ -124,9 +118,7 @@ class ResidualBlockDeconv(nn.Module):
             padding=padding,
             dilation=dilation,
         )
-        self.relu1 = nn.ReLU()
-        self.dropout1 = nn.Dropout(dropout)
-
+        self.af = nn.Sigmoid()
         self.conv2 = nn.ConvTranspose1d(
             n_outputs,
             n_outputs,
@@ -135,18 +127,14 @@ class ResidualBlockDeconv(nn.Module):
             padding=padding,
             dilation=dilation,
         )
-        self.relu2 = nn.ReLU()
-        self.dropout2 = nn.Dropout(dropout)
-
         self.net = nn.Sequential(
-            self.conv1, self.relu1, self.dropout1, self.conv2, self.relu2, self.dropout2
+            self.conv1, self.af, nn.Dropout(dropout), self.conv2, self.af, nn.Dropout(dropout)
         )
         self.upsample = (
             nn.ConvTranspose1d(n_inputs, n_outputs, 1) if n_inputs != n_outputs else None
         )
-        self.relu = nn.ReLU()
 
     def forward(self, x):
         out = self.net(x)
         res = x if self.upsample is None else self.upsample(x)
-        return self.relu(out + res)
+        return self.af(out + res)

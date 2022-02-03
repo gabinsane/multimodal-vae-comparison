@@ -59,7 +59,7 @@ class POE(MMVAE):
     def infer(self,inputs):
         for x in inputs:
             if x is not None:
-                batch_size = len(x)
+                batch_size = len(x) if len(x) is not 2 else len(x[0])
                 break
         # initialize the universal prior expert
         mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
