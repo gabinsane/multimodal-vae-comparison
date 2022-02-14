@@ -9,7 +9,8 @@ import math, statistics
 import matplotlib.pyplot as plt
 import json
 import argparse
-
+import csv
+import glob
 
 def parse_args(cfg_path=None):
     parser = argparse.ArgumentParser()
@@ -91,11 +92,12 @@ def eval_sample(path):
     print("Saved samples for {}".format(path))
 
 def plot_loss(path):
-    loss = pd.read_csv(os.path.join(path, "loss.csv"), delimiter=",")
+    path = os.path.join(path, "loss.csv") if not "loss.csv" in path else path
+    loss = pd.read_csv(path, delimiter=",")
     epochs = loss["Epoch"]
     losses = loss["Test Loss"]
     l_mod = loss["Test Mod_0"]
-    plt.plot(epochs, l_mod, color='black', linestyle='dashed', label="Reconstruction Loss")
+    #plt.plot(epochs, l_mod, color='black', linestyle='dashed', label="Reconstruction Loss")
     #plt.plot(epochs, kld,  color='b', linestyle='dotted',
     #         marker='o', label="KLD")
     plt.plot(epochs, losses, color='green', linestyle='solid', label="Loss")
@@ -104,6 +106,22 @@ def plot_loss(path):
     plt.legend()
     plt.savefig(os.path.join(path, "visuals/loss.png"))
     print("Saved loss plot")
+
+def compare_models_numbers(pth):
+    f = open(os.path.join(pth, "comparison.csv"), 'w')
+    writer = csv.writer(f)
+    all_csvs = glob.glob(pth + "**/loss.csv", recursive=True)
+    header = None
+    for c in all_csvs:
+        #plot_loss(c)
+        model_csv = pd.read_csv(c, delimiter=",")
+        if not header:
+            writer.writerow(["Model", "Epochs"] + list(model_csv.keys())[1:])
+            header = True
+        row = [c.split(pth)[-1].split("/loss.csv")[0]] + [int(model_csv.values[-1][0])] + [round(x, 4) for x in list(model_csv.values[-1][1:])]
+        writer.writerow(row)
+    f.close()
+    print("Saved comparison at {}".format(os.path.join(pth, "comparison.csv")))
 
 def load_model(path, trainloader=None, testloader=None, batch=8):
     device = torch.device("cuda")
@@ -177,34 +195,9 @@ def assemble_txtrecos(gt, txt, pth):
     cv2.imwrite(pth.replace(".png", "gt.png"), o_l)
     cv2.imwrite(pth.replace(".png", "recon.png"), r_l)
 
-# trainloader, testloader = None, None
-# paths = "/home/gabi/mirracle_multimodal/mmvae/results/single/img_24l_bce/0a/"
-# dir_of_models = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/smaller_buffer"
-# #cv_seeds(dir_of_models)
-# if dir_of_models:
-#     paths = sorted(glob(os.path.join(dir_of_models, "*/")))
-#     log = ["Test Loss"]
-#     fig = plt.figure()
-#     fig = plot_results(paths, fig, log, 1, True)
-#     plt.show()
-#     # for path in paths:
-#     #     if os.path.exists('{}/recon_1x1_500.txt'.format(path)):
-#     #         with open('{}/recon_1x1_500.txt'.format(path)) as f:
-#     #             txt = f.readlines()
-#     #             gt_t = txt[0].split("|")
-#     #             r_t = txt[1].split("|")
-#     #             assemble_txtrecos(gt_t, r_t, '{}/recon_1x1_500.png'.format(path))
-#     # for p in paths:
-#     #     #if not "txt" in p and not 'img' in p:
-#     #     try:
-#     #         eval(p)
-#     #     except:
-#     #         pass
-# else:
-#     eval1(paths)
 if __name__ == "__main__":
-    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/exp_sounds5"
-    #plot_loss(p)
+    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/sound_actions_images/"
+    compare_models_numbers(p)
     #eval_sample(p)
-    eval_reconstruct(p)
+    #eval_reconstruct(p)
 

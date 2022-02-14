@@ -1,16 +1,24 @@
 import argparse
 import os, yaml
 
+'''
+Code to automatically generate a set of training configs covering all defined parameter combinations. 
+For each argument, you can set multiple values which will be covered.
+
+Example usage:
+python generate_configs.py --cfg ../config2mods.yml --path sound_action --exp-name lr --mixing moe poe --lr 1e-3 1e-4 1e-5
+'''
+
 
 def exclude_keys(d, keys):
     return {x: d[x] for x in d if x not in keys}
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", type=str, default="../configs_experiment0", help="Folder in which to save the configs")
-parser.add_argument('--exp-name', type=str, default=None,
-                    help='config_name')
+parser.add_argument('--exp-name', type=str, default="conf",
+                    help='name of the config file')
 parser.add_argument('--cfg', type=str, default=None,
-                    help='config_name')
+                    help='Which config to alter (only the specified parameters will vary)')
 parser.add_argument('--epochs', type=int, default=None,  help='number of training epochs')
 parser.add_argument('--lr', type=str, nargs="+", default=None,  help='learning rate')
 parser.add_argument('--batch_size', type=int,  nargs="+", default=None,
@@ -43,10 +51,10 @@ for a in exclude_keys(vars(args), {"path", "exp_name", "cfg"}):
             for v in val_range:
                 new_c = c.copy()
                 new_c[a] = v
-                new_c
                 new_configs.append(new_c)
         all_configs = new_configs
-for i in all_configs:
+for index, i in enumerate(all_configs):
+    all_configs[index]["exp_name"] = "_".join([os.path.basename(args.path), args.exp_name, str(index)])
     print(i)
 paths = [cfg_pth] * len(all_configs)
 for i, c in enumerate(paths):

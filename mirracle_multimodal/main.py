@@ -216,8 +216,6 @@ if __name__ == '__main__':
             train(epoch, agg, lossmeter)
             trest(epoch,agg, lossmeter)
             save_model(model, runPath + '/model.rar')
-            if epoch % 100 == 0:
-                save_model(model, runPath + '/model_epoch{}.rar'.format(epoch))
         plot_loss(runPath)
         eval_sample(runPath)
         eval_reconstruct(runPath)
