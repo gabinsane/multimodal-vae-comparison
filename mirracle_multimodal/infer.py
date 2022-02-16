@@ -11,6 +11,7 @@ import json
 import argparse
 import csv
 import glob
+from vis import t_sne
 
 def parse_args(cfg_path=None):
     parser = argparse.ArgumentParser()
@@ -83,6 +84,39 @@ def eval_reconstruct(path):
         pickle.dump(recons, handle)
     print("Saved reconstructions for {}".format(path))
 
+def eval_analyse(path, K=1):
+    model, args = load_model(path, batch=64)
+    if model.modelName not in ["moe", "poe"]:
+        enc = [model.enc_name]
+    else:
+        enc = model.encoders
+    for i, e in enumerate(enc):
+        l, data = load_data(e)
+        d = [None] * len(enc)
+        d[i] = data
+        d = d[0] if len(enc) == 1 else d
+        _, _, zs = model.forward(d, K=K)
+        t_sne([zs.reshape(-1, zs.size(-1)).detach().cpu()], path, "eval_mod{}".format(i), K, l)
+
+
+def load_data(encoder):
+    with open("/home/gabi/mirracle_remote/mirracle_multimodal/data/dataset2/labels.pkl", 'rb') as handle:
+        labels = pickle.load(handle)
+    if encoder == "Transformer":
+       with open("/home/gabi/mirracle_remote/mirracle_multimodal/data/dataset2/action_data.pkl", 'rb') as handle:
+            d = pickle.load(handle)
+       d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d]
+       if len(d[0].shape) < 3:
+           d = [torch.unsqueeze(i, dim=1) for i in d]
+       d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
+       d = [d[-128:], None]
+    elif encoder == "Audio":
+        with open("/home/gabi/mirracle_remote/mirracle_multimodal/data/dataset2/sounds.pkl", 'rb') as handle:
+            d = pickle.load(handle)
+        d = [torch.from_numpy(np.asarray(x).astype(np.int16)) for x in d]
+        d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0).cuda()
+    return labels[-128:], d[-128:]
+
 def eval_sample(path):
     model, args, _, _ = load_model(path, batch=1)
     N, K = 36, 1
@@ -137,9 +171,9 @@ def load_model(path, trainloader=None, testloader=None, batch=8):
     model.load_state_dict(torch.load(os.path.join(path,'model.rar')))
     model._pz_params = model._pz_params
     model.eval()
-    if trainloader is None or testloader is None:
-        trainloader, testloader = model.getDataLoaders(batch, device)
-    return model, args, trainloader, testloader
+    # if trainloader is None or testloader is None:
+    #     trainloader, testloader = model.getDataLoaders(batch, device)
+    return model, args
 
 
 def print_txt2img(txt, correct = [1,1,1]):
@@ -196,8 +230,8 @@ def assemble_txtrecos(gt, txt, pth):
     cv2.imwrite(pth.replace(".png", "recon.png"), r_l)
 
 if __name__ == "__main__":
-    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/sound_actions_images/"
-    compare_models_numbers(p)
+    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/actions"
+    eval_analyse(p)
     #eval_sample(p)
     #eval_reconstruct(p)
 

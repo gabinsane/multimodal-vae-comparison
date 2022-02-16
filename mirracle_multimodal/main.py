@@ -2,7 +2,7 @@ import argparse
 import configparser
 import json, yaml
 from collections import defaultdict
-import warnings
+import warnings, pickle
 warnings.filterwarnings('ignore')
 import numpy as np
 import torch
@@ -62,6 +62,11 @@ torch.backends.cudnn.benchmark = True
 args.cuda = not args.no_cuda and torch.cuda.is_available()
 device = torch.device("cuda" if args.cuda else "cpu")
 
+labels = None
+if config["labels"]:
+    with open(config["labels"], 'rb') as handle:
+        labels = pickle.load(handle)
+
 model = "VAE" if len(mods) == 1 else config["mixing"].lower()
 modelC = getattr(models, model)
 params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods], [m["feature_dim"] for m in mods]]
@@ -105,7 +110,7 @@ def train(epoch, agg, lossmeter):
             else:
                 data, masks = dataT
                 data = pad_seq_data(data, masks)
-                d_len = len(data[0][0])
+                d_len = len(data[0])
         else:
             if isinstance(dataT, tuple):
                 data, masks = dataT
@@ -147,14 +152,15 @@ def trest(epoch, agg, lossmeter):
                 else:
                     data, masks = dataT
                     data = pad_seq_data(data, masks)
-                    d_len = len(data[0][0])
+                    d_len = len(data[0])
             else:
-                if isinstance(dataT, tuple):
+                if config["modality_1"]["encoder"] == "Transformer":
                     data, masks = dataT
                     data = [data.to(device), masks]
+                    d_len = len(data[0])
                 else:
                     data = unpack_data(dataT[0], device=device)
-                d_len = len(data[0])
+                    d_len = len(data)
             loss, kld, partial_l = objective(model, data, ltype=config["loss"])
             loss_m.append(loss/d_len)
             kld_m.append(kld/d_len)
@@ -162,8 +168,8 @@ def trest(epoch, agg, lossmeter):
                 partial_losses[i].append(l/d_len)
             if ix == 0 and epoch % config["viz_freq"] == 0:
                 #model.reconstruct(data, runPath, epoch)
-                model.generate(runPath, epoch)
-                model.analyse(data, runPath, epoch)
+                #model.generate(runPath, epoch)
+                model.analyse(data, runPath, epoch, labels[int(len(labels)*0.9):int(len(labels)*0.9)+d_len])
     progress_d = {"Epoch": epoch, "Test Loss": get_loss_mean(loss_m), "Test KLD": get_loss_mean(kld_m)}
     for i, x in enumerate(partial_losses):
         progress_d["Test Mod_{}".format(i)] = get_loss_mean(x)

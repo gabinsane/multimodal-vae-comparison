@@ -144,6 +144,7 @@ class Enc_Transformer(nn.Module):
             x = (batch[0]).float()
         mask = batch[1]
         bs, nframes, njoints, nfeats = x.shape
+        mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = x.permute((1, 0, 2, 3)).reshape(nframes, bs, njoints * nfeats)
         # embedding of the skeleton
         x = self.skelEmbedding(x.cuda())

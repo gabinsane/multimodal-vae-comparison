@@ -24,7 +24,6 @@ class MMVAE(nn.Module):
         for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
             vae_mods.append(module_types[self.modelName](e, d, pth, fd, n_latents))
         self.vaes = nn.ModuleList(vae_mods)
-        self.modelName = None  # filled-in per sub-class
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
@@ -135,11 +134,11 @@ class MMVAE(nn.Module):
                     w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                     cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
 
-    def analyse(self, data, runPath, epoch):
-        zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch)
+    def analyse(self, data, runPath, epoch, labels):
+        zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch, labels=labels)
         plot_kls_df(kls_df, '{}/visuals/kl_distance_{}.png'.format(runPath, epoch))
 
-    def analyse_data(self, data, K, runPath, epoch):
+    def analyse_data(self, data, K, runPath, epoch, labels):
         self.eval()
         with torch.no_grad():
             qz_xs, _, zss = self.forward(data, K=K)
@@ -160,5 +159,6 @@ class MMVAE(nn.Module):
             else:
                 kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
                     keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
-        t_sne(zss_sampled[1:], runPath, epoch)
+        K = 1 if self.modelName == "poe" else K
+        t_sne(zss_sampled[1:], runPath, epoch, K, labels)
         return torch.cat(zsl, 0).cpu().numpy(), kls_df

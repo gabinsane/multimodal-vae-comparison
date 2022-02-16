@@ -45,19 +45,26 @@ def own_cmap(n, copies=2):
     cmap = colors.LinearSegmentedColormap.from_list('mmdgm_cmap', cmap_array)
     return cmap, cmap_array, marks
 
-def t_sne(data, runPath, epoch):
-    tsne = TSNE(n_components=2, verbose=1, random_state=123)
+def t_sne(data, runPath, epoch, K, labels):
+    tsne = TSNE(n_components=2, verbose=0, random_state=123)
     data_labels, c1, c2 = [], [], []
     for ind, mod in enumerate(data):
         z = tsne.fit_transform(mod.cpu().numpy())
         df = pd.DataFrame()
         c1.append(z[:, 0])
         c2.append(z[:, 1])
-        data_labels.append(["Modality {}".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
+        if not labels:
+            data_labels.append(["Modality {}".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
+        else:
+            if len(data) > 1:
+                l = ["Class {} Mod {}".format(str(i), ind) for i in list(labels)]
+            else:
+                l = ["Class {}".format(str(i)) for i in list(labels)]
+            data_labels.append([val for val in l for _ in range(K)])
     df["comp-1"] = np.concatenate(c1)
     df["comp-2"] = np.concatenate(c2)
     df["y"] = np.concatenate(data_labels)
-    p = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = sns.color_palette("hls", len(data)), data = df).set(title="T-SNE projection")
+    p = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = sns.color_palette("hls", len(data)*len(set(labels))), data = df).set(title="T-SNE projection")
     plt.savefig(os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)))
     plt.clf()
 

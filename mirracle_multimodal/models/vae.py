@@ -136,8 +136,8 @@ class VAE(nn.Module):
             w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
             cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
 
-    def analyse(self, data, runPath, epoch):
-        zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch)
+    def analyse(self, data, runPath, epoch, labels=None):
+        zsl, kls_df = self.analyse_data(data, K=1, runPath=runPath, epoch=epoch, labels=labels)
         plot_kls_df(kls_df, '{}/visuals/kl_distance_{:03d}.png'.format(runPath, epoch))
 
     def generate_samples(self, N, K):
@@ -163,7 +163,7 @@ class VAE(nn.Module):
                 recon = get_mean(px_z)
             return recon
 
-    def analyse_data(self, data, K, runPath, epoch):
+    def analyse_data(self, data, K, runPath, epoch, labels):
         self.eval()
         with torch.no_grad():
             qz_x, _, zs = self.forward(data, K=K)
@@ -177,5 +177,5 @@ class VAE(nn.Module):
                 keys=[r'KL$(q(z|x)\,||\,p(z))$'],
                 ax_names=['Dimensions', r'KL$(q\,||\,p)$']
             )
-        t_sne(zss[1:], runPath, epoch)
+        t_sne(zss[1:], runPath, epoch, K, labels)
         return torch.cat(zsl, 0).cpu().numpy(), kls_df
