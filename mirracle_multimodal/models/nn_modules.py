@@ -84,7 +84,7 @@ class ResidualBlock(nn.Module):
             padding=padding,
             dilation=dilation,
         )
-        self.af = nn.Sigmoid()
+        self.af = nn.Tanh()
         self.conv2 = nn.Conv1d(
             n_outputs,
             n_outputs,
@@ -118,7 +118,7 @@ class ResidualBlockDeconv(nn.Module):
             padding=padding,
             dilation=dilation,
         )
-        self.af = nn.Sigmoid()
+        self.af = nn.Tanh()
         self.conv2 = nn.ConvTranspose1d(
             n_outputs,
             n_outputs,

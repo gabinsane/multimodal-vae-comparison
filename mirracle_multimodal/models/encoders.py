@@ -41,8 +41,8 @@ class Enc_CNN(nn.Module):
         self.lin2 = torch.nn.DataParallel(nn.Linear(hidden_dim, hidden_dim))
 
         # Fully connected layers for mean and variance
-        self.mu_gen = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
-        self.var_gen = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
 
     def forward(self, x):
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
@@ -59,8 +59,8 @@ class Enc_CNN(nn.Module):
 
         # Fully connected layer for log variance and mean
         # Log std-dev in paper (bear in mind)
-        mu = self.mu_gen(x)
-        logvar = self.var_gen(x)
+        mu = self.mu_layer(x)
+        logvar = self.logvar_layer(x)
         lv = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, lv
 
@@ -93,8 +93,8 @@ class Enc_Audio(nn.Module):
         self.name = "AudioConv"
         self.latent_dim = latent_dim
         self.TCN = ConvNet(data_dim[0], [128, 128, 96, 96, 64], dropout=0)
-        self.share_mean = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
-        self.share_logvar = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
+        self.mu_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
+        self.logvar_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
 
     def forward(self, inputs):
         """Args:
@@ -103,8 +103,8 @@ class Enc_Audio(nn.Module):
         inputs = torch.stack(inputs).cuda() if isinstance(inputs, list) else inputs
         output = self.TCN(inputs.float()).permute(0,2,1)
         x = output.reshape(inputs.shape[0], -1)
-        mu = self.share_mean(x)
-        logvar = self.share_logvar(x)
+        mu = self.mu_layer(x)
+        logvar = self.logvar_layer(x)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
@@ -126,7 +126,7 @@ class Enc_Transformer(nn.Module):
 
         self.input_feats = self.njoints * self.nfeats
         self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
-        self.sigma_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
 
         self.skelEmbedding = torch.nn.DataParallel(nn.Linear(self.input_feats, self.latent_dim))
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
@@ -156,6 +156,6 @@ class Enc_Transformer(nn.Module):
         z = final.mean(axis=0)
         # extract mu and logvar
         mu = self.mu_layer(z)
-        logvar = self.sigma_layer(z)
+        logvar = self.logvar_layer(z)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar

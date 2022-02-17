@@ -126,8 +126,8 @@ def eval_sample(path):
     print("Saved samples for {}".format(path))
 
 def plot_loss(path):
-    path = os.path.join(path, "loss.csv") if not "loss.csv" in path else path
-    loss = pd.read_csv(path, delimiter=",")
+    pth = os.path.join(path, "loss.csv") if not "loss.csv" in path else path
+    loss = pd.read_csv(pth, delimiter=",")
     epochs = loss["Epoch"]
     losses = loss["Test Loss"]
     l_mod = loss["Test Mod_0"]
@@ -142,6 +142,7 @@ def plot_loss(path):
     print("Saved loss plot")
 
 def compare_models_numbers(pth):
+    pth = pth + "/" if pth[-1] != "/" else pth
     f = open(os.path.join(pth, "comparison.csv"), 'w')
     writer = csv.writer(f)
     all_csvs = glob.glob(pth + "**/loss.csv", recursive=True)
