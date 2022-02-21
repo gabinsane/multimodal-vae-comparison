@@ -90,13 +90,16 @@ def eval_analyse(path, K=1):
         enc = [model.enc_name]
     else:
         enc = model.encoders
+    zss = []
     for i, e in enumerate(enc):
         l, data = load_data(e)
         d = [None] * len(enc)
         d[i] = data
         d = d[0] if len(enc) == 1 else d
         _, _, zs = model.forward(d, K=K)
-        t_sne([zs.reshape(-1, zs.size(-1)).detach().cpu()], path, "eval_mod{}".format(i), K, l)
+        zs = zs[0] if isinstance(zs, list) else zs
+        zss.append(zs.reshape(-1, zs.size(-1)).detach().cpu())
+    t_sne(zss, path, "eval_mod{}".format(i), K, l)
 
 
 def load_data(encoder):
@@ -125,20 +128,25 @@ def eval_sample(path):
         pickle.dump(np.asarray(samples.detach().cpu()), handle)
     print("Saved samples for {}".format(path))
 
+def plot_setup(xname, yname, pth, figname):
+    plt.xlabel(xname)
+    plt.ylabel(yname)
+    #plt.legend()
+    plt.savefig(os.path.join(pth, "visuals/{}.png".format(figname)))
+    plt.clf()
+
 def plot_loss(path):
     pth = os.path.join(path, "loss.csv") if not "loss.csv" in path else path
     loss = pd.read_csv(pth, delimiter=",")
     epochs = loss["Epoch"]
     losses = loss["Test Loss"]
+    kld = loss["Test KLD"]
     l_mod = loss["Test Mod_0"]
     #plt.plot(epochs, l_mod, color='black', linestyle='dashed', label="Reconstruction Loss")
-    #plt.plot(epochs, kld,  color='b', linestyle='dotted',
-    #         marker='o', label="KLD")
     plt.plot(epochs, losses, color='green', linestyle='solid', label="Loss")
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.savefig(os.path.join(path, "visuals/loss.png"))
+    plot_setup("Epochs", "Loss", path, "loss")
+    plt.plot(epochs, kld,  color='blue', linestyle='solid', label="KLD")
+    plot_setup("Epochs", "KLD", path, "KLD")
     print("Saved loss plot")
 
 def compare_models_numbers(pth):
@@ -231,8 +239,10 @@ def assemble_txtrecos(gt, txt, pth):
     cv2.imwrite(pth.replace(".png", "recon.png"), r_l)
 
 if __name__ == "__main__":
-    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/actions"
+    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/actions_sounds_new"
+    #plot_loss(p)
     eval_analyse(p)
+    #compare_models_numbers(p)
     #eval_sample(p)
     #eval_reconstruct(p)
 

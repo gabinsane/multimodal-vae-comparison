@@ -160,5 +160,5 @@ class MMVAE(nn.Module):
                 kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
                     keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
         K = 1 if self.modelName == "poe" else K
-        t_sne(zss_sampled[1:], runPath, epoch, K, labels)
+        t_sne([x.cpu() for x in zss_sampled[1:]], runPath, epoch, K, labels)
         return torch.cat(zsl, 0).cpu().numpy(), kls_df

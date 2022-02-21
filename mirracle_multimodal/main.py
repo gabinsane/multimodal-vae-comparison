@@ -110,14 +110,15 @@ def train(epoch, agg, lossmeter):
             else:
                 data, masks = dataT
                 data = pad_seq_data(data, masks)
-                d_len = len(data[0])
+                d_len = len(data[0][0])
         else:
-            if isinstance(dataT, tuple):
+            if config["modality_1"]["encoder"] == "Transformer":
                 data, masks = dataT
                 data = [data.to(device), masks]
+                d_len = len(data[0])
             else:
                 data = unpack_data(dataT[0], device=device)
-            d_len = len(data[0])
+                d_len = len(data)
         optimizer.zero_grad()
         loss, kld, partial_l = objective(model, data, ltype=config["loss"])
         loss_m.append(loss/d_len)
@@ -152,7 +153,7 @@ def trest(epoch, agg, lossmeter):
                 else:
                     data, masks = dataT
                     data = pad_seq_data(data, masks)
-                    d_len = len(data[0])
+                    d_len = len(data[0][0])
             else:
                 if config["modality_1"]["encoder"] == "Transformer":
                     data, masks = dataT
