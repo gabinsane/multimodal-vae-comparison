@@ -1,23 +1,25 @@
-n_latents: 32
-batch_size: 64
+n_latents: 64
+batch_size: 32
 epochs: 2000
-obj: elbo
+obj: elbo_binding
+lr: 1e-4
 loss: lprob
-viz_freq: 50
+viz_freq: 5
 mixing: moe
-exp_name: sounds_actions
+exp_name: actions_sounds_new_binding
 pre_trained:
 seed: 2
+labels: ../data/dataset2/labels.pkl
 modality_1:
-   encoder: Audio
-   decoder: Audio
-   path: /home/gabi/kubecova-action-representationvae/dataset1/sounds.pkl
-   feature_dim: [56057,2]
+  encoder: Transformer
+  decoder: Transformer
+  path:  ../data/dataset2/action_data.pkl
+  feature_dim: [60, 1, 24]
 modality_2:
-   encoder: Transformer
-   decoder: Transformer
-   path: /home/gabi/kubecova-action-representationvae/dataset1/action_data.pkl
-   feature_dim: [60,1,24]
+  decoder: Audio
+  encoder: Audio
+  path: ../data/dataset2/sounds.pkl
+  feature_dim: [56053, 2]
 
 
 
