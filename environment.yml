@@ -86,5 +86,6 @@ dependencies:
     - sounddevice==0.4.4
     - soundfile
     - pydub
+    - adabelief-pytorch==0.2.1
 prefix: /home/gabi/anaconda3/envs/moevae
 

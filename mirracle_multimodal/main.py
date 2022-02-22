@@ -6,6 +6,7 @@ import warnings, pickle
 warnings.filterwarnings('ignore')
 import numpy as np
 import torch
+from adabelief_pytorch import AdaBelief
 from torch import optim
 import os
 from infer import plot_loss, eval_reconstruct, eval_sample
@@ -42,6 +43,8 @@ def parse_args():
                         help='seed number')
     parser.add_argument('--exp_name', type=str, default=None,
                         help='name of folder')
+    parser.add_argument('--optimizer', type=str, default=None,
+                        help='optimizer')
     args = parser.parse_args()
     with open(args.cfg) as file: config = yaml.load(file)
     for name, value in vars(args).items():
@@ -90,8 +93,11 @@ with open('{}/config.json'.format(runPath), 'w') as fp:
     json.dump(config, fp)
 
 # preparation for training
-optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                       lr=float(config["lr"]), amsgrad=True)
+if "optimizer" not in config.keys() or config["optimizer"].lower() == "adam":
+    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=float(config["lr"]), amsgrad=True)
+elif config["optimizer"].lower() == "adabelief":
+    optimizer = AdaBelief(model.parameters(), lr=float(config["lr"]), eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False)
+
 train_loader, test_loader = model.getDataLoaders(config["batch_size"], device=device)
 objective = getattr(objectives,
                     ('m_' if hasattr(model, 'vaes') else '')
@@ -168,7 +174,7 @@ def trest(epoch, agg, lossmeter):
             for i, l in enumerate(partial_l):
                 partial_losses[i].append(l/d_len)
             if ix == 0 and epoch % config["viz_freq"] == 0:
-                #model.reconstruct(data, runPath, epoch)
+                model.reconstruct(data, runPath, epoch)
                 #model.generate(runPath, epoch)
                 model.analyse(data, runPath, epoch, labels[int(len(labels)*0.9):int(len(labels)*0.9)+d_len])
     progress_d = {"Epoch": epoch, "Test Loss": get_loss_mean(loss_m), "Test KLD": get_loss_mean(kld_m)}
