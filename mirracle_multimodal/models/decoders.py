@@ -107,6 +107,7 @@ class Dec_TransformerIMG(nn.Module):
         self.ff_size = ff_size
         self.num_layers = num_layers
         self.num_heads = num_heads
+        self.data_dim = data_dim
         self.dropout = dropout
         self.activation = activation
         # iteration over image sequence
@@ -133,11 +134,14 @@ class Dec_TransformerIMG(nn.Module):
                                                 nn.ConvTranspose2d(hid_channels, 3,  kernel_size, **cnn_kwargs),
                                                 torch.nn.Sigmoid()))
     def forward(self, batch):
-        z = batch
-        mask = None
+        if isinstance(batch, list):
+            z, mask = batch
+        else:
+            z = batch
+            mask = None
         latent_dim = z.shape[-1]
         bs = z.shape[1]
-        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, 3), dtype=bool)).to(z.device)
+        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
         z = z[None]  # sequence of size 1
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
@@ -157,6 +161,7 @@ class Dec_Transformer(nn.Module):
         self.name = "Transformer"
         self.njoints = data_dim[1]
         self.nfeats = data_dim[2]
+        self.data_dim = data_dim
         self.latent_dim = latent_dim
         self.ff_size = ff_size
         self.num_layers = num_layers
@@ -179,7 +184,7 @@ class Dec_Transformer(nn.Module):
         z, mask = batch[0], batch[1]
         latent_dim = z.shape[-1]
         bs = z.shape[1]
-        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, 60), dtype=bool)).to(z.device)
+        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
         z = z[None]  # sequence of size 1
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)

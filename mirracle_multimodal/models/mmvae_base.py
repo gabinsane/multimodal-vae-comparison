@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy import prod
 from utils import get_mean, kl_divergence, lengths_to_mask
+from data_proc.process_audio import numpy_to_wav
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
@@ -43,7 +44,7 @@ class MMVAE(nn.Module):
         new_batch, masks = [], []
         for i, e in enumerate(self.encoders):
             m = [x[i] for x in batch]
-            if e == "Transformer":
+            if "transformer" in e.lower():
                 masks.append(lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in m]))).to(self.device))
                 m = list(torch.nn.utils.rnn.pad_sequence(m, batch_first=True, padding_value=0.0))
             else:
@@ -62,7 +63,7 @@ class MMVAE(nn.Module):
         train_data = TensorDataset(trains)
         test_data = TensorDataset(tests)
         kwargs = {'num_workers': 2, 'pin_memory': True} if device == 'cuda' else {}
-        if "Transformer" in self.encoders: kwargs["collate_fn"] = self.seq_collate_fn
+        if any(["transformer" in e.lower() for e in self.encoders]): kwargs["collate_fn"] = self.seq_collate_fn
         train = DataLoader(train_data, batch_size=batch_size, shuffle=False, **kwargs)
         test = DataLoader(test_data, batch_size=batch_size, shuffle=False, **kwargs)
         return train, test
@@ -105,8 +106,8 @@ class MMVAE(nn.Module):
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                _data = data[o][:N].cpu() if not isinstance(data[o], list) else None
                 if "word2vec" in self.vaes[o].pth:
+                    _data = data[o][:N].cpu()
                     target, reconstruct = [], []
                     recon = recon.reshape(N, self.vaes[o].data_dim[-1], -1)
                     _data = _data.reshape(N, self.vaes[o].data_dim[-1], -1)
@@ -119,7 +120,8 @@ class MMVAE(nn.Module):
                     output = open(os.path.join(runPath, "visuals/",'recon_epoch{}_m{}xm{}.txt'.format(epoch, r, o)), "w")
                     output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
                     output.close()
-                elif "image" in self.vaes[o].pth:
+                elif "image" in self.vaes[o].pth and self.vaes[o].enc_name == "CNN":
+                    _data = data[o][:N].cpu()
                     recon = recon.squeeze(0).cpu()
                     _data = _data.reshape(N, *self.vaes[o].data_dim)
                     recon = recon.reshape(N, *self.vaes[o].data_dim)
@@ -129,10 +131,29 @@ class MMVAE(nn.Module):
                         rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                         o_l = org if o_l == [] else np.hstack((o_l, org))
                         r_l = rec if r_l == [] else np.hstack((r_l, rec))
-
                     w2 =cv2.cvtColor(np.vstack((o_l*255, r_l*255)).astype('uint8'), cv2.COLOR_BGR2RGB)
                     w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
                     cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
+                elif self.vaes[o].enc_name.lower() == "transformerimg":
+                    _data = torch.stack(data[o][0]).cpu()[:N]
+                    o_l, r_l = [], []
+                    for re, recons_list in enumerate(recon[:N]):
+                        d = _data[re].cpu().permute(0, 1, 2, 3)
+                        recon = recons_list.cpu()
+                        o_l = np.asarray(np.hstack(d)) if o_l == [] else np.concatenate(
+                            (o_l, np.asarray(np.hstack(d))), axis=1)
+                        r_l = np.asarray(np.hstack(recon)) if r_l == [] else np.concatenate(
+                            (r_l, np.asarray(np.hstack(recon))), axis=1)
+                    cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_minp{}.png'.format(epoch, r)),
+                                np.vstack((o_l, r_l)) * 255)
+                elif self.vaes[o].enc_name.lower() == "audio":
+                    _data = torch.stack(data[o]).cpu()[:N]
+                    for i in range(3):
+                        numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_minp{}_s{}.wav'.format(epoch, r, i)),
+                                 np.asarray(_data[i].cpu()).astype(np.int16), 16000)
+                        numpy_to_wav(os.path.join(runPath,"visuals/",'recon_epoch{}_minp{}_s{}.wav'.format(epoch, r, i)),
+                                 np.asarray(recon[i].cpu()).astype(np.int16), 16000)
+
 
     def analyse(self, data, runPath, epoch, labels):
         zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch, labels=labels)

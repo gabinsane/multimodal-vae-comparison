@@ -1,5 +1,4 @@
 import argparse
-import configparser
 import json, yaml
 from collections import defaultdict
 import warnings, pickle
@@ -96,7 +95,7 @@ with open('{}/config.json'.format(runPath), 'w') as fp:
 if "optimizer" not in config.keys() or config["optimizer"].lower() == "adam":
     optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=float(config["lr"]), amsgrad=True)
 elif config["optimizer"].lower() == "adabelief":
-    optimizer = AdaBelief(model.parameters(), lr=float(config["lr"]), eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False)
+    optimizer = AdaBelief(model.parameters(), lr=float(config["lr"]), eps=1e-16, betas=(0.9,0.999), weight_decouple=True, rectify=False, print_change_log=False)
 
 train_loader, test_loader = model.getDataLoaders(config["batch_size"], device=device)
 objective = getattr(objectives,
@@ -118,7 +117,7 @@ def train(epoch, agg, lossmeter):
                 data = pad_seq_data(data, masks)
                 d_len = len(data[0][0])
         else:
-            if config["modality_1"]["encoder"] == "Transformer":
+            if "transformer" in config["modality_1"]["encoder"].lower():
                 data, masks = dataT
                 data = [data.to(device), masks]
                 d_len = len(data[0])
@@ -161,7 +160,7 @@ def trest(epoch, agg, lossmeter):
                     data = pad_seq_data(data, masks)
                     d_len = len(data[0][0])
             else:
-                if config["modality_1"]["encoder"] == "Transformer":
+                if "transformer" in config["modality_1"]["encoder"].lower():
                     data, masks = dataT
                     data = [data.to(device), masks]
                     d_len = len(data[0])

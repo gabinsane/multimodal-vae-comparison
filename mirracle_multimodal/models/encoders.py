@@ -123,9 +123,6 @@ class Enc_TransformerIMG(nn.Module):
         self.activation = activation
         self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
-        # self.transforms = transforms.Compose([
-        #     transforms.Normalize(mean=[0.485, 0.456, 0.406],
-        #                          std=[0.229, 0.224, 0.225])])
         self.conv_pretrained = visnn.models.resnet152(pretrained=True, progress=True)
         self.downsample = torch.nn.DataParallel(nn.Linear(1000, self.latent_dim))
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
@@ -137,12 +134,12 @@ class Enc_TransformerIMG(nn.Module):
         self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
 
     def forward(self, batch):
-        if isinstance(batch[0], list):
-            x = torch.stack(batch[0])
+        if isinstance(batch, list):
+            x, mask = batch
+            x = torch.stack(x).cuda() if isinstance(x, list) else x
         else:
-            x = (batch)
+            x, mask = batch, None
         bs, nframes = x.shape[0], x.shape[1]
-        mask = torch.tensor(np.ones((bs, 3), dtype=bool))
         imgs_feats = []
         for i in range(x.shape[1]):
             imgs_feats.append(self.downsample(self.conv_pretrained(x[:, i, :].permute(0,3,2,1))))
@@ -156,7 +153,6 @@ class Enc_TransformerIMG(nn.Module):
         logvar = self.logvar_layer(z)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
-
 
 
 class Enc_Transformer(nn.Module):

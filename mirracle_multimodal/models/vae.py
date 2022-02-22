@@ -8,6 +8,7 @@ from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_im
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 import pickle, os
+from data_proc.process_audio import numpy_to_wav
 import torch.nn.functional as F
 
 class VAE(nn.Module):
@@ -64,7 +65,7 @@ class VAE(nn.Module):
                 #d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
             elif self.enc.name == "Transformer":
-                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name != "TransformerIMG" else [torch.from_numpy(np.asarray(x)) for x in d]
+                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() != "transformerimg" else [torch.from_numpy(np.asarray(x)) for x in d]
                 if len(d[0].shape) < 3:
                     d = [torch.unsqueeze(i, dim=1) for i in d]
                 kwargs["collate_fn"] = self.seq_collate_fn
@@ -84,7 +85,7 @@ class VAE(nn.Module):
         self._qz_x_params = self.enc(x)
         qz_x = self.qz_x(*self._qz_x_params)
         zs = qz_x.rsample(torch.Size([K]))
-        if self.dec_name == "Transformer":
+        if self.dec.name.lower() == "transformer":
             px_z = self.px_z(*self.dec([zs, x[1]] if x is not None else [zs, None]))
         else: px_z = self.px_z(*self.dec(zs))
         return qz_x, px_z, zs
@@ -135,7 +136,7 @@ class VAE(nn.Module):
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
             w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
             cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
-        elif self.enc_name == "TransformerIMG":
+        elif self.enc_name.lower() == "transformerimg":
             o_l, r_l = [], []
             for r, recons_list in enumerate(recons_mat):
                     _data = data[r].cpu().permute(0,1,2,3)
@@ -143,6 +144,13 @@ class VAE(nn.Module):
                     o_l = np.asarray(np.hstack(_data)) if o_l == [] else np.concatenate((o_l, np.asarray(np.hstack(_data))), axis=1)
                     r_l = np.asarray(np.hstack(recon)) if r_l == [] else np.concatenate((r_l, np.asarray(np.hstack(recon))), axis=1)
             cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch),np.vstack((o_l, r_l)) * 255)
+        elif self.enc_name.lower() == "audio":
+            _data = data.cpu()
+            for i in range(3):
+                numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_s{}.wav'.format(epoch, i)),
+                     np.asarray(_data[i].cpu()).astype(np.int16), 16000)
+                numpy_to_wav(os.path.join(runPath,"visuals/",'recon_epoch{}_s{}.wav'.format(epoch, i)),
+                                 np.asarray(recons_mat.cpu()[i].cpu()).astype(np.int16), 16000)
 
 
     def analyse(self, data, runPath, epoch, labels=None):
