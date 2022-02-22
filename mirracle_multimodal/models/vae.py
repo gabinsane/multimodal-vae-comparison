@@ -138,19 +138,18 @@ class VAE(nn.Module):
             cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
         elif self.enc_name.lower() == "transformerimg":
             o_l, r_l = [], []
-            for r, recons_list in enumerate(recons_mat):
-                    _data = data[r].cpu().permute(0,1,2,3)
+            for r, recons_list in enumerate(recons_mat[:N]):
+                    _data = data[0][r].cpu().permute(0,1,2,3)[:N]
                     recon = recons_list.cpu()
                     o_l = np.asarray(np.hstack(_data)) if o_l == [] else np.concatenate((o_l, np.asarray(np.hstack(_data))), axis=1)
                     r_l = np.asarray(np.hstack(recon)) if r_l == [] else np.concatenate((r_l, np.asarray(np.hstack(recon))), axis=1)
-            cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch),np.vstack((o_l, r_l)) * 255)
+            cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),np.vstack((o_l, r_l)) * 255)
         elif self.enc_name.lower() == "audio":
-            _data = data.cpu()
-            for i in range(3):
+             for i in range(3):
                 numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_s{}.wav'.format(epoch, i)),
-                     np.asarray(_data[i].cpu()).astype(np.int16), 16000)
+                     np.asarray(data[i].cpu()).astype(np.int16), 16000)
                 numpy_to_wav(os.path.join(runPath,"visuals/",'recon_epoch{}_s{}.wav'.format(epoch, i)),
-                                 np.asarray(recons_mat.cpu()[i].cpu()).astype(np.int16), 16000)
+                                 np.asarray(recons_mat[i].cpu()).astype(np.int16), 16000)
 
 
     def analyse(self, data, runPath, epoch, labels=None):
