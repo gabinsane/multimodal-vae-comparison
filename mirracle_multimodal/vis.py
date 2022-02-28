@@ -63,7 +63,8 @@ def t_sne(data, runPath, epoch, K, labels):
             data_labels.append([val for val in l for _ in range(K)])
     df["y"] = np.concatenate(data_labels)
     sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = sns.color_palette("hls", len(data)*len(set(labels))), data = df).set(title="T-SNE projection")
-    plt.savefig(os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)))
+    p = os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)) if not ".png" in runPath else runPath
+    plt.savefig(p)
     plt.clf()
 
 

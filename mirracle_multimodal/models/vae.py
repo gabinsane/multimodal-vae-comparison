@@ -64,11 +64,14 @@ class VAE(nn.Module):
                 d = d.reshape(d.shape[0],-1)
                 #d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
-            elif self.enc.name == "Transformer":
-                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() != "transformerimg" else [torch.from_numpy(np.asarray(x)) for x in d]
-                if len(d[0].shape) < 3:
-                    d = [torch.unsqueeze(i, dim=1) for i in d]
-                kwargs["collate_fn"] = self.seq_collate_fn
+            elif self.enc.name in ["Transformer", "CNN"]:
+                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() == "transformerimg" else [torch.from_numpy(np.asarray(x[0])) for x in d]
+                if self.enc_name.lower() == "cnn":
+                    d = torch.stack(d).transpose(1,3) #.reshape(len(d), -1)
+                else:
+                    if len(d[0].shape) < 3:
+                        d = [torch.unsqueeze(i, dim=1) for i in d]
+                    kwargs["collate_fn"] = self.seq_collate_fn
             elif self.enc.name == "AudioConv":
                 d = [torch.from_numpy(np.asarray(x).astype(np.int16)) for x in d]
                 d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
@@ -127,27 +130,22 @@ class VAE(nn.Module):
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
             output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
             output.close()
-        elif "image" in self.pth and self.enc_name == "CNN":
+        elif self.enc_name.lower() in ["transformerimg", "cnn"]:
             o_l, r_l = [], []
-            for r, recons_list in enumerate(recons_mat):
-                    _data = data[r].cpu().reshape(-1, self.data_dim[0], self.data_dim[1], self.data_dim[2]) # if r == 1 else resize_img(_data, self.vaes[1].dataSize)
-                    recon = recons_list.cpu().reshape(-1, self.data_dim[0], self.data_dim[1], self.data_dim[2]) # if o == 1 else resize_img(recon, self.vaes[1].dataSize)
-                    o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)))
-                    r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
-            w = np.vstack((np.hstack(o_l), np.hstack(r_l)))
-            cv2.imwrite('{}/visuals/recon_{}x_{:03d}.png'.format(runPath, r, epoch), w*255)
-        elif self.enc_name.lower() == "transformerimg":
-            o_l, r_l = [], []
+            N = 3 if self.enc_name.lower() == "transformerimg" else 10
             for r, recons_list in enumerate(recons_mat[:N]):
-                    _data = data[0][r].cpu().permute(0,1,2,3)[:N]
-                    recon = recons_list.cpu()
-                    o_l = np.asarray(np.hstack(_data)) if o_l == [] else np.concatenate((o_l, np.asarray(np.hstack(_data))), axis=1)
-                    r_l = np.asarray(np.hstack(recon)) if r_l == [] else np.concatenate((r_l, np.asarray(np.hstack(recon))), axis=1)
+                    _data = data[0][r].cpu()[:N] if self.enc_name.lower() != "cnn" else data[r].cpu().permute(2,1,0)
+                    _data = np.hstack(_data) if len(_data.shape) > 3 else _data
+                    recon = recons_list.cpu() if self.enc_name.lower() != "cnn" else  recons_list.cpu().permute(2,1,0)
+                    recon = np.hstack(recon) if len(recon.shape) > 3 else recon
+                    o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)), axis=1)
+                    r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
             cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),np.vstack((o_l, r_l)) * 255)
         elif self.enc_name.lower() == "audio":
              for i in range(3):
-                numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_s{}.wav'.format(epoch, i)),
-                     np.asarray(data[i].cpu()).astype(np.int16), 16000)
+                if epoch < 101:
+                    numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_s{}.wav'.format(epoch, i)),
+                         np.asarray(data[i].cpu()).astype(np.int16), 16000)
                 numpy_to_wav(os.path.join(runPath,"visuals/",'recon_epoch{}_s{}.wav'.format(epoch, i)),
                                  np.asarray(recons_mat[i].cpu()).astype(np.int16), 16000)
 

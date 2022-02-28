@@ -1,7 +1,7 @@
 # objectives of choice
 import torch
 from numpy import prod
-
+import numpy as np
 from utils import log_mean_exp, is_multidata, kl_divergence
 
 
@@ -48,6 +48,7 @@ def elbo(model, x, K=1, ltype="lprob"):
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
+    #scale = np.clip(10 ** (len(str(int(-lpx_z.sum(-1))))-3), 1, None)
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
 
@@ -57,16 +58,16 @@ def _iwae(model, x, K):
     lpz = model.pz(*model.pz_params).log_prob(zs).sum(-1)
     lpx_z = px_z.log_prob(x).view(*px_z.batch_shape[:2], -1) * model.llik_scaling
     lqz_x = qz_x.log_prob(zs).sum(-1)
-    return lpz + lpx_z.sum(-1) - lqz_x, lpx_z.sum(-1).sum()
+    return lpz + lpx_z.sum(-1).sum(-1) - lqz_x
 
 
-def iwae(model, x, K):
+def iwae(model, x, K=1, ltype=None):
     """Computes an importance-weighted ELBO estimate for log p_\theta(x)
     Iterates over the batch as necessary.
     """
     S = compute_microbatch_split(x, K)
     lw = torch.cat([_iwae(model, _x, K) for _x in x.split(S)], 1)  # concat on batch
-    return -log_mean_exp(lw).sum(), 0,0,0
+    return -log_mean_exp(lw).sum(), 0,[0]
 
 
 def _dreg(model, x, K):

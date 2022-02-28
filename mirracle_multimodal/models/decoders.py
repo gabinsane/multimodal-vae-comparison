@@ -56,7 +56,7 @@ class Dec_CNN(nn.Module):
         x = (self.convT3(x))
         d = torch.sigmoid(x.view(*z.size()[:-1], *self.datadim))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
-        return d.squeeze(), torch.tensor(0.75).to(z.device)
+        return d.squeeze().reshape(-1, *self.datadim), torch.tensor(0.75).to(z.device)
 
 class Dec_FNN(nn.Module):
     """ Generate a SVHN image given a sample from the latent space. """

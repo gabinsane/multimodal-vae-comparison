@@ -63,8 +63,7 @@ class Enc_CNN(nn.Module):
         # Log std-dev in paper (bear in mind)
         mu = self.mu_layer(x)
         logvar = self.logvar_layer(x)
-        lv = F.softmax(logvar, dim=-1) + Constants.eta
-        return mu, lv
+        return mu, logvar
 
 # Classes
 class Enc_FNN(nn.Module):
@@ -85,7 +84,6 @@ class Enc_FNN(nn.Module):
         e = torch.relu(self.lin2(e))
         e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
-        lv =  F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
 
 
@@ -107,7 +105,7 @@ class Enc_Audio(nn.Module):
         x = output.reshape(inputs.shape[0], -1)
         mu = self.mu_layer(x)
         logvar = self.logvar_layer(x)
-        logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        #logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
 class Enc_TransformerIMG(nn.Module):
@@ -121,10 +119,23 @@ class Enc_TransformerIMG(nn.Module):
         self.num_heads = num_heads
         self.dropout = dropout
         self.activation = activation
-        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
-        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
-        self.conv_pretrained = visnn.models.resnet152(pretrained=True, progress=True)
-        self.downsample = torch.nn.DataParallel(nn.Linear(1000, self.latent_dim))
+        #self.conv_pretrained = visnn.models.resnet152(pretrained=True, progress=True)
+        hid_channels = 32
+        kernel_size = 4
+        n_chan = 3
+        self.reshape = (hid_channels, kernel_size, kernel_size)
+        # Convolutional layers
+        cnn_kwargs = dict(stride=2, padding=1)
+        self.convolve = torch.nn.DataParallel(torch.nn.Sequential(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs),
+                                                torch.nn.ReLU(),
+                                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                                torch.nn.ReLU(),
+                                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                                torch.nn.ReLU(),
+                                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                                torch.nn.ReLU()))
+        self.downsample = torch.nn.DataParallel(nn.Linear(np.product(self.reshape), self.latent_dim))
+        #Transformer layers
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.latent_dim,
                                                           nhead=self.num_heads,
@@ -132,6 +143,8 @@ class Enc_TransformerIMG(nn.Module):
                                                           dropout=self.dropout,
                                                           activation=self.activation))
         self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
 
     def forward(self, batch):
         if isinstance(batch, list):
@@ -142,7 +155,7 @@ class Enc_TransformerIMG(nn.Module):
         bs, nframes = x.shape[0], x.shape[1]
         imgs_feats = []
         for i in range(x.shape[1]):
-            imgs_feats.append(self.downsample(self.conv_pretrained(x[:, i, :].permute(0,3,2,1))))
+            imgs_feats.append(self.downsample(self.convolve(x[:, i, :].permute(0,3,2,1).float()).view(-1, np.prod(self.reshape))))
         x = torch.stack(imgs_feats)
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = self.sequence_pos_encoder(x)
@@ -203,5 +216,4 @@ class Enc_Transformer(nn.Module):
         # extract mu and logvar
         mu = self.mu_layer(z)
         logvar = self.logvar_layer(z)
-        logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
