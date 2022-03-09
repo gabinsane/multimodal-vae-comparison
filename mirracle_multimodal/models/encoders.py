@@ -115,6 +115,7 @@ class Enc_TransformerIMG(nn.Module):
         self.name = "Transformer"
         self.latent_dim = latent_dim
         self.ff_size = ff_size
+        self.datadim = data_dim
         self.num_layers = num_layers
         self.num_heads = num_heads
         self.dropout = dropout
@@ -127,13 +128,13 @@ class Enc_TransformerIMG(nn.Module):
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
         self.convolve = torch.nn.DataParallel(torch.nn.Sequential(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU(),
+                                                torch.nn.SiLU(),
                                                 nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU(),
+                                                torch.nn.SiLU(),
                                                 nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU(),
+                                                torch.nn.SiLU(),
                                                 nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU()))
+                                                torch.nn.SiLU()))
         self.downsample = torch.nn.DataParallel(nn.Linear(np.product(self.reshape), self.latent_dim))
         #Transformer layers
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
@@ -143,8 +144,8 @@ class Enc_TransformerIMG(nn.Module):
                                                           dropout=self.dropout,
                                                           activation=self.activation))
         self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
-        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
-        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.datadim[0] * self.latent_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.datadim[0] *  self.latent_dim, self.latent_dim))
 
     def forward(self, batch):
         if isinstance(batch, list):
@@ -155,15 +156,15 @@ class Enc_TransformerIMG(nn.Module):
         bs, nframes = x.shape[0], x.shape[1]
         imgs_feats = []
         for i in range(x.shape[1]):
+            #imgs_feats.append(self.downsample(self.conv_pretrained(x[:, i, :].permute(0, 3, 2, 1).float())))
             imgs_feats.append(self.downsample(self.convolve(x[:, i, :].permute(0,3,2,1).float()).view(-1, np.prod(self.reshape))))
         x = torch.stack(imgs_feats)
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = self.sequence_pos_encoder(x)
         final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
-        z = final.mean(axis=0)
         # extract mu and logvar
-        mu = self.mu_layer(z)
-        logvar = self.logvar_layer(z)
+        mu = self.mu_layer(final.view(bs, -1))
+        logvar = self.logvar_layer(final.view(bs, -1))
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 

@@ -132,7 +132,8 @@ def plot_setup(xname, yname, pth, figname):
     plt.xlabel(xname)
     plt.ylabel(yname)
     #plt.legend()
-    plt.savefig(os.path.join(pth, "visuals/{}.png".format(figname)))
+    p = pth if os.path.isdir(pth) else os.path.dirname(pth)
+    plt.savefig(os.path.join(p, "visuals/{}.png".format(figname)))
     plt.clf()
 
 def plot_loss(path):
@@ -149,14 +150,37 @@ def plot_loss(path):
     plot_setup("Epochs", "KLD", path, "KLD")
     print("Saved loss plot")
 
+def compare_loss(paths, label_tag):
+    for p in paths:
+        pth = os.path.join(p, "loss.csv") if not "loss.csv" in p else p
+        c =  os.path.join(p, "config.json") if not "loss.csv" in p else p.replace("loss.csv", "config.json")
+        with open(c) as json_file:
+            cfg = json.load(json_file)
+        loss = pd.read_csv(pth, delimiter=",")
+        epochs = loss["Epoch"]
+        losses = loss["Test Loss"]
+        kld = loss["Test KLD"]
+        l_mod = loss["Test Mod_0"]
+        # plt.plot(epochs, l_mod, color='black', linestyle='dashed', label="Reconstruction Loss")
+        plt.plot(epochs, losses, linestyle='solid', label= ", ".join(["{}: {}".format(x,str(cfg[x])) for x in label_tag]))
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend()
+    print("Saved in {}".format(os.path.join(os.path.dirname(paths[0]), "loss_optim_compared.png")))
+    plt.savefig(os.path.join(os.path.dirname(paths[0]), "losstype_compared.png"))
+
+def get_all_csvs(pth):
+    pth = pth + "/" if pth[-1] != "/" else pth
+    return glob.glob(pth + "**/loss.csv", recursive=True)
+
 def compare_models_numbers(pth):
     pth = pth + "/" if pth[-1] != "/" else pth
     f = open(os.path.join(pth, "comparison.csv"), 'w')
     writer = csv.writer(f)
-    all_csvs = glob.glob(pth + "**/loss.csv", recursive=True)
+    all_csvs = get_all_csvs(pth)
     header = None
     for c in all_csvs:
-        #plot_loss(c)
+        plot_loss(c)
         model_csv = pd.read_csv(c, delimiter=",")
         if not header:
             writer.writerow(["Model", "Epochs"] + list(model_csv.keys())[1:])
@@ -239,9 +263,10 @@ def assemble_txtrecos(gt, txt, pth):
     cv2.imwrite(pth.replace(".png", "recon.png"), r_l)
 
 if __name__ == "__main__":
-    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/actions_sounds_new"
+    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/images_bce_lprob/lprob"
+    compare_loss(get_all_csvs(p), ["optimizer", "n_latents"])
     #plot_loss(p)
-    eval_analyse(p)
+    #eval_analyse(p)
     #compare_models_numbers(p)
     #eval_sample(p)
     #eval_reconstruct(p)

@@ -1,10 +1,7 @@
-import pyttsx3
 import sounddevice as sd
 import soundfile as sf
-import pydub
 import numpy as np
 import os, time, pickle, random
-from itertools import chain
 noise_types = {"f":{1:random.randint(90,300), 2:False},"fs":{1:random.randint(100,130), 2:False}, "t":{1:220, 2:True}, "s":{1:125, 2:False}, "0":{1:125, 2:False}, "ts":{1:220, 2:True},}
 
 path1 = "./jsonFiles/sounddata/{}_soundset.pkl"
@@ -15,6 +12,7 @@ path1 = "./jsonFiles/sounddata/{}_soundset.pkl"
 
 def read_mp3(path, normalized=False):
     """MP3 to numpy array"""
+    import pydub
     a = pydub.AudioSegment.from_mp3(path)
     y = np.array(a.get_array_of_samples())
     if a.channels == 2:
@@ -26,6 +24,7 @@ def read_mp3(path, normalized=False):
 
 def write(f, sr, x, normalized=False):
     """numpy array to MP3"""
+    import pydub
     channels = 2 if (x.ndim == 2 and x.shape[1] == 2) else 1
     if normalized:  # normalized array - each item should be a float in [-1, 1)
         y = np.int16(x * 2 ** 15)
@@ -36,7 +35,6 @@ def write(f, sr, x, normalized=False):
 
 
 def numpy_to_wav(filename, data, sampling_freq=24000):
-    #file = sd.rec(data, sampling_freq, channels=2, blocking=True)
     sf.write(filename, data, sampling_freq)
 
 def get_noisy_sound_sample(category):
@@ -51,7 +49,6 @@ def add_noise(sound):
     for x in range(sound.shape[1]):
         sound_noise[:, x] = sound[:, 1] * noise
     sound_padded = sound_noise.copy()
-    #print(np.nonzero(sound_padded!=0)[0][0])
     for x in range(add_silence[0]):
         sound_padded = np.insert(sound_padded, 0, np.array((0, 0)), 0)
     for x in range(add_silence[1]):
@@ -71,7 +68,6 @@ def inspect_dataset(dataset_path):
     with open(dataset_path, 'rb') as h:
         data = pickle.load(h)
     for sig in data:
-        print("Playing sound")
         play_as_sound(sig.astype(np.int16), 16000)
         time.sleep(3)
 
@@ -98,7 +94,10 @@ def get_soundset_sample(cat):
 
 
 if __name__ == "__main__":
-    inspect_dataset("/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/exp_sounds5/visuals/reconstructions.pkl")
+    with open("/home/gabi/kubecova-action-representationvae/dataset1/labels.pkl", 'rb') as h:
+        data = pickle.load(h)[:8]
+        print(data[:20])
+    inspect_dataset("/home/gabi/kubecova-action-representationvae/dataset1/sounds.pkl")
     #actions = ["lift", "bump", "push"]
     #make_soundsets(actions, path1)
 

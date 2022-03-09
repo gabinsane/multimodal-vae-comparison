@@ -126,11 +126,11 @@ class Dec_TransformerIMG(nn.Module):
         self.reshape = (hid_channels, kernel_size, kernel_size)
         self.lin = torch.nn.DataParallel(nn.Linear(self.latent_dim, np.product(self.reshape)))
         self.deconvolve = torch.nn.DataParallel(torch.nn.Sequential(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU(),
+                                                torch.nn.SiLU(),
                                                 nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU(),
+                                                torch.nn.SiLU(),
                                                 nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.ReLU(),
+                                                torch.nn.SiLU(),
                                                 nn.ConvTranspose2d(hid_channels, 3,  kernel_size, **cnn_kwargs),
                                                 torch.nn.Sigmoid()))
     def forward(self, batch):
@@ -142,7 +142,6 @@ class Dec_TransformerIMG(nn.Module):
         latent_dim = z.shape[-1]
         bs = z.shape[1]
         mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
-        z = z[None]  # sequence of size 1
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
@@ -185,7 +184,6 @@ class Dec_Transformer(nn.Module):
         latent_dim = z.shape[-1]
         bs = z.shape[1]
         mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
-        z = z[None]  # sequence of size 1
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,

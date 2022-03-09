@@ -35,6 +35,8 @@ parser.add_argument('--seed', type=int, metavar='S',  nargs="+", default=None,
                     help='seed number')
 parser.add_argument('--mixing', type=str, metavar='S',  nargs="+", default=None,
                     help='seed number')
+parser.add_argument('--optimizer', type=str, metavar='S',  nargs="+", default=None,
+                    help='optimizer')
 
 args = parser.parse_args()
 
