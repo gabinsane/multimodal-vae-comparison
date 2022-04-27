@@ -1,9 +1,12 @@
 import torch, numpy as np
 import torch.nn as nn
 import torchvision as visnn
+import chainer.links as L
+import chainer, math
+from chainer import cuda, Variable
 import torch.nn.functional as F
 from utils import Constants, create_vocab, W2V
-from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock
+from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock
 import torchvision.transforms as transforms
 
 def unpack(d):
@@ -167,6 +170,75 @@ class Enc_TransformerIMG(nn.Module):
         logvar = self.logvar_layer(final.view(bs, -1))
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
+
+
+class Enc_Conv2(nn.Module):
+    def __init__(self, latent_dim, channel=1, density=1, initial_size=64, Normal=1):
+        super(Enc_Conv2, self).__init__()
+        self.dc1= L.Convolution2D(channel, int(16 * density), 4, stride=2, pad=1,
+                            initialW=Normal(0.02))
+        self.dc2= L.Convolution2D(int(16 * density), int(32 * density), 4, stride=2, pad=1,
+                            initialW=Normal(0.02))
+        self.norm2= L.BatchNormalization(int(32 * density))
+        self.dc3= L.Convolution2D(int(32 * density), int(64 * density), 4, stride=2, pad=1,
+                            initialW=Normal(0.02))
+        self.norm3= L.BatchNormalization(int(64 * density))
+        self.dc4= L.Convolution2D(int(64 * density), int(128 * density), 4, stride=2, pad=1,
+                            initialW=Normal(0.02))
+        self.norm4= L.BatchNormalization(int(128 * density))
+        self.mean= L.Linear(initial_size * initial_size * int(128 * density), latent_dim,
+                      initialW=Normal(0.02))
+        self.var= L.Linear(initial_size * initial_size * int(128 * density), latent_dim,
+                     initialW=Normal(0.02))
+
+    def forward(self, x, train=True):
+        with chainer.using_config('train', train), chainer.using_config('enable_backprop', train):
+            xp = cuda.get_array_module(x.data)
+            h1 = F.leaky_relu(self.dc1(x))
+            h2 = F.leaky_relu(self.norm2(self.dc2(h1)))
+            h3 = F.leaky_relu(self.norm3(self.dc3(h2)))
+            h4 = F.leaky_relu(self.norm4(self.dc4(h3)))
+            mean = self.mean(h4)
+            var = self.var(h4)
+            rand = xp.random.normal(0, 1, var.data.shape).astype(np.float32)
+            z = mean + F.clip(F.exp(var), .001, 100.) * Variable(rand)
+            # z  = mean + F.exp(var) * Variable(rand, volatile=not train)
+            return mean, var
+
+
+class Enc_VideoGPT(nn.Module):
+    def __init__(self,  latent_dim, data_dim=1, n_res_layers=4, downsample=(2,4,4)):
+        super(Enc_VideoGPT, self).__init__()
+        self.name = "3DCNN"
+        n_times_downsample = np.array([int(math.log2(d)) for d in downsample])
+        self.convs = nn.ModuleList()
+        max_ds = n_times_downsample.max()
+        for i in range(max_ds):
+            in_channels = 3 if i == 0 else latent_dim
+            stride = tuple([2 if d > 0 else 1 for d in n_times_downsample])
+            conv = SamePadConv3d(in_channels, latent_dim, 4, stride=stride)
+            self.convs.append(conv)
+            n_times_downsample -= 1
+        self.conv_last = SamePadConv3d(in_channels, latent_dim, kernel_size=3)
+        self.res_stack = nn.Sequential(
+            *[AttentionResidualBlock(latent_dim)
+              for _ in range(n_res_layers)],
+            nn.BatchNorm3d(latent_dim),
+            nn.ReLU())
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(latent_dim*16*16, latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(latent_dim*16*16, latent_dim))
+
+    def forward(self, x):
+        h = x.permute(0,4,1,2,3)
+        for conv in self.convs:
+            h = F.relu(conv(h.float()))
+        h = self.conv_last(h)
+        h = self.res_stack(h)
+        mu = self.mu_layer(h.view(x.shape[0], -1))
+        logvar = self.logvar_layer(h.view(x.shape[0], -1))
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        return mu, logvar
+
 
 
 class Enc_Transformer(nn.Module):

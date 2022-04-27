@@ -3,6 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from models.nn_modules import PositionalEncoding, DeconvNet
 from utils import Constants, create_vocab, W2V
+import chainer, math
+#import chainer.functions as F
+import chainer.links as L
+from chainer.initializers import Normal
+from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock, SamePadConvTranspose3d
 
 class Dec_CNN(nn.Module):
     """Parametrizes p(x|z).
@@ -152,6 +157,81 @@ class Dec_TransformerIMG(nn.Module):
             images.append(self.deconvolve(im.view(-1, *self.reshape)))
         output = torch.stack(images).permute(1,0,3,4,2)
         return output.to(z.device), torch.tensor(0.75).to(z.device)
+
+
+class Decoder_Conv2(nn.Module):
+    def __init__(self, latent_dim, data_dim=1, density=1, initial_size=64, channel=3):
+        super(Decoder_Conv2, self).__init__()
+        self.g1 = L.Linear(latent_dim, initial_size * initial_size * 128 * density, initialW=Normal(0.02))
+        self.norm1 = L.BatchNormalization(initial_size * initial_size * 128 * density)
+        self.g2 = L.Deconvolution2D(128 * density, 64 * density, 4, stride=2, pad=1,
+                             initialW=Normal(0.02))
+        self.norm2 = L.BatchNormalization(64 * density)
+        self.g3 = L.Deconvolution2D(64 * density, 32 * density, 4, stride=2, pad=1,
+                             initialW=Normal(0.02))
+        self.norm3 = L.BatchNormalization(32 * density)
+        self.g4 = L.Deconvolution2D(32 * density, 16 * density, 4, stride=2, pad=1,
+                             initialW=Normal(0.02))
+        self.norm4 = L.BatchNormalization(16 * density)
+        self.g5 = L.Deconvolution2D(16 * density, channel, 4, stride=2, pad=1,
+                             initialW=Normal(0.02))
+        self.g2_= L.Deconvolution2D(64 * density, 64 * density, 3, stride=1, pad=1,
+                              initialW=Normal(0.02))
+        self.norm2_= L.BatchNormalization(64 * density)
+        self.g3_= L.Deconvolution2D(32 * density, 32 * density, 3, stride=1, pad=1,
+                              initialW=Normal(0.02))
+        self.norm3_= L.BatchNormalization(32 * density),
+        self.g4_= L.Deconvolution2D(16 * density, 16 * density, 3, stride=1, pad=1,
+                              initialW=Normal(0.02))
+        self.norm4_= L.BatchNormalization(16 * density)
+        self.g5_ = L.Deconvolution2D(channel, channel, 3, stride=1, pad=1, initialW=Normal(0.02))
+        self.density = density
+        self.latent_size = latent_dim
+        self.initial_size = initial_size
+
+    def forward(self, z, train=True):
+        with chainer.using_config('train', train):
+            h1 = F.reshape(F.relu(self.norm1(self.g1(z), test=not train)),
+                           (z.data.shape[0], 128 * self.density, self.initial_size, self.initial_size))
+            h2 = F.relu(self.norm2(self.g2(h1)))
+            h2_ = F.relu(self.norm2_(self.g2_(h2)))
+            h3 = F.relu(self.norm3(self.g3(h2_)))
+            h3_ = F.relu(self.norm3_(self.g3_(h3)))
+            h4 = F.relu(self.norm4(self.g4(h3_)))
+            h4_ = F.relu(self.norm4_(self.g4_(h4)))
+            return F.tanh(self.g5(h4_)), torch.tensor(0.75).to(z.device)
+
+
+class Dec_VideoGPT(nn.Module):
+    def __init__(self, latent_dim, data_dim=1, n_res_layers=4, upsample=(1,4,4)):
+        super(Dec_VideoGPT, self).__init__()
+        self.name = "3DCNN"
+        self.res_stack = nn.Sequential(
+            *[AttentionResidualBlock(latent_dim)
+              for _ in range(n_res_layers)],
+            nn.BatchNorm3d(latent_dim),
+            nn.ReLU())
+        n_times_upsample = np.array([int(math.log2(d)) for d in upsample])
+        max_us = n_times_upsample.max()
+        self.convts = nn.ModuleList()
+        for i in range(max_us):
+            out_channels = 3 if i == max_us - 1 else latent_dim
+            us = tuple([2 if d > 0 else 1 for d in n_times_upsample])
+            convt = SamePadConvTranspose3d(latent_dim, out_channels, 4, stride=us)
+            self.convts.append(convt)
+            n_times_upsample -= 1
+        self.upsample = torch.nn.DataParallel(nn.Linear(latent_dim, latent_dim*16*16*3))
+
+    def forward(self, x):
+        x_upsampled = self.upsample(x)
+        h = self.res_stack(x_upsampled.view(-1, x.shape[2], 3, 16, 16))
+        for i, convt in enumerate(self.convts):
+            h = convt(h)
+            if i < len(self.convts) - 1:
+                h = F.relu(h)
+        h = h.permute(0, 1, 3, 4, 2)
+        return h, torch.tensor(0.75).to(x.device)
+
 
 
 class Dec_Transformer(nn.Module):

@@ -64,8 +64,8 @@ class VAE(nn.Module):
                 d = d.reshape(d.shape[0],-1)
                 #d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
-            elif self.enc.name in ["Transformer", "CNN"]:
-                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() == "transformerimg" else [torch.from_numpy(np.asarray(x[0])) for x in d]
+            elif self.enc.name in ["Transformer", "CNN", "3DCNN"]:
+                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() in ["transformerimg", "videogpt"] else [torch.from_numpy(np.asarray(x[0])) for x in d]
                 if self.enc_name.lower() == "cnn":
                     d = torch.stack(d).transpose(1,3) #.reshape(len(d), -1)
                 else:
@@ -77,7 +77,7 @@ class VAE(nn.Module):
                 d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
         t_dataset = d[:int(len(d)*(0.9))]
         v_dataset = d[int(len(d)*(0.9)):]
-        if self.enc.name != "Transformer":
+        if self.enc.name not in ["Transformer", "3DCNN"]:
             t_dataset = torch.utils.data.TensorDataset(torch.tensor(t_dataset))
             v_dataset = torch.utils.data.TensorDataset(torch.tensor(v_dataset))
         train = DataLoader(t_dataset, batch_size=batch_size, shuffle=False, **kwargs)
@@ -130,13 +130,13 @@ class VAE(nn.Module):
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
             output.writelines(["|".join(target) + "\n", "|".join(reconstruct)])
             output.close()
-        elif self.enc_name.lower() in ["transformerimg", "cnn"]:
+        elif self.enc_name.lower() in ["transformerimg", "cnn", "videogpt"]:
             o_l, r_l = [], []
-            N = 3 if self.enc_name.lower() == "transformerimg" else 10
+            N = 3 if self.enc_name.lower() in ["transformerimg", "videogpt"] else 10
             for r, recons_list in enumerate(recons_mat[:N]):
-                    _data = data[0][r].cpu()[:N] if self.enc_name.lower() != "cnn" else data[r].cpu().permute(2,1,0)
+                    _data = data[0][r].cpu()[:N] if self.enc_name.lower() not in ["cnn", "videogpt"] else data[r].cpu()
                     _data = np.hstack(_data) if len(_data.shape) > 3 else _data
-                    recon = recons_list.cpu() if self.enc_name.lower() != "cnn" else  recons_list.cpu().permute(2,1,0)
+                    recon = recons_list.cpu() if self.enc_name.lower() != "cnn" else  recons_list.cpu()
                     recon = np.hstack(recon) if len(recon.shape) > 3 else recon
                     o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)), axis=1)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
