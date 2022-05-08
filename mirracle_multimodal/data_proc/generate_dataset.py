@@ -5,6 +5,7 @@ from itertools import chain
 from PIL import Image, ImageDraw, ImageFont
 import math, glob, imageio, cv2
 import argparse, sys
+from math import cos, sin, pi
 from train_w2v import train_word2vec
 parser = argparse.ArgumentParser(description='VAE data generator')
 parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
@@ -28,9 +29,12 @@ fonts = ["/usr/share/fonts/truetype/ubuntu/Ubuntu-C.ttf", "/usr/share/fonts/true
 WORD_EMBEDDING_SIZE = args.emb_size
 dimmap = {1:0, 4:1, 16:2, 64:3, 256:4, 1024:5, 4096:6}
 sizes = ["small", "large"]
+locations1 = ["at the top", "at the bottom"]
+locations2 = ["left", "right"]
+backgrounds = ["on white", "on black"]
 if int(args.subpart) == 0:
-    shapes = ["line", "circle", "semicircle", "pieslice", "square"]
-    colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0], "blue": [0,0,255], "grey": [128,128,128], "maroon": [105,0,0], "purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150], "orange":[255,140,0]}
+    shapes = ["spiral", "line", "circle", "square", "semicircle", "pieslice"]
+    colors = {"yellow": [255,255,0], "red": [255,0,0], "green": [0,255,0], "blue": [0,0,255], "grey": [128,128,128], "brown": [105,0,0], "purple": [215,0,215], "teal": [0,175,175], "navy":[0,0,150], "orange":[255,140,0], "beige":[232,211,185], "pink":[255,182,193]}
 elif int(args.subpart) == 1:
     shapes = ["line", "circle"]
     colors = {"black": [0,0,0], "red": [255,0,0], "green": [0,255,0]}
@@ -100,18 +104,47 @@ def randomize_rgb(rgb):
              new_rgb[ix] = c + random.randrange(-40, 40)
     return new_rgb
 
+def draw_spiral(x_l, y_l, a, b, img, colour, step=0.5, loops=5):
+    """
+    Draw the Archimdean spiral defined by:
+    r = a + b*theta
+    Args:
+        a (real): First parameter
+        b (real): Second parameter
+        img (Image): Image to write spiral to.
+        step (real): How much theta should increment by. (default: 0.5)
+        loops (int): How many times theta should loop around. (default: 5)
+    """
+    draw = ImageDraw.Draw(img)
+    theta = 0.0
+    r = a
+    prev_x = int(r*cos(theta))
+    prev_y = int(r*sin(theta))
+    while theta < 2 * loops * pi:
+        theta += step
+        r = a + b*theta
+        # Draw pixels, but remember to convert to Cartesian:
+        x = int(r*cos(theta))
+        y = int(r*sin(theta))
+        draw.line((prev_x+x_l, prev_y+y_l) + ((x+x_l),(y+y_l)), fill=tuple(colour))
+        prev_x = x
+        prev_y = y
+
 def make_attrs(path):
     print("Making ../data/attrs.pkl")
     attrs = []
     for x in range(args.size):
-        size, color, shape = "", "", ""
+        size, color, shape, loc1, loc2, bkgr = "", "", "", "", "", ""
         if sizes:
             size = random.choice(sizes)
         if colors:
             color = random.choice(list(colors.keys()))
         if shapes:
             shape = random.choice(shapes)
-        attrs.append([size, color,shape])
+        loc1 = random.choice(locations1)
+        loc2 = random.choice(locations2)
+        bkgr = random.choice(backgrounds)
+        attrs.append([size, color, shape, loc1, loc2, bkgr])
     attrs = np.asarray(attrs)
     with open(os.path.join(path, './attrs.pkl'), 'wb') as handle:
         pickle.dump(attrs, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -126,6 +159,7 @@ def unpickle(pth):
 def make_shape_imgs(pth, target_pth):
     print("Making {}".format(target_pth))
     target = unpickle(pth)
+    print(target)
     for idx, text in enumerate(target):
         size = text[0]
         colname = text[1]
@@ -135,23 +169,26 @@ def make_shape_imgs(pth, target_pth):
         padding = 6 - len(str(idx))
         index = padding * "0" + str(idx)
         filename = os.path.join(target_pth, "img_{}.png".format(index))
-        image = Image.new(mode="RGB", size=(64, 64), color="white")
+        image = Image.new(mode="RGB", size=(64, 64), color=text[5].split(" ")[-1])
         draw = ImageDraw.Draw(image)
         color = randomize_rgb(colors[colname]) if args.noisycol else colors[colname]
         size_add = 30 if size == "large" else 16
-        x1 = random.randint(5,35)
-        x2 = random.randint(5,35)
-        shapes = {"circle": draw.ellipse, "line":draw.line, "square":draw.rectangle, "semicircle":draw.chord, "pieslice":draw.pieslice,  "polygon":draw.polygon}
+        x1 = random.randint(5,10) if "left" in text[4] else random.randint(30,35)
+        x2 = random.randint(5,10) if "top" in text[3] else random.randint(30,35)
+        shapes = {"circle": draw.ellipse, "line":draw.line, "square":draw.rectangle, "semicircle":draw.chord, "pieslice":draw.pieslice,  "polygon":draw.polygon, "spiral":draw_spiral}
         shape = shapes[shapename]
-        if shape not in [draw.chord, draw.pieslice, draw.polygon]:
+        if shape not in [draw.chord, draw.pieslice, draw.polygon, draw_spiral]:
             shape((x1, x2, x1+size_add, x2+size_add), fill=tuple(color), width=int(size_add/2))
         else:
             if shape == draw.polygon:
                 shape(((x1, x2), (x2, x1), (x2 + size_add, x1 + size_add)), fill=tuple(color), outline=(0, 0, 0))
-            else:
+            elif shape in [draw.pieslice, draw.chord]:
                 coords = [50,270] if shape == draw.chord else [200,250]
                 size_a = size_add if shape == draw.chord else size_add *2
                 shape((x1, x2, x1 + size_a, x2+size_a), start=coords[0], end=coords[1], fill=tuple(color))
+            else:
+                s = 0.6 if size == "large" else 0.3
+                shape(x1, x2, s, s, image, color)
         image.save(filename)
 
 def make_arrays(dataset, pth, name):
@@ -220,7 +257,7 @@ if __name__ == "__main__":
        os.makedirs(os.path.join(target_dir, "imagetxt"), exist_ok=True)
        make_dummy_txt(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "imagetxt"))
     elif args.type == "img-vec":
-       word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "word2vec{}d.pkl".format(WORD_EMBEDDING_SIZE)))
+       #word2vec(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "word2vec{}d.pkl".format(WORD_EMBEDDING_SIZE)))
        if not args.vecs_only:
         make_shape_imgs(os.path.join(target_dir, "attrs.pkl"), os.path.join(target_dir, "image"))
     print("\nAll done. Data saved in mirracle_multimodal/data")
