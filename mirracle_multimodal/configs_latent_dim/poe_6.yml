@@ -1,5 +1,5 @@
 batch_size: 64
-epochs: 2000
+epochs: 500
 exp_name: configs_latent_dim_poe_6
 labels: null
 loss: l1

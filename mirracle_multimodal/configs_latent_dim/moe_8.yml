@@ -1,5 +1,5 @@
 batch_size: 128
-epochs: 2000
+epochs: 500
 exp_name: configs_latent_dim_moe_8
 labels: null
 loss: l1

@@ -15,7 +15,7 @@ def exclude_keys(d, keys):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--path", type=str, default="../configs_latent_dim", help="Folder in which to save the configs")
-parser.add_argument('--exp-name', type=str, default="poe",
+parser.add_argument('--exp-name', type=str, default="moe",
                     help='name of the config file')
 parser.add_argument('--cfg', type=str, default="/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/config2mods.yml",
                     help='Which config to alter (only the specified parameters will vary)')
