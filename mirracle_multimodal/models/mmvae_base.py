@@ -10,16 +10,18 @@ from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
 import numpy as np
+from torch.autograd import Variable
 import cv2
 from .vae import VAE
 
 module_types = {"moe":VAE, "poe":VAE}
 
 class MMVAE(nn.Module):
-    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, n_latents):
+    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, n_latents, batch_size):
         super(MMVAE, self).__init__()
         self.device = None
         self.pz = prior_dist
+        self.batch_size = batch_size
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
@@ -39,6 +41,11 @@ class MMVAE(nn.Module):
         max_dimensionality = max([np.prod(x) for x in feature_dims])
         for x in range(len(self.vaes)):
             self.vaes[x].llik_scaling = max_dimensionality / np.prod(feature_dims[x])
+
+    def reparameterize(self, mu, logvar):
+        std = logvar.mul(0.5).exp_()
+        eps = Variable(std.data.new(std.size()).normal_())
+        return eps.mul(std).add_(mu)
 
     def seq_collate_fn(self, batch):
         new_batch, masks = [], []

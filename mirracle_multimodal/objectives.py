@@ -33,6 +33,9 @@ def loss_fn(output, target, ltype, mod_type=None):
     elif ltype == "l1":
         l = torch.nn.L1Loss(reduction="sum")
         loss = -l(output.loc.cpu(), target.float().cpu().detach())
+    elif ltype == "category":
+        l = torch.nn.CrossEntropyLoss(reduction="sum")
+        loss = -l(output.loc.cpu(), target.float().cpu().detach())
     return loss
 
 def normalize(target, data=None):
@@ -51,7 +54,6 @@ def elbo(model, x, K=1, ltype="lprob"):
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-    #scale = np.clip(10 ** (len(str(int(-lpx_z.sum(-1))))-3), 1, None)
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
 

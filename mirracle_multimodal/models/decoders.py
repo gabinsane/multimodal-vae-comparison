@@ -7,7 +7,8 @@ import chainer, math
 #import chainer.functions as F
 import chainer.links as L
 from chainer.initializers import Normal
-from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock, SamePadConvTranspose3d
+from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock,\
+    SamePadConvTranspose3d, DataGeneratorText
 
 class Dec_CNN(nn.Module):
     """Parametrizes p(x|z).
@@ -233,13 +234,33 @@ class Dec_VideoGPT(nn.Module):
         return h, torch.tensor(0.75).to(x.device)
 
 
+class Dec_Text(nn.Module):
+    def __init__(self, latent_dim, data_dim=1, dim_text=128):
+        super(Dec_Text, self).__init__()
+        self.name = "textonehot"
+        self.DIM_text = dim_text
+        self.feature_generator = nn.Linear(latent_dim, 5*self.DIM_text, bias=True);
+        self.text_generator = DataGeneratorText(data_dim, a=2.0, b=0.3)
+
+    def forward(self, z):
+        z = torch.cat((z_style, z_content), dim=1).squeeze(-1)
+        text_feat_hat = self.feature_generator(z);
+        text_feat_hat = text_feat_hat.unsqueeze(-1);
+        text_hat = self.text_generator(text_feat_hat)
+        text_hat = text_hat.transpose(-2,-1);
+        return text_hat
+
+
 
 class Dec_Transformer(nn.Module):
-    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=4, dropout=0.1, activation="gelu"):
+    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=2, dropout=0.1, activation="gelu"):
         super(Dec_Transformer, self).__init__()
         self.name = "Transformer"
         self.njoints = data_dim[1]
-        self.nfeats = data_dim[2]
+        if len(data_dim) > 2:
+            self.nfeats = data_dim[2]
+        else:
+            self.nfeats = 1
         self.data_dim = data_dim
         self.latent_dim = latent_dim
         self.ff_size = ff_size
@@ -272,4 +293,34 @@ class Dec_Transformer(nn.Module):
         # zero for padded area
         output[~mask.T] = 0
         output = output.permute(1, 0, 2, 3)
+        return output.to(z.device), torch.tensor(0.75).to(z.device)
+
+class Dec_TxtTransformer(Dec_Transformer):
+    def __init__(self, latent_dim, data_dim=1):
+        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4,)
+        self.name = "TxtTransformer"
+        self.softmax = nn.Softmax(dim=2)
+        self.sigmoid = nn.Sigmoid()
+        self.conv2 = nn.ConvTranspose1d(self.latent_dim, self.input_feats,
+                                        kernel_size=4,
+                                        stride=2,
+                                        padding=1,
+                                        dilation=1,
+                                        output_padding=0)
+
+    def forward(self, batch):
+        z, mask = batch[0], batch[1]
+        latent_dim = z.shape[-1]
+        bs = z.shape[1]
+        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
+        timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
+        timequeries = self.sequence_pos_encoder(timequeries)
+        output = self.seqTransDecoder(tgt=timequeries, memory=z,
+                                      tgt_key_padding_mask=~mask)
+        output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints,  self.nfeats)).squeeze()
+        # zero for padded area
+        output = output.permute(1,0,2) * mask.unsqueeze(dim=-1).repeat(1,1,self.njoints).float()
+        #output = self.softmax(output)
+        #one_pos = torch.argmax(output, dim=-1)
+        #output = torch.zeros_like(output).scatter_(1, one_pos.unsqueeze(-1), 1.).squeeze()
         return output.to(z.device), torch.tensor(0.75).to(z.device)

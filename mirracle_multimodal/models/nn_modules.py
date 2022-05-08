@@ -24,6 +24,231 @@ class SamePadConvTranspose3d(nn.Module):
     def forward(self, x):
         return self.convt(F.pad(x, self.pad_input))
 
+
+def make_res_block_encoder_feature_compressor(channels_in, channels_out, a_val=2, b_val=0.3):
+    downsample = None
+    if channels_in != channels_out:
+        downsample = nn.Sequential(nn.Conv1d(channels_in,
+                                             channels_out,
+                                             kernel_size=1,
+                                             stride=1,
+                                             padding=0,
+                                             dilation=1),
+                                   nn.BatchNorm1d(channels_out))
+    layers = []
+    layers.append(ResidualBlock1dConv(channels_in, channels_out, kernelsize=1, stride=1, padding=0, dilation=1,
+                                      downsample=downsample, a=a_val, b=b_val))
+    return nn.Sequential(*layers)
+
+
+def make_layers_resnet_encoder_feature_compressor(start_channels, end_channels, a=2, b=0.3, l=1):
+    layers = []
+    num_compr_layers = int((1/float(l))*np.floor(np.log(start_channels / float(end_channels))))
+    for k in range(0, num_compr_layers):
+        in_channels = np.round(start_channels/float(2 ** (l*k))).astype(int)
+        out_channels = np.round(start_channels/float(2 ** (l*(k+1)))).astype(int)
+        resblock = make_res_block_encoder_feature_compressor(in_channels, out_channels, a_val=a, b_val=b)
+        layers.append(resblock)
+
+    out_channels = np.round(start_channels/float(2 ** (l*num_compr_layers))).astype(int)
+    if out_channels > end_channels:
+        resblock = make_res_block_encoder_feature_compressor(out_channels, end_channels, a_val=a, b_val=b)
+        layers.append(resblock)
+    return nn.Sequential(*layers)
+
+
+class ResidualFeatureCompressor(nn.Module):
+    def __init__(self, in_channels, out_channels_style, out_channels_content, a, b, compression_power):
+        super(ResidualFeatureCompressor, self).__init__()
+        self.a = a
+        self.b = b
+        self.compression_power = compression_power
+        self.style_mu = make_res_block_encoder_feature_compressor(in_channels, out_channels_style, a_val=self.a, b_val=self.b)
+        self.style_logvar = make_res_block_encoder_feature_compressor(in_channels, out_channels_style, a_val=self.a, b_val=self.b)
+        self.content_mu = make_res_block_encoder_feature_compressor(in_channels, out_channels_content, a_val=self.a, b_val=self.b)
+        self.content_logvar = make_res_block_encoder_feature_compressor(in_channels, out_channels_content, a_val=self.a, b_val=self.b)
+
+    def forward(self, feats):
+        mu_style, logvar_style = self.style_mu(feats), self.style_logvar(feats)
+        mu_content, logvar_content = self.content_mu(feats), self.content_logvar(feats)
+        return mu_style, logvar_style, mu_content, logvar_content
+
+def make_res_block_encoder_feature_extractor(in_channels, out_channels, kernelsize, stride, padding, dilation, a_val=2.0, b_val=0.3):
+    downsample = None
+    if (stride != 1) or (in_channels != out_channels) or dilation != 1:
+        downsample = nn.Sequential(nn.Conv1d(in_channels, out_channels,
+                                             kernel_size=kernelsize,
+                                             stride=stride,
+                                             padding=padding,
+                                             dilation=dilation),
+                                   nn.BatchNorm1d(out_channels))
+    layers = []
+    layers.append(ResidualBlock1dConv(in_channels, out_channels, kernelsize, stride, padding, dilation, downsample, a=a_val, b=b_val))
+    return nn.Sequential(*layers)
+
+class LinearFeatureCompressor(nn.Module):
+    def __init__(self, in_channels, out_channels_style, out_channels_content):
+        super(LinearFeatureCompressor, self).__init__()
+        self.style_mu = nn.Linear(in_channels, out_channels_style, bias=True)
+        self.style_logvar = nn.Linear(in_channels, out_channels_style, bias=True)
+        self.content_mu = nn.Linear(in_channels, out_channels_content, bias=True)
+        self.content_logvar = nn.Linear(in_channels, out_channels_content, bias=True)
+
+    def forward(self, feats):
+        feats = feats.view(feats.size(0), -1)
+        mu_style, logvar_style = self.style_mu(feats), self.style_logvar(feats)
+        mu_content, logvar_content = self.content_mu(feats), self.content_logvar(feats)
+        return mu_style, logvar_style, mu_content, logvar_content
+
+class ResidualBlock1dConv(nn.Module):
+    def __init__(self, channels_in, channels_out, kernelsize, stride, padding, dilation, downsample, a=2, b=0.3):
+        super(ResidualBlock1dConv, self).__init__()
+        self.bn1 = nn.BatchNorm1d(channels_in)
+        self.conv1 = nn.Conv1d(channels_in, channels_in, kernel_size=1, stride=1, padding=0)
+        self.dropout1 = nn.Dropout(p=0.5, inplace=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.bn2 = nn.BatchNorm1d(channels_in)
+        self.conv2 = nn.Conv1d(channels_in, channels_out, kernel_size=kernelsize, stride=stride, padding=padding, dilation=dilation)
+        self.dropout2 = nn.Dropout(p=0.5, inplace=False)
+        self.downsample = downsample
+        self.a = a
+        self.b = b
+
+    def forward(self, x):
+        residual = x
+        out = self.bn1(x)
+        out = self.relu(out)
+        out = self.conv1(out)
+        out = self.dropout1(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = self.dropout2(out)
+        if self.downsample:
+            residual = self.downsample(x)
+        out = self.a*residual + self.b*out
+        return out
+
+class ResidualBlock1dTransposeConv(nn.Module):
+    def __init__(self, channels_in, channels_out, kernelsize, stride, padding, dilation, o_padding, upsample, a=2, b=0.3):
+        super(ResidualBlock1dTransposeConv, self).__init__()
+        self.bn1 = nn.BatchNorm1d(channels_in)
+        self.conv1 = nn.ConvTranspose1d(channels_in, channels_in, kernel_size=1, stride=1, padding=0)
+        self.dropout1 = nn.Dropout(p=0.5, inplace=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.bn2 = nn.BatchNorm1d(channels_in)
+        self.conv2 = nn.ConvTranspose1d(channels_in, channels_out, kernel_size=kernelsize, stride=stride, padding=padding, dilation=dilation, output_padding=o_padding)
+        self.dropout2 = nn.Dropout(p=0.5, inplace=False)
+        self.upsample = upsample
+        self.a = a
+        self.b = b
+
+    def forward(self, x):
+        residual = x
+        out = self.bn1(x)
+        out = self.relu(out)
+        out = self.conv1(out)
+        out = self.dropout1(out)
+        out = self.bn2(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = self.dropout2(out)
+        if self.upsample:
+            residual = self.upsample(x)
+        out = self.a*residual + self.b*out
+        return out
+
+
+def res_block_decoder(in_channels, out_channels, kernelsize, stride, padding, o_padding, dilation, a_val=2.0, b_val=0.3):
+    upsample = None
+
+    if (kernelsize != 1 or stride != 1) or (in_channels != out_channels) or dilation != 1:
+        upsample = nn.Sequential(nn.ConvTranspose1d(in_channels, out_channels,
+                                                    kernel_size=kernelsize,
+                                                    stride=stride,
+                                                    padding=padding,
+                                                    dilation=dilation,
+                                                    output_padding=o_padding),
+                                   nn.BatchNorm1d(out_channels))
+    layers = []
+    layers.append(ResidualBlock1dTransposeConv(in_channels, out_channels, kernelsize, stride, padding, dilation, o_padding, upsample=upsample, a=a_val, b=b_val))
+    return nn.Sequential(*layers)
+
+
+class DataGeneratorText(nn.Module):
+    def __init__(self, data_dim, a, b, DIM_text=128):
+        super(DataGeneratorText, self).__init__()
+        self.datadim = data_dim
+        self.DIM_text = DIM_text
+        self.a = a
+        self.b = b
+        self.resblock_1 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+                                            kernelsize=4, stride=1, padding=0, dilation=1, o_padding=0)
+        self.resblock_2 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_3 = res_block_decoder(5*self.DIM_text, 4*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_4 = res_block_decoder(4*self.DIM_text, 3*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_5 = res_block_decoder(3*self.DIM_text, 2*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_6 = res_block_decoder(2*self.DIM_text, self.DIM_text,
+                                                 kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.conv2 = nn.ConvTranspose1d(self.DIM_text, self.datadim[1],
+                                        kernel_size=4,
+                                        stride=2,
+                                        padding=1,
+                                        dilation=1,
+                                        output_padding=0)
+        self.softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, feats):
+        d = self.resblock_1(feats)
+        d = self.resblock_2(d)
+        d = self.resblock_3(d)
+        d = self.resblock_4(d)
+        d = self.resblock_5(d)
+        d = self.resblock_6(d)
+        d = self.conv2(d)
+        d = self.softmax(d)
+        return d
+
+
+
+class FeatureExtractorText(nn.Module):
+    def __init__(self, datadim, a, b, dim_text=128):
+        super(FeatureExtractorText, self).__init__()
+        self.txtdim = datadim
+        self.a = a
+        self.b = b
+        self.DIM_text = dim_text
+        self.conv1 = nn.Conv1d(self.txtdim[1], self.DIM_text,
+                               kernel_size=4, stride=2, padding=1, dilation=1)
+        self.resblock_1 = make_res_block_encoder_feature_extractor(self.DIM_text, 2*self.DIM_text,
+                                                                   kernelsize=4, stride=2, padding=1, dilation=1)
+        self.resblock_2 = make_res_block_encoder_feature_extractor(2*self.DIM_text, 3*self.DIM_text,
+                                                                   kernelsize=4, stride=2, padding=1, dilation=1)
+        self.resblock_3 = make_res_block_encoder_feature_extractor(3*self.DIM_text, 4*self.DIM_text,
+                                                                   kernelsize=4, stride=2, padding=1, dilation=1)
+        self.resblock_4 = make_res_block_encoder_feature_extractor(4*self.DIM_text, 5*self.DIM_text,
+                                                                   kernelsize=4, stride=2, padding=1, dilation=1)
+        self.resblock_5 = make_res_block_encoder_feature_extractor(5*self.DIM_text, 5*self.DIM_text,
+                                                                   kernelsize=4, stride=2, padding=1, dilation=1)
+        self.resblock_6 = make_res_block_encoder_feature_extractor(5*self.DIM_text, 5*self.DIM_text,
+                                                                   kernelsize=4, stride=2, padding=0, dilation=1)
+
+    def forward(self, x):
+        x = x.transpose(-2,-1)
+        out = self.conv1(x)
+        out = self.resblock_1(out)
+        out = self.resblock_2(out)
+        out = self.resblock_3(out)
+        out = self.resblock_4(out)
+        out = self.resblock_5(out)
+        out = self.resblock_6(out)
+        return out
+
+
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=1000):
         super(PositionalEncoding, self).__init__()
@@ -40,7 +265,10 @@ class PositionalEncoding(nn.Module):
 
     def forward(self, x):
         # not used in the final model
-        x = x + self.pe[:x.shape[0], :]
+        try:
+            x = x + self.pe[:x.shape[0], :]
+        except:
+            x = x.permute(1, 0, 2, 3) + self.pe[:x.shape[0], :]
         return self.dropout(x)
 
 # Does not support dilation
@@ -502,6 +730,59 @@ class StridedSparsityConfig(object):
             flat_idx %= self._block_shape_cum[i]
         return tuple(idx)
 
+def res_block_decoder(in_channels, out_channels, kernelsize, stride, padding, o_padding, dilation, a_val=2.0, b_val=0.3):
+    upsample = None
+
+    if (kernelsize != 1 or stride != 1) or (in_channels != out_channels) or dilation != 1:
+        upsample = nn.Sequential(nn.ConvTranspose1d(in_channels, out_channels,
+                                                    kernel_size=kernelsize,
+                                                    stride=stride,
+                                                    padding=padding,
+                                                    dilation=dilation,
+                                                    output_padding=o_padding),
+                                   nn.BatchNorm1d(out_channels))
+    layers = []
+    layers.append(ResidualBlock1dTransposeConv(in_channels, out_channels, kernelsize, stride, padding, dilation, o_padding, upsample=upsample, a=a_val, b=b_val))
+    return nn.Sequential(*layers)
+
+
+class DataGeneratorText(nn.Module):
+    def __init__(self, data_dim, a, b, dim_text = 128):
+        super(DataGeneratorText, self).__init__()
+        self.data_dim = data_dim
+        self.DIM_text = dim_text
+        self.a = a
+        self.b = b
+        self.resblock_1 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+                                            kernelsize=4, stride=1, padding=0, dilation=1, o_padding=0)
+        self.resblock_2 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_3 = res_block_decoder(5*self.DIM_text, 4*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_4 = res_block_decoder(4*self.DIM_text, 3*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_5 = res_block_decoder(3*self.DIM_text, 2*self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_6 = res_block_decoder(2*self.DIM_text, self.DIM_text,
+                                                 kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.conv2 = nn.ConvTranspose1d(self.DIM_text, self.data_dim[1],
+                                        kernel_size=4,
+                                        stride=2,
+                                        padding=1,
+                                        dilation=1,
+                                        output_padding=0)
+        self.softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, feats):
+        d = self.resblock_1(feats)
+        d = self.resblock_2(d)
+        d = self.resblock_3(d)
+        d = self.resblock_4(d)
+        d = self.resblock_5(d)
+        d = self.resblock_6(d)
+        d = self.conv2(d)
+        d = self.softmax(d)
+        return d
 
 def scaled_dot_product_attention(q, k, v, mask=None, attn_dropout=0., training=True):
     # Performs scaled dot-product attention over the second to last dimension dn

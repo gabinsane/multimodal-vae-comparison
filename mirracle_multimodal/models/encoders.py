@@ -6,7 +6,7 @@ import chainer, math
 from chainer import cuda, Variable
 import torch.nn.functional as F
 from utils import Constants, create_vocab, W2V
-from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock
+from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock, FeatureExtractorText, LinearFeatureCompressor
 import torchvision.transforms as transforms
 
 def unpack(d):
@@ -172,6 +172,20 @@ class Enc_TransformerIMG(nn.Module):
         return mu, logvar
 
 
+class Enc_Text(nn.Module):
+    def __init__(self, latent_dim, data_dim=1, dim_text = 64):
+        super(Enc_Text, self).__init__()
+        self.name = "textonehot"
+        self.DIM_text = dim_text
+        self.feature_extractor = FeatureExtractorText(data_dim, a=2.0, b=0.3)
+        self.feature_compressor = LinearFeatureCompressor(5*self.DIM_text, 32, latent_dim)
+
+    def forward(self, x_text):
+        h_text = self.feature_extractor(x_text)
+        mu_style, logvar_style, mu_content, logvar_content = self.feature_compressor(h_text);
+        return mu_style, logvar_style, mu_content, logvar_content, h_text;
+
+
 class Enc_Conv2(nn.Module):
     def __init__(self, latent_dim, channel=1, density=1, initial_size=64, Normal=1):
         super(Enc_Conv2, self).__init__()
@@ -240,10 +254,9 @@ class Enc_VideoGPT(nn.Module):
         return mu, logvar
 
 
-
 class Enc_Transformer(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
-    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
+    def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
         super(Enc_Transformer, self).__init__()
         self.name = "Transformer"
         self.njoints = data_dim[1]
@@ -289,4 +302,38 @@ class Enc_Transformer(nn.Module):
         # extract mu and logvar
         mu = self.mu_layer(z)
         logvar = self.logvar_layer(z)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        return mu, logvar
+
+class Enc_TxtTransformer(Enc_Transformer):
+    def __init__(self, latent_dim, data_dim=1):
+        super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim)
+        self.name = "TxtTransformer"
+        self.embedding = nn.Embedding(self.input_feats,2)
+        self.sequence_pos_encoder = PositionalEncoding(2, self.dropout)
+        seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.input_feats*2,
+                                                          nhead=self.num_heads,
+                                                          dim_feedforward=self.ff_size,
+                                                          dropout=self.dropout,
+                                                          activation=self.activation))
+        self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.input_feats*2, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.input_feats*2, self.latent_dim))
+
+    def forward(self, batch):
+        if isinstance(batch[0], list):
+            x = torch.stack(batch[0]).float()
+        else:
+            x = (batch[0]).float()
+        mask = batch[1]
+        bs, nframes, njoints = x.shape
+        mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
+        x = self.embedding(x.cuda().long())
+        x = self.sequence_pos_encoder(x)
+        final = self.seqTransEncoder(x.view(nframes, bs, -1), src_key_padding_mask=~mask)
+        z = final.mean(axis=0)
+        # extract mu and logvar
+        mu = self.mu_layer(z)
+        logvar = self.logvar_layer(z)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar

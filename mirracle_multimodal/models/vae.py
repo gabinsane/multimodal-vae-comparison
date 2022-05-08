@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.distributions as dist
 from models import encoders, decoders
 from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_images, lengths_to_mask
+from utils import one_hot_encode, tensor_to_text
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 import pickle, os
@@ -12,12 +13,13 @@ from data_proc.process_audio import numpy_to_wav
 import torch.nn.functional as F
 
 class VAE(nn.Module):
-    def __init__(self, enc, dec, data_path, feature_dim, n_latents, prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
+    def __init__(self, enc, dec, data_path, feature_dim, n_latents, batch_size, prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
         super(VAE, self).__init__()
         self.device = None
         self.pz = prior_dist
         self.px_z = likelihood_dist
         self.qz_x = post_dist
+        self.batch_size = batch_size
         self._qz_x_params = None  # populated in `forward`
         self.llik_scaling = 1.0
         self.pth = data_path
@@ -62,22 +64,29 @@ class VAE(nn.Module):
                 d = pickle.load(handle)
             if "word2vec" in self.pth:
                 d = d.reshape(d.shape[0],-1)
-                #d = self.w2v.normalize_w2v(d)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
             elif self.enc.name in ["Transformer", "CNN", "3DCNN"]:
-                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() in ["transformerimg", "videogpt"] else [torch.from_numpy(np.asarray(x[0])) for x in d]
+                d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() in ["transformerimg", "videogpt"] else [torch.from_numpy(np.asarray(x)) for x in d]
                 if self.enc_name.lower() == "cnn":
                     d = torch.stack(d).transpose(1,3) #.reshape(len(d), -1)
                 else:
                     if len(d[0].shape) < 3:
                         d = [torch.unsqueeze(i, dim=1) for i in d]
                     kwargs["collate_fn"] = self.seq_collate_fn
+            elif self.enc.name in ["TxtTransformer", "textonehot"]:
+                d = [" ".join(x) for x in d]
+                d = [one_hot_encode(len(f), f) for f in d]
+                d = [torch.from_numpy(np.asarray(x)) for x in d]
+                if self.enc.name == "TxtTransformer":
+                    kwargs["collate_fn"] = self.seq_collate_fn
+                else:
+                    d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
             elif self.enc.name == "AudioConv":
                 d = [torch.from_numpy(np.asarray(x).astype(np.int16)) for x in d]
-                d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
+                d = torch.nn.utils.rnn.pad_packed_sequence(d, batch_first=True, padding_value=0.0)
         t_dataset = d[:int(len(d)*(0.9))]
         v_dataset = d[int(len(d)*(0.9)):]
-        if self.enc.name not in ["Transformer", "3DCNN"]:
+        if self.enc.name not in ["Transformer","TxtTransformer", "3DCNN"]:
             t_dataset = torch.utils.data.TensorDataset(torch.tensor(t_dataset))
             v_dataset = torch.utils.data.TensorDataset(torch.tensor(v_dataset))
         train = DataLoader(t_dataset, batch_size=batch_size, shuffle=False, **kwargs)
@@ -88,7 +97,7 @@ class VAE(nn.Module):
         self._qz_x_params = self.enc(x)
         qz_x = self.qz_x(*self._qz_x_params)
         zs = qz_x.rsample(torch.Size([K]))
-        if self.dec.name.lower() == "transformer":
+        if "transformer" in self.dec.name.lower():
             px_z = self.px_z(*self.dec([zs, x[1]] if x is not None else [zs, None]))
         else: px_z = self.px_z(*self.dec(zs))
         return qz_x, px_z, zs
@@ -132,7 +141,7 @@ class VAE(nn.Module):
             output.close()
         elif self.enc_name.lower() in ["transformerimg", "cnn", "videogpt"]:
             o_l, r_l = [], []
-            N = 3 if self.enc_name.lower() in ["transformerimg", "videogpt"] else 10
+            N = 10 if self.enc_name.lower() in ["transformerimg", "videogpt"] else 10
             for r, recons_list in enumerate(recons_mat[:N]):
                     _data = data[0][r].cpu()[:N] if self.enc_name.lower() not in ["cnn", "videogpt"] else data[r].cpu()
                     _data = np.hstack(_data) if len(_data.shape) > 3 else _data
@@ -141,6 +150,22 @@ class VAE(nn.Module):
                     o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)), axis=1)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
             cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),np.vstack((o_l, r_l)) * 255)
+        elif self.enc_name.lower() in ["txttransformer", "textonehot"]:
+            recons_mat = torch.softmax(recons_mat, dim=-1)
+            one_pos = torch.argmax(recons_mat, dim=2)
+            rec = torch.nn.functional.one_hot(one_pos)
+            recon = rec[:10].int()
+            recon_decoded = tensor_to_text(recon)
+            orig_decoded = tensor_to_text(data[0][:10].squeeze().int())
+            orig_decoded = ["".join(x) for x in orig_decoded]
+            recon_decoded = ["".join(x) for x in recon_decoded]
+            output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
+            joined = []
+            for o, r in zip(orig_decoded, recon_decoded):
+                for l in [o, "|", r, "\n"]:
+                    joined.append(l)
+            output.writelines(["".join(joined)])
+            output.close()
         elif self.enc_name.lower() == "audio":
              for i in range(3):
                 if epoch < 101:
@@ -169,13 +194,19 @@ class VAE(nn.Module):
 
     def reconstruct_data(self, data):
         self.eval()
-        if self.enc_name != "Transformer":
+        if self.enc_name not in ["Transformer", "TxtTransformer"]:
             with torch.no_grad():
                 qz_x = self.qz_x(*self.enc(data))
                 latents = qz_x.rsample()
                 px_z = self.px_z(*self.dec(latents.unsqueeze(0)))
                 recon = get_mean(px_z)
-            return recon
+        else:
+            with torch.no_grad():
+                qz_x = self.qz_x(*self.enc(data))
+                latents = qz_x.rsample()
+                px_z = self.px_z(*self.dec([latents.unsqueeze(0), data[1]]))
+                recon = get_mean(px_z)
+        return recon
 
     def analyse_data(self, data, K, runPath, epoch, labels):
         self.eval()

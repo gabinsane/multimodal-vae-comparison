@@ -74,7 +74,7 @@ modelC = getattr(models, model)
 params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods], [m["feature_dim"] for m in mods]]
 if len(mods) == 1:
     params = [x[0] for x in params]
-model = modelC(*params, config["n_latents"]).to(device)
+model = modelC(*params, config["n_latents"], config["batch_size"]).to(device)
 
 if config["pre_trained"]:
     print('Loading model {} from {}'.format(model.modelName, config["pre_trained"]))
@@ -175,7 +175,10 @@ def trest(epoch, agg, lossmeter):
             if ix == 0 and epoch % config["viz_freq"] == 0:
                 model.reconstruct(data, runPath, epoch)
                 #model.generate(runPath, epoch)
-                model.analyse(data, runPath, epoch, labels[int(len(labels)*0.9):int(len(labels)*0.9)+d_len])
+                # if labels:
+                #     model.analyse(data, runPath, epoch, labels[int(len(labels)*0.9):int(len(labels)*0.9)+d_len])
+                # else:
+                #     model.analyse(data, runPath, epoch)
     progress_d = {"Epoch": epoch, "Test Loss": get_loss_mean(loss_m), "Test KLD": get_loss_mean(kld_m)}
     for i, x in enumerate(partial_losses):
         progress_d["Test Mod_{}".format(i)] = get_loss_mean(x)

@@ -2,14 +2,13 @@ import math
 import os, csv
 import shutil
 import time
-import torch
 import torch.distributions as dist
-import torch.nn.functional as F
-import numpy as np
-import random
 import glob, imageio
 from gensim.models import Word2Vec
-# Classes
+import random
+import numpy as np
+import torch
+import torch.nn.functional as F
 
 class W2V():
     def __init__(self, dim, path):
@@ -335,3 +334,46 @@ class FakeCategorical(dist.Distribution):
         # cross-entropy loss ($\sum -gt_i \log(p_i)$ with most gt_i = 0, We adopt the
         # operationally equivalence here, which is summing up the sentence dimension
         # in objective.
+
+alphabet = ' abcdefghijklmnopqrstuvwxyz'
+#alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:\'"\\/|_@#$%^&*~`+-=<>()[]{} \n'
+
+def char2Index(alphabet, character):
+    return alphabet.find(character)
+
+
+def one_hot_encode(len_seq, seq):
+    X = torch.zeros(len_seq, len(alphabet))
+    if len(seq) > len_seq:
+        seq = seq[:len_seq];
+    for index_char, char in enumerate(seq):
+        if char2Index(alphabet, char) != -1:
+            X[index_char, char2Index(alphabet, char)] = 1.0
+    return X
+
+
+def create_text_from_label_mnist(len_seq, label, alphabet):
+    text = digit_text_english[label];
+    sequence = len_seq * [' '];
+    start_index = random.randint(0, len_seq - 1 - len(text));
+    sequence[start_index:start_index + len(text)] = text;
+    sequence_one_hot = one_hot_encode(len_seq, alphabet, sequence);
+    return sequence_one_hot
+
+
+def seq2text(alphabet, seq):
+    decoded = []
+    for j in range(len(seq)):
+        decoded.append(alphabet[seq[j]])
+    return decoded
+
+
+def tensor_to_text(gen_t):
+    if not isinstance(gen_t, list):
+        gen_t = gen_t.cpu().data.numpy()
+    gen_t = np.argmax(gen_t, axis=-1)
+    decoded_samples = []
+    for i in range(len(gen_t)):
+        decoded = seq2text(alphabet, gen_t[i])
+        decoded_samples.append(decoded)
+    return decoded_samples
