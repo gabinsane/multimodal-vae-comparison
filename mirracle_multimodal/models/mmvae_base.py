@@ -3,8 +3,8 @@ from itertools import combinations
 import torch, os
 import torch.nn as nn
 import torch.nn.functional as F
-from numpy import prod
 from utils import get_mean, kl_divergence, lengths_to_mask
+from utils import one_hot_encode, tensor_to_text
 from data_proc.process_audio import numpy_to_wav
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
@@ -25,7 +25,7 @@ class MMVAE(nn.Module):
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
-            vae_mods.append(module_types[self.modelName](e, d, pth, fd, n_latents))
+            vae_mods.append(module_types[self.modelName](e, d, pth, fd, n_latents, batch_size))
         self.vaes = nn.ModuleList(vae_mods)
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
@@ -128,18 +128,18 @@ class MMVAE(nn.Module):
                     output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
                     output.close()
                 elif "image" in self.vaes[o].pth and self.vaes[o].enc_name == "CNN":
-                    _data = data[o][:N].cpu()
+                    _data = torch.stack(data[o]).cpu()
                     recon = recon.squeeze(0).cpu()
-                    _data = _data.reshape(N, *self.vaes[o].data_dim)
-                    recon = recon.reshape(N, *self.vaes[o].data_dim)
+                    _data = _data.reshape(len(_data), *self.vaes[o].data_dim)
+                    recon = recon.reshape(len(recon), *self.vaes[o].data_dim)
                     o_l, r_l = [], []
-                    for x in range(_data.shape[0]):
-                        org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-                        rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                    for x in range(recon.shape[0]):
+                        org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[211,211,211])
+                        rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[211,211,211])
                         o_l = org if o_l == [] else np.hstack((o_l, org))
                         r_l = rec if r_l == [] else np.hstack((r_l, rec))
                     w2 =cv2.cvtColor(np.vstack((o_l*255, r_l*255)).astype('uint8'), cv2.COLOR_BGR2RGB)
-                    w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+                    w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[211,211,211])
                     cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
                 elif self.vaes[o].enc_name.lower() == "transformerimg":
                     _data = torch.stack(data[o][0]).cpu()[:N]
@@ -153,6 +153,22 @@ class MMVAE(nn.Module):
                             (r_l, np.asarray(np.hstack(recon))), axis=1)
                     cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_minp{}.png'.format(epoch, r)),
                                 np.vstack((o_l, r_l)) * 255)
+                elif self.vaes[o].enc_name.lower() in ["txttransformer", "textonehot"]:
+                    recons_mat = torch.softmax(recon, dim=-1)
+                    one_pos = torch.argmax(recons_mat, dim=2)
+                    rec = torch.nn.functional.one_hot(one_pos)
+                    recon = rec.int()
+                    recon_decoded = tensor_to_text(recon)
+                    orig_decoded = tensor_to_text(torch.stack(data[o][0]).squeeze().int())
+                    orig_decoded = ["".join(x) for x in orig_decoded]
+                    recon_decoded = ["".join(x) for x in recon_decoded]
+                    output = open('{}/visuals/recon_epoch{}_m{}xm{}.txt'.format(runPath, epoch, r, o), "w")
+                    joined = []
+                    for orig, reconst in zip(orig_decoded, recon_decoded):
+                        for l in [orig, "|", reconst, "\n"]:
+                            joined.append(l)
+                    output.writelines(["".join(joined)])
+                    output.close()
                 elif self.vaes[o].enc_name.lower() == "audio":
                     _data = torch.stack(data[o]).cpu()[:N]
                     for i in range(3):

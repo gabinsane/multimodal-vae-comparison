@@ -4,6 +4,7 @@ import torchvision as visnn
 import chainer.links as L
 import chainer, math
 from chainer import cuda, Variable
+import torch.distributions as dist
 import torch.nn.functional as F
 from utils import Constants, create_vocab, W2V
 from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock, FeatureExtractorText, LinearFeatureCompressor
@@ -29,6 +30,7 @@ class Enc_CNN(nn.Module):
         kernel_size = 4
         hidden_dim = 256
         self.latent_dim = latent_dim
+        self.silu = torch.nn.SiLU()
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         n_chan = 3
@@ -50,22 +52,24 @@ class Enc_CNN(nn.Module):
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
 
     def forward(self, x):
+        x = torch.stack(x) if isinstance(x, list) else x
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
         # Convolutional layers with ReLu activations
-        x = torch.relu(self.conv1(x.float()))
-        x = torch.relu(self.conv2(x))
-        x = torch.relu(self.conv3(x))
-        x = torch.relu(self.conv_64(x))
+        x = self.silu(self.conv1(x.float()))
+        x = self.silu(self.conv2(x))
+        x = self.silu(self.conv3(x))
+        x = self.silu(self.conv_64(x))
 
         # Fully connected layers with ReLu activations
         x = x.view((batch_size, -1 ))
-        x = torch.relu(self.lin1(x))
+        x = self.silu(self.lin1(x))
         x = (self.lin2(x))
 
         # Fully connected layer for log variance and mean
         # Log std-dev in paper (bear in mind)
         mu = self.mu_layer(x)
         logvar = self.logvar_layer(x)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
 # Classes

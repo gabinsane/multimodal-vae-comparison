@@ -14,10 +14,10 @@ def exclude_keys(d, keys):
     return {x: d[x] for x in d if x not in keys}
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--path", type=str, default="../configs_experiment0", help="Folder in which to save the configs")
-parser.add_argument('--exp-name', type=str, default="conf",
+parser.add_argument("-p", "--path", type=str, default="../configs_latent_dim", help="Folder in which to save the configs")
+parser.add_argument('--exp-name', type=str, default="poe",
                     help='name of the config file')
-parser.add_argument('--cfg', type=str, default=None,
+parser.add_argument('--cfg', type=str, default="/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/config2mods.yml",
                     help='Which config to alter (only the specified parameters will vary)')
 parser.add_argument('--epochs', type=int, default=None,  help='number of training epochs')
 parser.add_argument('--lr', type=str, nargs="+", default=None,  help='learning rate')

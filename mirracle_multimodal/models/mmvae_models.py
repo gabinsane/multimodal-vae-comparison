@@ -172,14 +172,14 @@ class MOE(MMVAE):
         for e, zs in enumerate(zss):
             for d, vae in enumerate(self.vaes):
                 if e != d:  # fill-in off-diagonal
-                    if self.vaes[d].dec_name == "Transformer":
+                    if "transformer" in self.vaes[d].dec_name.lower():
                         px_zs[e][d] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None] ))
                     else:
                         px_zs[e][d] = vae.px_z(*vae.dec(zs))
         return qz_xs, px_zs, zss
 
     def reconstruct(self, data, runPath, epoch, N=8):
-        recons_mat = super(MOE, self).reconstruct([d[:N] for d in data])
+        recons_mat = super(MOE, self).reconstruct([d for d in data])
         self.process_reconstructions(recons_mat, data, epoch, runPath)
 
 
@@ -196,7 +196,7 @@ class POE(MMVAE):
         qz_x = dist.Normal(*[mu, logvar])
         z = qz_x.rsample(torch.Size([1]))
         for ind, vae in enumerate(self.vaes):
-            if vae.dec_name == "Transformer":
+            if "transformer" in vae.dec_name.lower():
                z_dec = [z, inputs[ind][1]] if inputs[ind] is not None else [z, None]
             else: z_dec = z
             recons.append(vae.px_z(*vae.dec(z_dec)))

@@ -245,8 +245,8 @@ def load_images(path, imsize=64, size=math.inf):
     return dataset
 
 if __name__ == "__main__":
-    os.makedirs("../../data", exist_ok=True)
-    target_dir = "../../data"
+    os.makedirs("../data", exist_ok=True)
+    target_dir = "../data"
     if not args.vecs_only:
         make_attrs(target_dir)
         os.makedirs(os.path.join(target_dir, "image"), exist_ok=True)

@@ -154,9 +154,9 @@ class VAE(nn.Module):
             recons_mat = torch.softmax(recons_mat, dim=-1)
             one_pos = torch.argmax(recons_mat, dim=2)
             rec = torch.nn.functional.one_hot(one_pos)
-            recon = rec[:10].int()
+            recon = rec.int()
             recon_decoded = tensor_to_text(recon)
-            orig_decoded = tensor_to_text(data[0][:10].squeeze().int())
+            orig_decoded = tensor_to_text(data[0].squeeze().int())
             orig_decoded = ["".join(x) for x in orig_decoded]
             recon_decoded = ["".join(x) for x in recon_decoded]
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")

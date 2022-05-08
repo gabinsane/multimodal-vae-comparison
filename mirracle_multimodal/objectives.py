@@ -19,9 +19,11 @@ def loss_fn(output, target, ltype, mod_type=None):
     if len(target) == 2:
         target = target[0]
     target = torch.stack(target).float() if isinstance(target, list) else target
-    if mod_type == "Transformer":
+    if "transformer" in mod_type.lower():
         output.loc = output.loc[:,:target.shape[1]]
         output.scale = output.scale[:, :target.shape[1]]
+        if "txt" in mod_type.lower():
+            ltype = "category"
     else:
         target = target.reshape(*output.loc.shape)
     if ltype == "bce":
@@ -108,7 +110,7 @@ def m_elbo_moe(model, x, ltype="lprob"):
         kld = kl_divergence(qz_x, model.pz(*model.pz_params))
         klds.append(kld.sum(-1))
         for d in range(len(px_zs)):
-            lpx_z = loss_fn(px_zs[d][d], x[d], ltype=ltype).cuda() * model.vaes[d].llik_scaling
+            lpx_z = loss_fn(px_zs[d][d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name).cuda() * model.vaes[d].llik_scaling
             if d == r:
                   lwt = torch.tensor(0.0).cuda()
             else:
