@@ -37,7 +37,7 @@ def loss_fn(output, target, ltype, mod_type=None):
         loss = -l(output.loc.cpu(), target.float().cpu().detach())
     elif ltype == "category":
         l = torch.nn.CrossEntropyLoss(reduction="sum")
-        loss = -l(output.loc.cpu(), target.float().cpu().detach())
+        loss = -l(output.loc.cuda(), target.float().cuda().detach())
     return loss
 
 def normalize(target, data=None):

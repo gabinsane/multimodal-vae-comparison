@@ -245,7 +245,7 @@ class POE(MMVAE):
             mu, logvar = mu.to("cuda"), logvar.to("cuda")
         return mu, logvar
 
-    def reconstruct(self, data, runPath, epoch, N=8):
+    def reconstruct(self, data, runPath, epoch, N=64):
         recons_mat = []
         for ix, i in enumerate(data):
             input_mat = [None] * len(data)
