@@ -39,6 +39,7 @@ class W2V():
 
 def load_images(path, dim):
     def generate(images):
+        images = sorted(images)
         dataset = np.zeros((len(images), dim[0], dim[1], dim[2]), dtype=np.float)
         for i, image_path in enumerate(images):
             image = imageio.imread(image_path)

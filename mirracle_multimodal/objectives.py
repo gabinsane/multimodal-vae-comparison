@@ -19,7 +19,7 @@ def loss_fn(output, target, ltype, mod_type=None):
     if len(target) == 2:
         target = target[0]
     target = torch.stack(target).float() if isinstance(target, list) else target
-    if "transformer" in mod_type.lower():
+    if mod_type is not None and "transformer" in mod_type.lower():
         output.loc = output.loc[:,:target.shape[1]]
         output.scale = output.scale[:, :target.shape[1]]
         if "txt" in mod_type.lower():

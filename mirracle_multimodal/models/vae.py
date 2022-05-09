@@ -118,7 +118,7 @@ class VAE(nn.Module):
             r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
             cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
 
-    def reconstruct(self, data, runPath, epoch, N=3):
+    def reconstruct(self, data, runPath, epoch, N=64):
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
         if ".pkl" in self.pth and self.w2v:
             _data = data[:N].cpu()
@@ -141,11 +141,12 @@ class VAE(nn.Module):
             output.close()
         elif self.enc_name.lower() in ["transformerimg", "cnn", "videogpt"]:
             o_l, r_l = [], []
-            N = 10 if self.enc_name.lower() in ["transformerimg", "videogpt"] else 10
+            N = 3 if self.enc_name.lower() in ["transformerimg", "videogpt"] else 64
             for r, recons_list in enumerate(recons_mat[:N]):
-                    _data = data[0][r].cpu()[:N] if self.enc_name.lower() not in ["cnn", "videogpt"] else data[r].cpu()
+                    _data = data[0][r].cpu()[:N].reshape(data[0].shape[1], data[0].shape[1], 3) \
+                        if self.enc_name.lower() not in ["cnn", "videogpt"] else data.cpu()[r].reshape(data[0].shape[1], data[0].shape[1], 3)
                     _data = np.hstack(_data) if len(_data.shape) > 3 else _data
-                    recon = recons_list.cpu() if self.enc_name.lower() != "cnn" else  recons_list.cpu()
+                    recon = recons_list.cpu()
                     recon = np.hstack(recon) if len(recon.shape) > 3 else recon
                     o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)), axis=1)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
