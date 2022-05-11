@@ -1,6 +1,6 @@
 import torch, numpy as np
 import models, pickle
-from utils import unpack_data
+from utils import unpack_data, one_hot_encode, output_onehot2text
 from PIL import Image, ImageDraw, ImageFont,  ImageOps
 import cv2, os
 from glob import glob
@@ -190,7 +190,7 @@ def compare_models_numbers(pth):
     f.close()
     print("Saved comparison at {}".format(os.path.join(pth, "comparison.csv")))
 
-def load_model(path, trainloader=None, testloader=None, batch=8):
+def load_model(path):
     device = torch.device("cuda")
     config, mods, args = parse_args(cfg_path=path)
     model = "VAE" if len(mods) == 1 else config["mixing"].lower()
@@ -199,14 +199,26 @@ def load_model(path, trainloader=None, testloader=None, batch=8):
               [m["feature_dim"] for m in mods]]
     if len(mods) == 1:
         params = [x[0] for x in params]
-    model = modelC(*params, config["n_latents"]).to(device)
+    model = modelC(*params, config["n_latents"], config["batch_size"]).to(device)
     print('Loading model {} from {}'.format(model.modelName, path))
     model.load_state_dict(torch.load(os.path.join(path,'model.rar')))
     model._pz_params = model._pz_params
     model.eval()
-    # if trainloader is None or testloader is None:
-    #     trainloader, testloader = model.getDataLoaders(batch, device)
     return model, args
+
+
+def text_to_image(text, model):
+    txt_inp = one_hot_encode(len(text), text)
+    model.eval()
+    recons = model.forward([None,[txt_inp.unsqueeze(0), None]])[1]
+    image = np.asarray(recons[0].loc[0].cpu().detach())
+    recon_text = recons[1].loc[0]
+    recon_text = output_onehot2text(recon=recon_text.unsqueeze(0))
+    print("Reconstructed text: {}".format(recon_text[0][0][:len(text)]))
+    image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
+    cv2.imshow(recon_text[0][0][:len(text)], image)
+    cv2.waitKey(5000)
+    cv2.destroyAllWindows()
 
 
 def print_txt2img(txt, correct = [1,1,1]):
@@ -263,8 +275,12 @@ def assemble_txtrecos(gt, txt, pth):
     cv2.imwrite(pth.replace(".png", "recon.png"), r_l)
 
 if __name__ == "__main__":
-    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/images_bce_lprob/lprob"
-    compare_loss(get_all_csvs(p), ["optimizer", "n_latents"])
+    p = "/home/gabi/mirracle_remote/mirracle_multimodal/mirracle_multimodal/results/configs_latent_dim_poe_7"
+    model, args = load_model(p)
+    while True:
+        t = input("Text to reconstruct: ")
+        text_to_image(t.lower(), model)
+    #compare_loss(get_all_csvs(p), ["optimizer", "n_latents"])
     #plot_loss(p)
     #eval_analyse(p)
     #compare_models_numbers(p)

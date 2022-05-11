@@ -2,6 +2,7 @@
 import torch
 from numpy import prod
 import numpy as np
+import torch.distributions as dist
 from utils import log_mean_exp, is_multidata, kl_divergence
 
 
@@ -51,11 +52,18 @@ def normalize(target, data=None):
     return output
 
 
-def elbo(model, x, K=1, ltype="lprob"):
+def calc_klds(latent_dists, model):
+    klds = []
+    for d in latent_dists:
+        klds.append(kl_divergence(d, model.pz(*model.pz_params)))
+    return klds
+
+
+def elbo(model, x, d_len, K=1, ltype="lprob"):
     """Computes E_{p(x)}[ELBO] """
     qz_x, px_z, _ = model(x)
-    lpx_z = loss_fn(px_z, x, ltype=ltype)
-    kld = kl_divergence(qz_x, model.pz(*model.pz_params))
+    lpx_z = loss_fn(px_z, x, ltype=ltype)/d_len
+    kld = kl_divergence(qz_x, model.pz(*model.pz_params))/d_len
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
 
@@ -102,13 +110,13 @@ def dreg(model, x, K, regs=None):
             zs.register_hook(lambda grad: grad_wt.unsqueeze(-1) * grad)
     return (grad_wt * lw).sum()
 
-def m_elbo_moe(model, x, ltype="lprob"):
+def m_elbo_moe(model, x, d_len, ltype="lprob"):
     """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
     for r, qz_x in enumerate(qz_xs):
         kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-        klds.append(kld.sum(-1))
+        klds.append(kld.sum(-1)/d_len)
         for d in range(len(px_zs)):
             lpx_z = loss_fn(px_zs[d][d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name).cuda() * model.vaes[d].llik_scaling
             if d == r:
@@ -117,12 +125,31 @@ def m_elbo_moe(model, x, ltype="lprob"):
                   zs = zss[d].detach()
                   qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
                   lwt = (qz_x.log_prob(zs)- qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
-            lpx_zs.append((lwt.exp() * lpx_z))
+            lpx_zs.append((lwt.exp() * lpx_z)/d_len)
     obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
     return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
-def m_elbo_binding_moe(model, x, ltype="lprob"):
+
+def m_elbo_mopoe(model, x, d_len, ltype="lprob", beta=5):
+    """Computes GENERALIZED MULTIMODAL ELBO https://arxiv.org/pdf/2105.02470.pdf """
+    qz_xs, px_zs, zss, single_latents = model(x)
+    lpx_zs, klds = [], []
+    uni_mus, uni_logvars = list(single_latents[0][:-1].squeeze(1)), list(single_latents[1][:-1].squeeze(1))
+    uni_dists = [dist.Normal(*[mu, logvar]) for mu, logvar in zip(uni_mus, uni_logvars)]
+    for r, px_z in enumerate(px_zs):
+        lpx_z = loss_fn(px_z, x[r], ltype=ltype, mod_type=model.vaes[r].dec_name).cuda() * model.vaes[r].llik_scaling
+        lpx_zs.append(lpx_z/d_len)
+    rec_loss = torch.tensor(lpx_zs).sum()
+    group_divergence = kl_divergence(qz_xs, model.pz(*model.pz_params))
+    kld_mods = calc_klds(uni_dists, model)
+    kld_weighted = (torch.stack(kld_mods).sum(0) + group_divergence).sum()/d_len
+    obj = rec_loss - beta * kld_weighted
+    individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
+    return -obj.sum(), kld_weighted, individual_losses
+
+
+def m_elbo_binding_moe(model, x, d_len, ltype="lprob"):
     """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
@@ -146,20 +173,7 @@ def m_elbo_binding_moe(model, x, ltype="lprob"):
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
     return -obj.sum(), torch.stack(bindings).sum(0).mean(0).sum(), individual_losses
 
-def m_elbo_poe_fully(model, x, K, ltype="lprob"):
-    """Computes importance-sampled m_elbo (in notes3) for multi-modal vae """
-    qz_x, px_zs, zss = model(x)
-    lpx_zs, klds = [], []
-    kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-    klds.append(kld.sum(-1))
-    for d in range(len(px_zs)):
-        lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype)  * model.vaes[d].llik_scaling
-        lwt = torch.tensor(0.0).cuda()
-        lpx_zs.append(lwt.exp() * lpx_z)
-    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    return -obj.sum(), torch.stack(klds).mean(0).sum(),[-lpx_zs[0].sum() / model.vaes[0].llik_scaling, -lpx_zs[1].sum()]
-
-def m_elbo_poe(model, x, ltype="lprob", ):
+def m_elbo_poe(model, x, d_len, ltype="lprob", ):
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
         mods = [None for _ in range(len(x))]
@@ -169,10 +183,10 @@ def m_elbo_poe(model, x, ltype="lprob", ):
             mods[m] = x[m]
         qz_x, px_zs, _ = model(mods)
         kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-        klds.append(kld.sum(-1))
+        klds.append(kld.sum(-1)/d_len)
         loc_lpx_z = []
         for d in range(len(px_zs)):
-            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling
+            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling/d_len
             loc_lpx_z.append(lpx_z)
             if d == m:
                 lpx_zs[m].append(lpx_z)

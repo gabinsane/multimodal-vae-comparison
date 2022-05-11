@@ -115,7 +115,7 @@ def train(epoch, agg, lossmeter):
             else:
                 data, masks = dataT
                 data = pad_seq_data(data, masks)
-                d_len = len(data[0][0])
+                d_len = len(data[0])
         else:
             if "transformer" in config["modality_1"]["encoder"].lower():
                 data, masks = dataT
@@ -125,14 +125,14 @@ def train(epoch, agg, lossmeter):
                 data = unpack_data(dataT[0], device=device)
                 d_len = len(data)
         optimizer.zero_grad()
-        loss, kld, partial_l = objective(model, data, ltype=config["loss"])
-        loss_m.append(loss/d_len)
-        kld_m.append(kld/d_len)
+        loss, kld, partial_l = objective(model, data, d_len, ltype=config["loss"])
+        loss_m.append(loss)
+        kld_m.append(kld)
         for i,l in enumerate(partial_l):
-            partial_losses[i].append(l/d_len)
+            partial_losses[i].append(l)
         loss.backward()
         optimizer.step()
-        print("Training iteration {}/{}, loss: {}".format(it, int(len(train_loader.dataset)/config["batch_size"]), int(loss/d_len)))
+        print("Training iteration {}/{}, loss: {}".format(it, int(len(train_loader.dataset)/config["batch_size"]), int(loss)))
     progress_d = {"Epoch": epoch, "Train Loss": get_loss_mean(loss_m), "Train KLD": get_loss_mean(kld_m)}
     for i, x in enumerate(partial_losses):
         progress_d["Train Mod_{}".format(i)] = get_loss_mean(x)
@@ -158,7 +158,7 @@ def trest(epoch, agg, lossmeter):
                 else:
                     data, masks = dataT
                     data = pad_seq_data(data, masks)
-                    d_len = len(data[0][0])
+                    d_len = len(data[0])
             else:
                 if "transformer" in config["modality_1"]["encoder"].lower():
                     data, masks = dataT
@@ -167,11 +167,11 @@ def trest(epoch, agg, lossmeter):
                 else:
                     data = unpack_data(dataT[0], device=device)
                     d_len = len(data)
-            loss, kld, partial_l = objective(model, data, ltype=config["loss"])
-            loss_m.append(loss/d_len)
-            kld_m.append(kld/d_len)
+            loss, kld, partial_l = objective(model, data, d_len, ltype=config["loss"])
+            loss_m.append(loss)
+            kld_m.append(kld)
             for i, l in enumerate(partial_l):
-                partial_losses[i].append(l/d_len)
+                partial_losses[i].append(l)
             if ix == 0 and epoch % config["viz_freq"] == 0:
                 model.reconstruct(data, runPath, epoch)
                 #model.generate(runPath, epoch)

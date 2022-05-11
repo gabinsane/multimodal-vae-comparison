@@ -378,3 +378,25 @@ def tensor_to_text(gen_t):
         decoded = seq2text(alphabet, gen_t[i])
         decoded_samples.append(decoded)
     return decoded_samples
+
+def output_onehot2text(recon=None, original=None):
+    recon_decoded, orig_decoded = None, None
+    if recon is not None:
+        recons_mat = torch.softmax(recon, dim=-1)
+        one_pos = torch.argmax(recons_mat, dim=2)
+        rec = torch.nn.functional.one_hot(one_pos)
+        recon = rec.int()
+        recon_decoded = tensor_to_text(recon)
+        recon_decoded = ["".join(x) for x in recon_decoded]
+    if original is not None:
+        orig_decoded = tensor_to_text(torch.stack(original).squeeze().int())
+        orig_decoded = ["".join(x) for x in orig_decoded]
+    return recon_decoded, orig_decoded
+
+def combinatorial(lst):
+    index, pairs = 1, []
+    for element1 in lst:
+        for element2 in lst[index:]:
+            pairs.append((element1, element2))
+        index += 1
+    return pairs
