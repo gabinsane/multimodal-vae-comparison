@@ -4,7 +4,7 @@ import torch, os
 import torch.nn as nn
 import torch.nn.functional as F
 from utils import get_mean, kl_divergence, lengths_to_mask
-from utils import one_hot_encode, tensor_to_text
+from utils import output_onehot2text
 from data_proc.process_audio import numpy_to_wav
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
@@ -22,6 +22,7 @@ class MMVAE(nn.Module):
         self.device = None
         self.pz = prior_dist
         self.batch_size = batch_size
+        self.n_latents = n_latents
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
@@ -154,14 +155,7 @@ class MMVAE(nn.Module):
                     cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_minp{}.png'.format(epoch, r)),
                                 np.vstack((o_l, r_l)) * 255)
                 elif self.vaes[o].enc_name.lower() in ["txttransformer", "textonehot"]:
-                    recons_mat = torch.softmax(recon, dim=-1)
-                    one_pos = torch.argmax(recons_mat, dim=2)
-                    rec = torch.nn.functional.one_hot(one_pos)
-                    recon = rec.int()
-                    recon_decoded = tensor_to_text(recon)
-                    orig_decoded = tensor_to_text(torch.stack(data[o][0]).squeeze().int())
-                    orig_decoded = ["".join(x) for x in orig_decoded]
-                    recon_decoded = ["".join(x) for x in recon_decoded]
+                    recon_decoded, orig_decoded = output_onehot2text(recon, data[o][0])
                     output = open('{}/visuals/recon_epoch{}_m{}xm{}.txt'.format(runPath, epoch, r, o), "w")
                     joined = []
                     for orig, reconst in zip(orig_decoded, recon_decoded):

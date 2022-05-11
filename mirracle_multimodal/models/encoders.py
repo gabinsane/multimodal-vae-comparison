@@ -329,7 +329,7 @@ class Enc_TxtTransformer(Enc_Transformer):
             x = torch.stack(batch[0]).float()
         else:
             x = (batch[0]).float()
-        mask = batch[1]
+        mask = batch[1] if len(batch) > 1 else None
         bs, nframes, njoints = x.shape
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = self.embedding(x.cuda().long())

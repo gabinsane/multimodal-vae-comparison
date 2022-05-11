@@ -317,7 +317,7 @@ class Dec_TxtTransformer(Dec_Transformer):
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
                                       tgt_key_padding_mask=~mask)
-        output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints,  self.nfeats)).squeeze()
+        output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints,  self.nfeats)).squeeze(-1)
         # zero for padded area
         output = output.permute(1,0,2) * mask.unsqueeze(dim=-1).repeat(1,1,self.njoints).float()
         #output = self.softmax(output)

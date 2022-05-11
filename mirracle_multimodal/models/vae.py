@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.distributions as dist
 from models import encoders, decoders
 from utils import get_mean, kl_divergence, Constants, create_vocab, W2V, load_images, lengths_to_mask
-from utils import one_hot_encode, tensor_to_text
+from utils import one_hot_encode, output_onehot2text
 from vis import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
 from torch.utils.data import DataLoader
 import pickle, os
@@ -152,14 +152,7 @@ class VAE(nn.Module):
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
             cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),np.vstack((o_l, r_l)) * 255)
         elif self.enc_name.lower() in ["txttransformer", "textonehot"]:
-            recons_mat = torch.softmax(recons_mat, dim=-1)
-            one_pos = torch.argmax(recons_mat, dim=2)
-            rec = torch.nn.functional.one_hot(one_pos)
-            recon = rec.int()
-            recon_decoded = tensor_to_text(recon)
-            orig_decoded = tensor_to_text(data[0].squeeze().int())
-            orig_decoded = ["".join(x) for x in orig_decoded]
-            recon_decoded = ["".join(x) for x in recon_decoded]
+            recon_decoded, orig_decoded = output_onehot2text(recons_mat, data[0].squeeze().int())
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
             joined = []
             for o, r in zip(orig_decoded, recon_decoded):
