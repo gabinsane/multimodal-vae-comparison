@@ -106,7 +106,10 @@ class MMVAE(nn.Module):
     def reconstruct(self, data):
         self.eval()
         with torch.no_grad():
-            _, px_zs, _ = self.forward(data)
+            if self.modelName != "mopoe":
+                _, px_zs, _ = self.forward(data)
+            else:
+                _, px_zs, _, _ = self.forward(data)
             recons = [[get_mean(px_z) for px_z in r] for r in px_zs] if any(isinstance(i, list) for i in px_zs) \
                      else [get_mean(px_z) for px_z in px_zs]
         return recons

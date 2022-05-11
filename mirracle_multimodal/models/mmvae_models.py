@@ -48,7 +48,10 @@ class POE(MMVAE):
         mu, logvar, single_params = self.infer(inputs)
         recons = []
         qz_x = dist.Normal(*[mu, logvar])
-        z = qz_x.rsample(torch.Size([1]))
+        if self.modelName == "mopoe":
+            z = self.reparameterize(mu, logvar).unsqueeze(0)
+        else:
+            z = qz_x.rsample(torch.Size([1]))
         for ind, vae in enumerate(self.vaes):
             if "transformer" in vae.dec_name.lower():
                z_dec = [z, inputs[ind][1]] if inputs[ind] is not None else [z, None]
@@ -59,7 +62,8 @@ class POE(MMVAE):
         return qz_x, recons, [z]
 
     def infer(self,inputs):
-        batch_size = len(inputs[0]) if len(inputs[0]) is not 2 else len(inputs[0][0])
+        id = 0 if inputs[0] is not None else 1
+        batch_size = len(inputs[id]) if len(inputs[id]) is not 2 else len(inputs[id][0])
         # initialize the universal prior expert
         mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
         for ix, modality in enumerate(inputs):
@@ -131,13 +135,22 @@ class MoPOE(POE):
                 if mu[mod_index] is not None:
                     mus_subset = torch.cat((mus_subset, mu[mod_index].unsqueeze(0)), dim=0)
                     logvars_subset = torch.cat((logvars_subset, logvar[mod_index].unsqueeze(0)), dim=0)
-            s_mu, s_logvar = self.poe_fusion(mus_subset, logvars_subset)
-            distr_subsets[k] = [s_mu, s_logvar]
-            mus = torch.cat((mus, s_mu.unsqueeze(0)), dim=0)
-            logvars = torch.cat((logvars, s_logvar.unsqueeze(0)), dim=0)
+            if mus_subset.nelement() != 0:
+                s_mu, s_logvar = self.poe_fusion(mus_subset, logvars_subset)
+                distr_subsets[k] = [s_mu, s_logvar]
+                if len(mus.shape) > 3:
+                    mus = mus.squeeze(0)
+                mus = torch.cat((mus, s_mu), dim=0)
+                logvars = torch.cat((logvars, s_logvar), dim=0)
         weights = (1 / float(mus.shape[0])) * torch.ones(mus.shape[0]).cuda()
         joint_mu, joint_logvar = self.moe_fusion(mus, logvars, weights)
-        return joint_mu.squeeze(0), joint_logvar.squeeze(0), [mus, logvars]
+        return joint_mu, joint_logvar, [mus, logvars]
+
+    def reparameterize(self, mu, logvar):
+        std = logvar.mul(0.5).exp_()
+        eps = Variable(std.data.new(std.size()).normal_())
+        return eps.mul(std).add_(mu)
+
 
     def reweight_weights(self, w):
         return w / w.sum()
