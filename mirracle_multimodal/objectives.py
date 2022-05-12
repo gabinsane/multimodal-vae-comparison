@@ -4,7 +4,7 @@ from numpy import prod
 import numpy as np
 import torch.distributions as dist
 from utils import log_mean_exp, is_multidata, kl_divergence
-
+from torch.autograd import Variable
 
 # helper to vectorise computation
 def compute_microbatch_split(x, K):
@@ -144,6 +144,7 @@ def m_elbo_mopoe(model, x, d_len, ltype="lprob", beta=5):
     group_divergence = kl_divergence(qz_xs, model.pz(*model.pz_params))
     kld_mods = calc_klds(uni_dists, model)
     kld_weighted = (torch.stack(kld_mods).sum(0) + group_divergence).sum()/d_len
+    rec_loss = Variable(rec_loss, requires_grad=True)
     obj = rec_loss - beta * kld_weighted
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
     return -obj.sum(), kld_weighted, individual_losses
