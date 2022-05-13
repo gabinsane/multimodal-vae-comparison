@@ -23,7 +23,7 @@ def loss_fn(output, target, ltype, mod_type=None):
     if mod_type is not None and "transformer" in mod_type.lower():
         output.loc = output.loc[:,:target.shape[1]]
         output.scale = output.scale[:, :target.shape[1]]
-        if "txt" in mod_type.lower():
+        if "txt" in mod_type.lower() and ltype !="lprob":
             ltype = "category"
     else:
         target = target.reshape(*output.loc.shape)
@@ -35,6 +35,9 @@ def loss_fn(output, target, ltype, mod_type=None):
         loss = output.log_prob(target.cuda()).view(*target.shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
     elif ltype == "l1":
         l = torch.nn.L1Loss(reduction="sum")
+        loss = -l(output.loc.cpu(), target.float().cpu().detach())
+    elif ltype == "mse":
+        l = torch.nn.MSELoss(reduction="sum")
         loss = -l(output.loc.cpu(), target.float().cpu().detach())
     elif ltype == "category":
         l = torch.nn.CrossEntropyLoss(reduction="sum")

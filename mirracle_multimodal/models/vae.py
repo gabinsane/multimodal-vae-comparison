@@ -71,7 +71,7 @@ class VAE(nn.Module):
             elif self.enc.name in ["Transformer", "CNN", "3DCNN"]:
                 d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in d] if self.enc_name.lower() in ["transformerimg", "videogpt"] else [torch.from_numpy(np.asarray(x)) for x in d]
                 if self.enc_name.lower() == "cnn":
-                    d = torch.stack(d).transpose(1,3) #.reshape(len(d), -1)
+                    d = torch.stack(d).transpose(1,3)
                 else:
                     if len(d[0].shape) < 3:
                         d = [torch.unsqueeze(i, dim=1) for i in d]
@@ -153,7 +153,8 @@ class VAE(nn.Module):
                     recon = np.hstack(recon) if len(recon.shape) > 3 else recon
                     o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)), axis=1)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
-            cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),np.vstack((o_l, r_l)) * 255)
+            img = cv2.cvtColor(np.float32(np.vstack((o_l, r_l)) * 255), cv2.COLOR_BGR2RGB)
+            cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),img)
         elif self.enc_name.lower() in ["txttransformer", "textonehot"]:
             recon_decoded, orig_decoded = output_onehot2text(recons_mat, data[0].squeeze().int())
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
