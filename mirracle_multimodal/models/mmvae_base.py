@@ -134,8 +134,11 @@ class MMVAE(nn.Module):
                 elif "image" in self.vaes[o].pth and self.vaes[o].enc_name == "CNN":
                     _data = torch.stack(data[o]).cpu()
                     recon = recon.squeeze(0).cpu()
-                    _data = _data.reshape(len(_data), *self.vaes[o].data_dim)
-                    recon = recon.reshape(len(recon), *self.vaes[o].data_dim)
+                    if "cub_" in self.vaes[o].pth:
+                        _data = _data.permute(0,3,2,1)
+                    else:
+                        _data = _data.reshape(len(_data), *self.vaes[o].data_dim)
+                        #recon = recon.reshape(len(recon), *self.vaes[o].data_dim)
                     o_l, r_l = [], []
                     for x in range(recon.shape[0]):
                         org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[211,211,211])

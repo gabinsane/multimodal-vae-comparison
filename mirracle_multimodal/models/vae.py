@@ -54,14 +54,17 @@ class VAE(nn.Module):
     def getDataLoaders(self, batch_size,device="cuda"):
         self.device = device
         kwargs = {'num_workers': 1, 'pin_memory': True} if device == "cuda" else {}
-        if not ".pkl" in self.pth:
+        if os.path.isdir(self.pth):
             if "image" in self.pth:
                 d = load_images(self.pth, self.data_dim)
-            else: raise Exception("If {} is an image dataset, please include 'image' in it's name. "
-                                  "For other data types you should use .pkl or write your own dataLoader'".format(self.pth))
         else:
-            with open(self.pth, 'rb') as handle:
-                d = pickle.load(handle)
+            if ".pth" in self.pth:
+                d = torch.load(self.pth)
+                if "image" in self.pth:
+                    d = d/255
+            else:
+                with open(self.pth, 'rb') as handle:
+                    d = pickle.load(handle)
             if "word2vec" in self.pth:
                 d = d.reshape(d.shape[0],-1)
                 if len(d.shape) < 2: d = np.expand_dims(d, axis=1)
@@ -74,7 +77,7 @@ class VAE(nn.Module):
                         d = [torch.unsqueeze(i, dim=1) for i in d]
                     kwargs["collate_fn"] = self.seq_collate_fn
             elif self.enc.name in ["TxtTransformer", "textonehot"]:
-                d = [" ".join(x) for x in d]
+                d = [" ".join(x) for x in d] if not "cub_" in self.pth else d
                 d = [one_hot_encode(len(f), f) for f in d]
                 d = [torch.from_numpy(np.asarray(x)) for x in d]
                 if self.enc.name == "TxtTransformer":

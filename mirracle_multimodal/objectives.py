@@ -41,6 +41,7 @@ def loss_fn(output, target, ltype, mod_type=None):
         loss = -l(output.loc.cuda(), target.float().cuda().detach())
     return loss
 
+
 def normalize(target, data=None):
     t_size= target.size()
     maxv, minv = torch.max(target.reshape(-1)), torch.min(target.view(-1))
