@@ -64,6 +64,67 @@ class Dec_CNN(nn.Module):
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d.squeeze().reshape(-1, *self.datadim), torch.tensor(0.75).to(z.device)
 
+class Dec_SVHN(nn.Module):
+    """Parametrizes p(x|z).
+    @param n_latents: integer
+                      number of latent variable dimensions.
+    """
+    def __init__(self, latent_dim, data_dim):
+        super(Dec_SVHN, self).__init__()
+        latent_dim = latent_dim
+        self.datadim = data_dim
+        self.name = "CNN"
+        self.linear = nn.Linear(latent_dim, 128)
+        self.conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=1, padding=0, dilation=1)
+        self.conv2 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1, dilation=1)
+        self.conv3 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, padding=1, dilation=1)
+        self.conv4 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, dilation=1)
+        self.relu = nn.ReLU()
+
+
+    def forward(self, z):
+        z = z.squeeze(0)
+        z = self.linear(z)
+        z = z.view(z.size(0), z.size(1), 1, 1)
+        x_hat = self.relu(z)
+        x_hat = self.conv1(x_hat)
+        x_hat = self.relu(x_hat)
+        x_hat = self.conv2(x_hat)
+        x_hat = self.relu(x_hat)
+        x_hat = self.conv3(x_hat)
+        x_hat = self.relu(x_hat)
+        d = torch.sigmoid(self.conv4(x_hat)).permute(0,2,3,1)
+        return d.squeeze(), torch.tensor(0.75).to(z.device)
+
+class Dec_MNIST(nn.Module):
+    """Parametrizes p(x|z).
+    @param n_latents: integer
+                      number of latent variable dimensions.
+    """
+    def __init__(self, latent_dim, data_dim):
+        super(Dec_MNIST, self).__init__()
+        latent_dim = latent_dim
+        self.datadim = data_dim
+        self.name = "CNN"
+        self.hidden_dim = 400;
+        modules = []
+        modules.append(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True)))
+        modules.extend([nn.Sequential(nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(True)) for _ in range(2 - 1)])
+        self.dec = nn.Sequential(*modules)
+        self.fc3 = nn.Linear(self.hidden_dim, 784)
+        self.relu = nn.ReLU();
+        self.sigmoid = nn.Sigmoid();
+
+    def forward(self, z):
+        x_hat = self.dec(z)
+        x_hat = self.fc3(x_hat)
+        x_hat = self.sigmoid(x_hat)
+        d = x_hat.view(*z.size()[:-1], *self.datadim).squeeze(0).permute(0,3,1,2)
+        return d.squeeze(), torch.tensor(0.75).to(z.device)
+
+
+
+
 class Dec_FNN(nn.Module):
     """ Generate a SVHN image given a sample from the latent space. """
 

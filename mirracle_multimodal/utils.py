@@ -43,6 +43,8 @@ def load_images(path, dim):
         dataset = np.zeros((len(images), dim[0], dim[1], dim[2]), dtype=np.float)
         for i, image_path in enumerate(images):
             image = imageio.imread(image_path)
+            if len(image.shape) < 3:
+                image = np.expand_dims(image, axis=2)
             dataset[i, :] = image / 255
         return dataset.reshape(-1, dataset.shape[-1], dataset.shape[1], dataset.shape[2])
 

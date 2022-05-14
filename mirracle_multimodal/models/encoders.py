@@ -72,6 +72,65 @@ class Enc_CNN(nn.Module):
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
+class Enc_MNIST(nn.Module):
+    """Parametrizes q(z|x).
+    @param n_latents: integer
+                      number of latent variable dimensions.
+    """
+    def __init__(self, latent_dim, data_dim):
+        super(Enc_MNIST, self).__init__()
+        self.name = "CNN"
+        self.hidden_dim = 400
+        modules = []
+        modules.append(nn.Sequential(nn.Linear(784, self.hidden_dim), nn.ReLU(True)))
+        modules.extend([nn.Sequential(nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(True))
+                        for _ in range(2 - 1)])
+        self.enc = nn.Sequential(*modules)
+        self.relu = nn.ReLU()
+        self.hidden_mu = nn.Linear(in_features=self.hidden_dim, out_features=latent_dim, bias=True)
+        self.hidden_logvar = nn.Linear(in_features=self.hidden_dim, out_features=latent_dim, bias=True)
+
+    def forward(self, x):
+        h = x.view(*x.size()[:-3], -1)
+        h = self.enc(h.float())
+        h = h.view(h.size(0), -1)
+        mu = self.hidden_mu(h)
+        logvar = self.hidden_logvar(h)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        return mu, logvar
+
+
+class Enc_SVHN(nn.Module):
+    """Parametrizes q(z|x).
+    @param n_latents: integer number of latent variable dimensions.
+    """
+    def __init__(self, latent_dim, data_dim):
+        super(Enc_SVHN, self).__init__()
+        self.name = "CNN"
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1, dilation=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1, dilation=1)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, dilation=1)
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=0, dilation=1)
+        self.relu = nn.ReLU()
+        self.hidden_mu = nn.Linear(in_features=128, out_features=latent_dim, bias=True)
+        self.hidden_logvar = nn.Linear(in_features=128, out_features=latent_dim, bias=True)
+
+    def forward(self, x):
+        h = self.conv1(x.float())
+        h = self.relu(h)
+        h = self.conv2(h)
+        h = self.relu(h)
+        h = self.conv3(h)
+        h = self.relu(h)
+        h = self.conv4(h)
+        h = self.relu(h)
+        h = h.view(h.size(0), -1)
+        mu = self.hidden_mu(h)
+        logvar = self.hidden_logvar(h)
+        logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        return mu, logvar
+
+
 # Classes
 class Enc_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):

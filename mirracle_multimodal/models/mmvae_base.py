@@ -131,14 +131,19 @@ class MMVAE(nn.Module):
                     output = open(os.path.join(runPath, "visuals/",'recon_epoch{}_m{}xm{}.txt'.format(epoch, r, o)), "w")
                     output.writelines(["|".join(target)+"\n", "|".join(reconstruct)])
                     output.close()
-                elif "image" in self.vaes[o].pth and self.vaes[o].enc_name == "CNN":
-                    _data = torch.stack(data[o]).cpu()
+                elif self.vaes[o].enc.name == "CNN":
+                    _data = torch.stack(data[o]).cpu() if isinstance(data[0], list) else data[o].cpu()
                     recon = recon.squeeze(0).cpu()
                     if "cub_" in self.vaes[o].pth:
                         _data = _data.permute(0,3,2,1)
+                    elif self.vaes[o].enc_name in ["MNIST", "SVHN"]:
+                        if self.vaes[o].enc_name == "MNIST":
+                            _data = _data.permute(0,2,3,1).cpu()
+                            recon = recon.unsqueeze(-1).cpu()
+                        else:
+                            _data = _data.reshape(-1, 32,32,3)
                     else:
                         _data = _data.reshape(len(_data), *self.vaes[o].data_dim)
-                        #recon = recon.reshape(len(recon), *self.vaes[o].data_dim)
                     o_l, r_l = [], []
                     for x in range(recon.shape[0]):
                         org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[211,211,211])

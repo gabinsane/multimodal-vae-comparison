@@ -28,9 +28,8 @@ def loss_fn(output, target, ltype, mod_type=None):
     else:
         target = target.reshape(*output.loc.shape)
     if ltype == "bce":
-        output = output.loc
         assert torch.min(target.reshape(-1)) >= 0 and torch.max(target.reshape(-1)) <= 1, "Cannot use bce on data which is not normalised"
-        loss = -torch.nn.functional.binary_cross_entropy(output.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
+        loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
     elif ltype == "lprob":
         loss = output.log_prob(target.cuda()).view(*target.shape[:2], -1).sum(-1).sum(-1).sum(-1).double()
     elif ltype == "l1":
