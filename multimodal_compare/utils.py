@@ -1,43 +1,49 @@
 import math
-import os
+import os, csv
 import shutil
-import sys
 import time
-import torch
-import torch.distributions as dist
-import torch.nn.functional as F
+import glob, imageio
 import numpy as np
-import random
-from gensim.models import Word2Vec
-# Classes
+import torch
+import torch.nn.functional as F
 
-class W2V():
-    def __init__(self, dim, path):
-        self.vec_dim = int(dim)
-        self.model = self.get_w2v(self.vec_dim, path)
-        self.max = None
-        self.min = None
+def pad_seq_data(data, masks):
+    for i, _ in enumerate(data):
+        if masks[i] is not None:
+            data[i].append(masks[i])
+        else:
+            data[i] = [o[0].clone().detach() for o in data[i][0]]
+    return data
 
-    def normalize_w2v(self, data):
-        self.max = data.max()
-        self.min = data.min()
-        a = self.max - self.min
-        d = (data - self.min) / a
-        return d
+def load_images(path, dim):
+    def generate(images):
+        images = sorted(images)
+        dataset = np.zeros((len(images), dim[0], dim[1], dim[2]), dtype=np.float)
+        for i, image_path in enumerate(images):
+            image = imageio.imread(image_path)
+            if len(image.shape) < 3:
+                image = np.expand_dims(image, axis=2)
+            dataset[i, :] = image / 255
+        return dataset.reshape(-1, dataset.shape[-1], dataset.shape[1], dataset.shape[2])
 
-    def unnormalize_w2v(self,data):
-        a = self.max - self.min
-        d = (data * a) + self.min
-        return d
+    if any([os.path.isdir(x) for x in glob.glob(os.path.join(path, "*"))]):
+        subparts = (glob.glob(os.path.join(path, "./*")))
+        datasets = []
+        for s in subparts:
+            images = (glob.glob(os.path.join(s, "*.png")))
+            d = generate(images)
+            datasets.append(d)
+        return np.concatenate(datasets)
+    else:
+        images = (glob.glob(os.path.join(path, "*.png")))
+        dataset = generate(images)
+        return dataset
 
-    def get_w2v(self, data_dim, path):
-        print(path)
-        try:
-            w = Word2Vec.load(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim)))
-        except:
-            print("Did not find {}".format(os.path.join(os.path.dirname(path), "word2vec{}d.model".format(data_dim))))
-            w = None
-        return w
+
+def lengths_to_mask(lengths):
+    max_len = max(lengths)
+    mask = torch.arange(max_len, device=lengths.device).expand(len(lengths), max_len) < lengths.unsqueeze(1)
+    return mask
 
 class Constants(object):
     eta = 1e-6
@@ -47,19 +53,30 @@ class Constants(object):
     logfloorc = -104  # smallest cuda v s.t. exp(v) > 0
 
 class Logger(object):
-    def __init__(self, filename, mode="a"):
-        self.terminal = sys.stdout
-        self.log = open(filename, mode)
+    """Saves training progress into csv"""
 
-    def write(self, message):
-        self.terminal.write(message)
-        self.log.write(message)
+    def __init__(self, path, mods):
+        self.fields = ["Epoch", "Train Loss", "Test Loss", "Train KLD", "Test KLD"]
+        self.path = path
+        self.dic = {}
+        for m in range(len(mods)):
+            self.fields.append("Train Mod_{}".format(m))
+            self.fields.append("Test Mod_{}".format(m))
+        self.reset()
 
-    def flush(self):
-        # this flush method is needed for python 3 compatibility.
-        # this handles the flush command by doing nothing.
-        # you might want to specify some extra behavior here.
-        pass
+    def reset(self):
+        with open(os.path.join(self.path, "loss.csv"), mode='w') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self.fields)
+            writer.writeheader()
+
+    def update_train(self, val_d):
+        self.dic = val_d
+
+    def update(self, val_d):
+        with open(os.path.join(self.path, "loss.csv"), mode='a') as csv_file:
+            writer = csv.DictWriter(csv_file, fieldnames=self.fields)
+            writer.writerow({**self.dic, **val_d})
+        self.dic = {}
 
 
 class Timer:
@@ -119,7 +136,7 @@ def unpack_data(dataB, device='cuda'):
                 raise RuntimeError('Invalid data format {} -- check your dataloader!'.format(type(dataB[1])))
 
         elif is_multidata(dataB[0]):
-            return [d.to(device) for d in list(zip(*dataB))[0]]  # mnist-svhn, cubIS
+            return [d for d in list(zip(*dataB))[0]]  # mnist-svhn, cubIS
         else:
             raise RuntimeError('Invalid data format {} -- check your dataloader!'.format(type(dataB[0])))
     elif torch.is_tensor(dataB):
@@ -154,42 +171,57 @@ def kl_divergence(d1, d2, K=100):
         samples = d1.rsample(torch.Size([K]))
         return (d1.log_prob(samples) - d2.log_prob(samples)).mean(0)
 
+alphabet = ' abcdefghijklmnopqrstuvwxyz'
 
-def pdist(sample_1, sample_2, eps=1e-5):
-    """Compute the matrix of all squared pairwise distances. Code
-    adapted from the torch-two-sample library (added batching).
-    You can find the original implementation of this function here:
-    https://github.com/josipd/torch-two-sample/blob/master/torch_two_sample/util.py
-
-    Arguments
-    ---------
-    sample_1 : torch.Tensor or Variable
-        The first sample, should be of shape ``(batch_size, n_1, d)``.
-    sample_2 : torch.Tensor or Variable
-        The second sample, should be of shape ``(batch_size, n_2, d)``.
-    norm : float
-        The l_p norm to be used.
-    batched : bool
-        whether data is batched
-
-    Returns
-    -------
-    torch.Tensor or Variable
-        Matrix of shape (batch_size, n_1, n_2). The [i, j]-th entry is equal to
-        ``|| sample_1[i, :] - sample_2[j, :] ||_p``."""
-    if len(sample_1.shape) == 2:
-        sample_1, sample_2 = sample_1.unsqueeze(0), sample_2.unsqueeze(0)
-    B, n_1, n_2 = sample_1.size(0), sample_1.size(1), sample_2.size(1)
-    norms_1 = torch.sum(sample_1 ** 2, dim=-1, keepdim=True)
-    norms_2 = torch.sum(sample_2 ** 2, dim=-1, keepdim=True)
-    norms = (norms_1.expand(B, n_1, n_2)
-             + norms_2.transpose(1, 2).expand(B, n_1, n_2))
-    distances_squared = norms - 2 * sample_1.matmul(sample_2.transpose(1, 2))
-    return torch.sqrt(eps + torch.abs(distances_squared)).squeeze()  # batch x K x latent
+def char2Index(alphabet, character):
+    return alphabet.find(character)
 
 
-def NN_lookup(emb_h, emb, data):
-    indices = pdist(emb.to(emb_h.device), emb_h).argmin(dim=0)
-    # indices = torch.tensor(cosine_similarity(emb, emb_h.cpu().numpy()).argmax(0)).to(emb_h.device).squeeze()
-    return data[indices]
+def one_hot_encode(len_seq, seq):
+    X = torch.zeros(len_seq, len(alphabet))
+    if len(seq) > len_seq:
+        seq = seq[:len_seq];
+    for index_char, char in enumerate(seq):
+        if char2Index(alphabet, char) != -1:
+            X[index_char, char2Index(alphabet, char)] = 1.0
+    return X
 
+
+def seq2text(alphabet, seq):
+    decoded = []
+    for j in range(len(seq)):
+        decoded.append(alphabet[seq[j]])
+    return decoded
+
+
+def tensor_to_text(gen_t):
+    if not isinstance(gen_t, list):
+        gen_t = gen_t.cpu().data.numpy()
+    gen_t = np.argmax(gen_t, axis=-1)
+    decoded_samples = []
+    for i in range(len(gen_t)):
+        decoded = seq2text(alphabet, gen_t[i])
+        decoded_samples.append(decoded)
+    return decoded_samples
+
+def output_onehot2text(recon=None, original=None):
+    recon_decoded, orig_decoded = None, None
+    if recon is not None:
+        recons_mat = torch.softmax(recon, dim=-1)
+        one_pos = torch.argmax(recons_mat, dim=2)
+        rec = torch.nn.functional.one_hot(one_pos)
+        recon = rec.int()
+        recon_decoded = tensor_to_text(recon)
+        recon_decoded = ["".join(x) for x in recon_decoded]
+    if original is not None:
+        orig_decoded = tensor_to_text(torch.stack(original).squeeze().int())
+        orig_decoded = ["".join(x) for x in orig_decoded]
+    return recon_decoded, orig_decoded
+
+def combinatorial(lst):
+    index, pairs = 1, []
+    for element1 in lst:
+        for element2 in lst[index:]:
+            pairs.append((element1, element2))
+        index += 1
+    return pairs

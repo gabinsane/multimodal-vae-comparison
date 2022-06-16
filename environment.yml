@@ -2,84 +2,33 @@ name: multivae
 channels:
   - defaults
 dependencies:
-  - _libgcc_mutex=0.1=main
-  - ca-certificates=2020.6.24=0
-  - certifi=2020.6.20=py36_0
-  - freetype=2.10.2=h5ab3b9f_0
-  - jpeg=9b=h024ee3a_2
-  - libedit=3.1.20191231=h14c3975_1
-  - libffi=3.2.1=hd88cf55_4
-  - libgcc-ng=9.1.0=hdf63c60_0
-  - libpng=1.6.37=hbc83047_0
-  - libstdcxx-ng=9.1.0=hdf63c60_0
-  - libtiff=4.1.0=h2733197_1
-  - lz4-c=1.9.2=he6710b0_1
-  - ncurses=6.2=he6710b0_1
-  - olefile=0.46=py36_0
-  - openssl=1.1.1g=h7b6447c_0
   - pillow=6.1.0=py36h34e0f95_0
   - pip=20.1.1=py36_1
   - python=3.6.8=h0371630_0
-  - readline=7.0=h7b6447c_5
-  - setuptools=49.2.0=py36_0
-  - sqlite=3.32.3=h62c20be_0
-  - tk=8.6.10=hbc83047_0
-  - wheel=0.34.2=py36_0
-  - xz=5.2.5=h7b6447c_0
-  - zlib=1.2.11=h7b6447c_3
-  - zstd=1.4.5=h9ceee32_0
   - pip:
-    - backcall==0.2.0
-    - boto==2.49.0
-    - boto3==1.14.34
-    - botocore==1.17.34
-    - dataclasses==0.8
-    - decorator==4.4.2
-    - docutils==0.15.2
     - gensim==4.0.1
-    - ipython==7.16.1
-    - ipython-genutils==0.2.0
-    - jedi==0.18.0
-    - jmespath==0.10.0
-    - joblib==0.16.0
     - jsonpatch==1.26
     - jsonpointer==2.0
-    - llvmlite==0.33.0
     - matplotlib==3.1.1
-    - mpmath==1.2.1
-    - natsort==7.1.1
-    - networkx==2.4
     - nltk==3.4.5
-    - numba==0.50.1
     - numpy==1.19.5
     - opencv-python==4.5.1.48
     - pandas==0.25.3
-    - parso==0.8.2
-    - pexpect==4.8.0
     - pickleshare==0.7.5
-    - pixyz==0.3.2
-    - prompt-toolkit==3.0.18
-    - ptyprocess==0.7.0
-    - pygments==2.9.0
     - pywavelets==1.1.1
     - imageio==2.8.0
-    - pyzmq==19.0.2
-    - s3transfer==0.3.3
     - scikit-image==0.15.0
     - scikit-learn==0.23.1
     - scipy==1.3.2
     - seaborn==0.9.0
-    - smart-open==2.1.0
-    - sympy==1.8
-    - threadpoolctl==2.1.0
-    - torch==1.3.1
-    - torchfile==0.1.0
-    - torchnet==0.0.4
-    - torchvision==0.4.2
-    - tornado==6.0.4
-    - traitlets==4.3.3
+    - torch==1.10.1
+    - torchvision==0.11.2
     - umap-learn==0.1.1
     - visdom==0.1.8.9
-    - wcwidth==0.2.5
     - websocket-client==0.57.0
-prefix: /home/gabi/anaconda3/envs/multivae
+    - pyttsx3==2.9.0
+    - sounddevice==0.4.4
+    - soundfile
+    - chainer==7.8.1
+    - pydub
+
