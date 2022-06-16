@@ -64,9 +64,9 @@ python ./data_proc/generate_dataset.py --dir ./data/level4 --level 4 --size 1000
 The code will make an _./image_ folder in the target directory that includes the _.png_ images. The text is stored in 
 _attrs.pkl_ file and is in the same order as the images. 
 
-### Setup and training
+## Setup and training
 
-#### Single experiment
+### Single experiment
 We show an example training config in _./multimodal_compare/configs/config1.yml_. You can run the training as follows:
 
 ```
@@ -74,7 +74,7 @@ cd ~/multimodal-vae-comparison/multimodal_compare
 python main.py --cfg configs/config1.yml
 ```
 
-#### Set of experiments
+### Set of experiments
 
 We provide an automated way to perform hyperparameter grid search for your models. First, set up the default config (e.g. config1.yml in ./configs)
 that should be adjusted in selected parameters. Then generate the full variability within the chosen parametes as follows:
@@ -100,7 +100,7 @@ We provide sets of configs for the experiments reported in the paper. These are 
 and ./configs/my_experiment/latent_dim_exp
 
 
-### Evaluation
+## Evaluation
 
 After training, you will find various visualizations of the training progress in the ./visuals folder of your experiment.
 Furthermore, to calculate the joint- and cross-generation accuracy, you can run:
