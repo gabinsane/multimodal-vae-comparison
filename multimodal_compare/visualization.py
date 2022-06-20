@@ -30,15 +30,17 @@ def t_sne(data, runPath, epoch, K, labels):
     data_labels = []
     for ind, mod in enumerate(data):
         if not labels:
+            palette = sns.color_palette("hls", len(data))
             data_labels.append(["Modality {}".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
         else:
+            palette = sns.color_palette("hls", len(data) * len(set(labels)))
             if len(data) > 1:
                 l = ["Class {} Mod {}".format(str(i), ind) for i in list(labels)]
             else:
                 l = ["Class {}".format(str(i)) for i in list(labels)]
             data_labels.append([val for val in l for _ in range(K)])
     df["y"] = np.concatenate(data_labels)
-    sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = sns.color_palette("hls", len(data)*len(set(labels))), data = df).set(title="T-SNE projection")
+    sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = palette, data = df).set(title="T-SNE projection")
     p = os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)) if not ".png" in runPath else runPath
     plt.savefig(p)
     plt.clf()

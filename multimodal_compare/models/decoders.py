@@ -10,15 +10,16 @@ from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePa
     SamePadConvTranspose3d, DataGeneratorText
 
 class Dec_CNN(nn.Module):
-    """Parametrizes p(x|z).
-    @param n_latents: integer
-                      number of latent variable dimensions.
-    """
     def __init__(self, latent_dim, data_dim):
+        """
+        CNN decoder for RGB images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        """
         super(Dec_CNN, self).__init__()
         latent_dim = latent_dim
         self.datadim = data_dim
-        self.name = "CNN"
+        self.net_type = "CNN"
 
         # Layer parameters
         hid_channels = 32
@@ -64,15 +65,16 @@ class Dec_CNN(nn.Module):
         return d.squeeze().reshape(-1, *self.datadim), torch.tensor(0.75).to(z.device)
 
 class Dec_SVHN(nn.Module):
-    """Parametrizes p(x|z).
-    @param n_latents: integer
-                      number of latent variable dimensions.
-    """
     def __init__(self, latent_dim, data_dim):
+        """
+        Image decoder for the SVHN dataset
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [32,32,3] for 32x32x3 images)
+        """
         super(Dec_SVHN, self).__init__()
         latent_dim = latent_dim
         self.datadim = data_dim
-        self.name = "CNN"
+        self.type = "CNN"
         self.linear = nn.Linear(latent_dim, 128)
         self.conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=1, padding=0, dilation=1)
         self.conv2 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1, dilation=1)
@@ -96,15 +98,16 @@ class Dec_SVHN(nn.Module):
         return d.squeeze(), torch.tensor(0.75).to(z.device)
 
 class Dec_MNIST(nn.Module):
-    """Parametrizes p(x|z).
-    @param n_latents: integer
-                      number of latent variable dimensions.
-    """
     def __init__(self, latent_dim, data_dim):
+        """
+        Image decoder for the MNIST BW images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [28,28,1] for 28x28 bw images)
+        """
         super(Dec_MNIST, self).__init__()
         latent_dim = latent_dim
         self.datadim = data_dim
-        self.name = "CNN"
+        self.net_type = "CNN"
         self.hidden_dim = 400;
         modules = []
         modules.append(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True)))
@@ -125,11 +128,14 @@ class Dec_MNIST(nn.Module):
 
 
 class Dec_FNN(nn.Module):
-    """ Generate a SVHN image given a sample from the latent space. """
-
     def __init__(self, latent_dim, data_dim=1):
+        """
+        Fully connected layer decoder for any type of data
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data
+        """
         super(Dec_FNN, self).__init__()
-        self.name = "FNN"
+        self.net_type = "FNN"
         self.hidden_dim = 30
         self.data_dim = data_dim
         self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, self.hidden_dim))
@@ -147,8 +153,13 @@ class Dec_FNN(nn.Module):
 
 class Dec_Audio(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
+        """
+        Decoder for audio data
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [4000,1])
+        """
         super(Dec_Audio, self).__init__()
-        self.name = "AudioConv"
+        self.net_type = "AudioConv"
         self.latent_dim = latent_dim
         self.reshape = (64, 3)
         self.data_dim = data_dim
@@ -167,8 +178,18 @@ class Dec_Audio(nn.Module):
 
 class Dec_TransformerIMG(nn.Module):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=4, dropout=0.1, activation="gelu"):
+        """
+        Decoder for a sequence of images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :param ff_size: feature dimension of the Transformer
+        :param num_layers: number of Transformer layers
+        :param num_heads: number of Transformer attention heads
+        :param dropout: dropout ofr the Transformer
+        :param activation: activation function
+        """
         super(Dec_TransformerIMG, self).__init__()
-        self.name = "Transformer"
+        self.net_type = "Transformer"
         self.latent_dim = latent_dim
         self.ff_size = ff_size
         self.num_layers = num_layers
@@ -222,6 +243,11 @@ class Dec_TransformerIMG(nn.Module):
 
 class Decoder_Conv2(nn.Module):
     def __init__(self, latent_dim, data_dim=1, density=1, initial_size=64, channel=3):
+        """
+        2D Convolutional network for images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        """
         super(Decoder_Conv2, self).__init__()
         self.g1 = L.Linear(latent_dim, initial_size * initial_size * 128 * density, initialW=Normal(0.02))
         self.norm1 = L.BatchNormalization(initial_size * initial_size * 128 * density)
@@ -265,8 +291,14 @@ class Decoder_Conv2(nn.Module):
 
 class Dec_VideoGPT(nn.Module):
     def __init__(self, latent_dim, data_dim=1, n_res_layers=4, upsample=(1,4,4)):
+        """
+        Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [10, 1, 12288] for 64x64x3 image sequences with max length 10 images)
+        :param n_res_layers: number of ResNet layers
+        """
         super(Dec_VideoGPT, self).__init__()
-        self.name = "3DCNN"
+        self.net_type = "3DCNN"
         self.res_stack = nn.Sequential(
             *[AttentionResidualBlock(latent_dim)
               for _ in range(n_res_layers)],
@@ -293,29 +325,20 @@ class Dec_VideoGPT(nn.Module):
         h = h.permute(0, 1, 3, 4, 2)
         return h, torch.tensor(0.75).to(x.device)
 
-
-class Dec_Text(nn.Module):
-    def __init__(self, latent_dim, data_dim=1, dim_text=128):
-        super(Dec_Text, self).__init__()
-        self.name = "textonehot"
-        self.DIM_text = dim_text
-        self.feature_generator = nn.Linear(latent_dim, 5*self.DIM_text, bias=True);
-        self.text_generator = DataGeneratorText(data_dim, a=2.0, b=0.3)
-
-    def forward(self, z):
-        z = torch.cat((z_style, z_content), dim=1).squeeze(-1)
-        text_feat_hat = self.feature_generator(z);
-        text_feat_hat = text_feat_hat.unsqueeze(-1);
-        text_hat = self.text_generator(text_feat_hat)
-        text_hat = text_hat.transpose(-2,-1);
-        return text_hat
-
-
-
 class Dec_Transformer(nn.Module):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=2, dropout=0.1, activation="gelu"):
+        """
+        Transformer decoder for arbitrary sequential data
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+        :param ff_size: feature dimension
+        :param num_layers: number of transformer layers
+        :param num_heads: number of transformer attention heads
+        :param dropout: dropout
+        :param activation: activation function
+        """
         super(Dec_Transformer, self).__init__()
-        self.name = "Transformer"
+        self.net_type = "Transformer"
         self.njoints = data_dim[1]
         if len(data_dim) > 2:
             self.nfeats = data_dim[2]
@@ -357,8 +380,13 @@ class Dec_Transformer(nn.Module):
 
 class Dec_TxtTransformer(Dec_Transformer):
     def __init__(self, latent_dim, data_dim=1):
+        """
+        Transformer decoder configured for character-level text reconstructions
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+        """
         super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4,)
-        self.name = "TxtTransformer"
+        self.net_type = "TxtTransformer"
         self.softmax = nn.Softmax(dim=2)
         self.sigmoid = nn.Sigmoid()
         self.conv2 = nn.ConvTranspose1d(self.latent_dim, self.input_feats,
@@ -380,7 +408,4 @@ class Dec_TxtTransformer(Dec_Transformer):
         output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints,  self.nfeats)).squeeze(-1)
         # zero for padded area
         output = output.permute(1,0,2) * mask.unsqueeze(dim=-1).repeat(1,1,self.njoints).float()
-        #output = self.softmax(output)
-        #one_pos = torch.argmax(output, dim=-1)
-        #output = torch.zeros_like(output).scatter_(1, one_pos.unsqueeze(-1), 1.).squeeze()
         return output.to(z.device), torch.tensor(0.75).to(z.device)

@@ -59,7 +59,7 @@ def elbo(model, x, ltype="lprob"):
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
-def m_elbo_moe(model, x, ltype="lprob"):
+def multimodal_elbo_moe(model, x, ltype="lprob"):
     """Computes ELBO for MoE VAE"""
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
@@ -80,7 +80,7 @@ def m_elbo_moe(model, x, ltype="lprob"):
     return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 
-def m_elbo_mopoe(model, x, ltype="lprob", beta=5):
+def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
     """Computes GENERALIZED MULTIMODAL ELBO https://arxiv.org/pdf/2105.02470.pdf """
     qz_xs, px_zs, zss, single_latents = model(x)
     lpx_zs, klds = [], []
@@ -99,7 +99,7 @@ def m_elbo_mopoe(model, x, ltype="lprob", beta=5):
     return -obj.sum(), kld_weighted, individual_losses
 
 
-def m_elbo_poe(model, x,  ltype="lprob"):
+def multimodal_elbo_poe(model, x,  ltype="lprob"):
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
         mods = [None for _ in range(len(x))]

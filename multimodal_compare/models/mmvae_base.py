@@ -16,7 +16,7 @@ from .vae import VAE
 module_types = {"moe":VAE, "poe":VAE}
 
 class MMVAE(nn.Module):
-    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, n_latents, batch_size):
+    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, batch_size):
         super(MMVAE, self).__init__()
         self.device = None
         self.pz = prior_dist
@@ -24,8 +24,8 @@ class MMVAE(nn.Module):
         self.n_latents = n_latents
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
-        for e, d, pth, fd in zip(encoders, decoders, data_paths, feature_dims):
-            vae_mods.append(module_types[self.modelName](e, d, pth, fd, n_latents, batch_size))
+        for e, d, pth, fd, mt in zip(encoders, decoders, data_paths, feature_dims, mod_types):
+            vae_mods.append(module_types[self.modelName](e, d, pth, fd, mt, n_latents, batch_size))
         self.vaes = nn.ModuleList(vae_mods)
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
@@ -68,11 +68,11 @@ class MMVAE(nn.Module):
             new_batch.append([m])
         return new_batch, masks
 
-    def getDataLoaders(self, batch_size, device='cuda'):
+    def load_dataset(self, batch_size, device='cuda'):
         self.device = device
         trains, tests = [], []
         for x in range(len(self.vaes)):
-            t, v = self.vaes[x].getDataLoaders(batch_size, device)
+            t, v = self.vaes[x].load_dataset(batch_size, device)
             trains.append(t.dataset)
             tests.append(v.dataset)
         train_data = TensorDataset(trains)
@@ -90,7 +90,7 @@ class MMVAE(nn.Module):
             pz = self.pz(*self.pz_params)
             latents = pz.rsample(torch.Size([N]))
             for d, vae in enumerate(self.vaes):
-                if vae.dec_name == "Transformer":
+                if "transformer" in vae.dec_name.lower():
                     px_z = vae.px_z(*vae.dec([latents, None]))
                 else:
                     px_z = vae.px_z(*vae.dec(latents))
@@ -124,7 +124,7 @@ class MMVAE(nn.Module):
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                if self.vaes[o].enc.name == "CNN":
+                if self.vaes[o].enc.type == "CNN":
                     _data = torch.stack(data[o]).cpu() if isinstance(data[0], list) else data[o].cpu()
                     recon = recon.squeeze(0).cpu()
                     if "cub_" in self.vaes[o].pth:

@@ -24,7 +24,7 @@ plot_colors = ["blue", "green", "red", "cyan", "magenta", "orange", "navy", "mar
 
 def estimate_log_marginal(model, device="cuda"):
     """Compute an estimate of the log-marginal likelihood of test data."""
-    train_loader, test_loader = model.getDataLoaders(32, device=device)
+    train_loader, test_loader = model.load_dataset(32, device=device)
     model.eval()
     marginal_loglik = 0
     objective = getattr(objectives, ('m_' if hasattr(model, 'vaes') else '')

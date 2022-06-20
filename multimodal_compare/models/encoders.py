@@ -17,13 +17,14 @@ def unpack(d):
 
 # Classes
 class Enc_CNN(nn.Module):
-    """Parametrizes q(z|x).
-    @param n_latents: integer
-                      number of latent variable dimensions.
-    """
     def __init__(self, latent_dim, data_dim):
+        """
+        CNN decoder for RGB images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        """
         super(Enc_CNN, self).__init__()
-        self.name = "CNN"
+        self.net_type = "CNN"
         hid_channels = 32
         kernel_size = 4
         hidden_dim = 256
@@ -71,13 +72,14 @@ class Enc_CNN(nn.Module):
         return mu, logvar
 
 class Enc_MNIST(nn.Module):
-    """Parametrizes q(z|x).
-    @param n_latents: integer
-                      number of latent variable dimensions.
-    """
     def __init__(self, latent_dim, data_dim):
+        """
+        Image encoder for the MNIST BW images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [28,28,1] for 28x28 bw images)
+        """
         super(Enc_MNIST, self).__init__()
-        self.name = "CNN"
+        self.net_type = "CNN"
         self.hidden_dim = 400
         modules = []
         modules.append(nn.Sequential(nn.Linear(784, self.hidden_dim), nn.ReLU(True)))
@@ -99,12 +101,14 @@ class Enc_MNIST(nn.Module):
 
 
 class Enc_SVHN(nn.Module):
-    """Parametrizes q(z|x).
-    @param n_latents: integer number of latent variable dimensions.
-    """
     def __init__(self, latent_dim, data_dim):
+        """
+        Image encoder for the SVHN dataset
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [32,32,3] for 32x32x3 images)
+        """
         super(Enc_SVHN, self).__init__()
-        self.name = "CNN"
+        self.net_type = "CNN"
         self.conv1 = nn.Conv2d(3, 32, kernel_size=4, stride=2, padding=1, dilation=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1, dilation=1)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1, dilation=1)
@@ -132,8 +136,13 @@ class Enc_SVHN(nn.Module):
 # Classes
 class Enc_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
+        """
+        Fully connected layer encoder for any type of data
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data
+        """
         super(Enc_FNN, self).__init__()
-        self.name = "FNN"
+        self.net_type = "FNN"
         self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
         self.lin2 = torch.nn.DataParallel(nn.Linear(np.prod(data_dim), self.hidden_dim))
@@ -153,8 +162,13 @@ class Enc_FNN(nn.Module):
 
 class Enc_Audio(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
+        """
+        Decoder for audio data
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [4000,1])
+        """
         super(Enc_Audio, self).__init__()
-        self.name = "AudioConv"
+        self.net_type = "AudioConv"
         self.latent_dim = latent_dim
         self.TCN = ConvNet(data_dim[0], [128, 128, 96, 96, 64], dropout=0)
         self.mu_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
@@ -175,8 +189,18 @@ class Enc_Audio(nn.Module):
 class Enc_TransformerIMG(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
+        """
+        Decoder for a sequence of images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :param ff_size: feature dimension of the Transformer
+        :param num_layers: number of Transformer layers
+        :param num_heads: number of Transformer attention heads
+        :param dropout: dropout ofr the Transformer
+        :param activation: activation function
+        """
         super(Enc_TransformerIMG, self).__init__()
-        self.name = "Transformer"
+        self.net_type = "Transformer"
         self.latent_dim = latent_dim
         self.ff_size = ff_size
         self.datadim = data_dim
@@ -233,22 +257,13 @@ class Enc_TransformerIMG(nn.Module):
         return mu, logvar
 
 
-class Enc_Text(nn.Module):
-    def __init__(self, latent_dim, data_dim=1, dim_text = 64):
-        super(Enc_Text, self).__init__()
-        self.name = "textonehot"
-        self.DIM_text = dim_text
-        self.feature_extractor = FeatureExtractorText(data_dim, a=2.0, b=0.3)
-        self.feature_compressor = LinearFeatureCompressor(5*self.DIM_text, 32, latent_dim)
-
-    def forward(self, x_text):
-        h_text = self.feature_extractor(x_text)
-        mu_style, logvar_style, mu_content, logvar_content = self.feature_compressor(h_text);
-        return mu_style, logvar_style, mu_content, logvar_content, h_text;
-
-
 class Enc_Conv2(nn.Module):
     def __init__(self, latent_dim, channel=1, density=1, initial_size=64, Normal=1):
+        """
+        2D Convolutional network for images
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        """
         super(Enc_Conv2, self).__init__()
         self.dc1= L.Convolution2D(channel, int(16 * density), 4, stride=2, pad=1,
                             initialW=Normal(0.02))
@@ -283,8 +298,14 @@ class Enc_Conv2(nn.Module):
 
 class Enc_VideoGPT(nn.Module):
     def __init__(self,  latent_dim, data_dim=1, n_res_layers=4, downsample=(2,4,4)):
+        """
+        Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [10, 1, 12288] for 64x64x3 image sequences with max length 10 images)
+        :param n_res_layers: number of ResNet layers
+        """
         super(Enc_VideoGPT, self).__init__()
-        self.name = "3DCNN"
+        self.net_type = "3DCNN"
         n_times_downsample = np.array([int(math.log2(d)) for d in downsample])
         self.convs = nn.ModuleList()
         max_ds = n_times_downsample.max()
@@ -318,8 +339,18 @@ class Enc_VideoGPT(nn.Module):
 class Enc_Transformer(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
     def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
+        """
+        Transformer encoder for arbitrary sequential data
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+        :param ff_size: feature dimension
+        :param num_layers: number of transformer layers
+        :param num_heads: number of transformer attention heads
+        :param dropout: dropout
+        :param activation: activation function
+        """
         super(Enc_Transformer, self).__init__()
-        self.name = "Transformer"
+        self.net_type = "Transformer"
         self.njoints = data_dim[1]
         self.nfeats = data_dim[2]
         self.latent_dim = latent_dim
@@ -368,8 +399,13 @@ class Enc_Transformer(nn.Module):
 
 class Enc_TxtTransformer(Enc_Transformer):
     def __init__(self, latent_dim, data_dim=1):
+        """
+        Transformer encoder configured for character-level text reconstructions
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+        """
         super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim)
-        self.name = "TxtTransformer"
+        self.net_type = "TxtTransformer"
         self.embedding = nn.Embedding(self.input_feats,2)
         self.sequence_pos_encoder = PositionalEncoding(2, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.input_feats*2,

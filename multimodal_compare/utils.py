@@ -78,25 +78,6 @@ class Logger(object):
             writer.writerow({**self.dic, **val_d})
         self.dic = {}
 
-
-class Timer:
-    def __init__(self, name):
-        self.name = name
-
-    def __enter__(self):
-        self.begin = time.time()
-        return self
-
-    def __exit__(self, *args):
-        self.end = time.time()
-        self.elapsed = self.end - self.begin
-        self.elapsedH = time.gmtime(self.elapsed)
-        print('====> [{}] Time: {:7.3f}s or {}'
-              .format(self.name,
-                      self.elapsed,
-                      time.strftime("%H:%M:%S", self.elapsedH)))
-
-
 # Functions
 def save_vars(vs, filepath):
     """
