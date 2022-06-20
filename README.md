@@ -64,9 +64,9 @@ python ./data_proc/generate_dataset.py --dir ./data/level4 --level 4 --size 1000
 The code will make an _./image_ folder in the target directory that includes the _.png_ images. The text is stored in 
 _attrs.pkl_ file and is in the same order as the images. 
 
-### Setup and training
+## Setup and training
 
-#### Single experiment
+### Single experiment
 We show an example training config in _./multimodal_compare/configs/config1.yml_. You can run the training as follows:
 
 ```
@@ -74,9 +74,9 @@ cd ~/multimodal-vae-comparison/multimodal_compare
 python main.py --cfg configs/config1.yml
 ```
 
-#### Set of experiments
+### Set of experiments
 
-We provide an automated way to perform hyperparameter grid search for your models. First, set up the default config (e.g. config1.yml in ./configs)
+We provide an automated way to perform hyperparameter grid search for your models. First, set up the default config (e.g. _config1.yml_ in _./configs_)
 that should be adjusted in selected parameters. Then generate the full variability within the chosen parametes as follows:
 
 ```
@@ -87,22 +87,19 @@ python data_proc/generate_configs.py --path ./configs/my_experiment  --cfg ./con
 The script will make 18 configs (2 models x 3 seeds x 3 latent dimensionalities) within the chosen directory. To see the full 
 spectrum of parameters that can be adjusted, run:
 
-```
-cd ~/multimodal-vae-comparison/multimodal_compare
-python data_proc/generate_configs.py -h
-```
+```python data_proc/generate_configs.py -h```
 
 To automatically run the whole set of experiments located in one folder, launch:
 
 ```./iterate_configs.sh "./configs/my_experiment/*" ```
 
-We provide sets of configs for the experiments reported in the paper. These are located in ./configs/my_experiment/batch_size_exp
-and ./configs/my_experiment/latent_dim_exp
+We provide sets of configs for the experiments reported in the paper. These are located in _./configs/batch_size_exp_
+and  _./configslatent_dim_exp_
 
 
-### Evaluation
+## Evaluation
 
-After training, you will find various visualizations of the training progress in the ./visuals folder of your experiment.
+After training, you will find various visualizations of the training progress in the _./visuals_ folder of your experiment.
 Furthermore, to calculate the joint- and cross-generation accuracy, you can run:
 
 ```
