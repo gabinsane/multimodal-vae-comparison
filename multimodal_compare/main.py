@@ -39,11 +39,13 @@ def parse_args():
     parser.add_argument('--optimizer', type=str, default=None,
                         help='optimizer')
     args = parser.parse_args()
-    with open(args.cfg) as file: config = yaml.safe_load(file)
+    with open(args.cfg) as file:
+        config = yaml.safe_load(file)
     for name, value in vars(args).items():
         if value is not None and name != "cfg" and name in config.keys():
             config[name] = value
     return config
+
 
 class Trainer():
     def __init__(self, cfg, device):
@@ -65,16 +67,16 @@ class Trainer():
         self.setup()
 
     def setup(self):
-        self.get_mods_config()
-        self.get_model()
-        self.setup_savedir()
-        self.configure_optimizer()
+        self._get_mods_config()
+        self._get_model()
+        self._setup_savedir()
+        self._configure_optimizer()
         self.train_loader, self.test_loader = self.model.load_dataset(self.config["batch_size"], device=self.device)
         self.objective = getattr(objectives, ('multimodal_' if hasattr(self.model, 'vaes') else '')
-                            + ("_".join((self.config["obj"], self.config["mixing"])) if hasattr(self.model, 'vaes')
-                            else self.config["obj"]))
+                                 + ("_".join((self.config["obj"], self.config["mixing"])) if hasattr(self.model, 'vaes')
+                                    else self.config["obj"]))
 
-    def setup_savedir(self):
+    def _setup_savedir(self):
         self.mPath = os.path.join('results/', self.config["exp_name"])
         os.makedirs(self.mPath, exist_ok=True)
         os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
@@ -82,31 +84,32 @@ class Trainer():
         with open('{}/config.json'.format(self.mPath), 'w') as yaml_file:
             yaml.dump(self.config, yaml_file, default_flow_style=False)
 
-    def configure_optimizer(self):
+    def _configure_optimizer(self):
         assert self.config["optimizer"].lower() in ["adam", "adabelief"], "unsupported optimizer"
         if self.config["optimizer"].lower() == "adam":
             self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()),
                                         lr=float(self.config["lr"]), amsgrad=True)
         elif self.config["optimizer"].lower() == "adabelief":
             from adabelief_pytorch import AdaBelief
-            self.optimizer = AdaBelief(self.model.parameters(), lr=float(self.config["lr"]), eps=1e-16, betas=(0.9,0.999),
+            self.optimizer = AdaBelief(self.model.parameters(), lr=float(self.config["lr"]), eps=1e-16,
+                                       betas=(0.9, 0.999),
                                        weight_decouple=True, rectify=False, print_change_log=False)
 
-    def get_model(self):
+    def _get_model(self):
         model = "VAE" if len(self.mods) == 1 else self.config["mixing"].lower()
         m = getattr(models, model)
         params = [[m["encoder"] for m in self.mods], [m["decoder"] for m in self.mods], [m["path"] for m in self.mods],
                   [m["feature_dim"] for m in self.mods], [m["mod_type"] for m in self.mods]]
         if len(self.mods) == 1:
             params = [x[0] for x in params]
-        self.model = m(*params, self.config["n_latents"], self.config["batch_size"]).to(self.device)
+        self.model = m(*params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(self.device)
 
         if self.config["pre_trained"]:
             print('Loading model {} from {}'.format(model.modelName, self.config["pre_trained"]))
             self.model.load_state_dict(torch.load(self.config["pre_trained"] + '/model.rar'))
             self.model._pz_params = model._pz_params
 
-    def get_mods_config(self):
+    def _get_mods_config(self):
         """
         Retrieves the modality-specific configs from the .yml config
         """
@@ -117,6 +120,35 @@ class Trainer():
         if self.config["labels"]:
             with open(self.config["labels"], 'rb') as handle:
                 self.labels = pickle.load(handle)
+
+    def prepare_data(self, data):
+        if any(["transformer" in x["encoder"].lower() for x in self.mods]):
+            data, masks = data
+            data = pad_seq_data(list(data), masks) if len(self.mods) > 1 else [data.to(self.device), masks]
+            data_len = len(data[0])
+        else:
+            data = unpack_data(data, device=self.device) if len(self.mods) > 1 else unpack_data(data[0])
+            data_len = len(data) if len(self.mods) == 1 else len(data[0])
+        return data, data_len
+
+    def prepare_testset(self, num_samples=None):
+        full_len = len(self.test_loader.dataset)
+        if any(["transformer" in x["encoder"].lower() for x in self.mods]):
+            data = self.model.seq_collate_fn(self.test_loader.dataset)
+            data, d_len = self.prepare_data(data)
+            new_set = []
+            for x in data:
+                if len(x) == full_len:
+                    new_set.append(x[:num_samples])
+                else:
+                    new_set.append([p[:num_samples] for p in x])
+            data = new_set
+        else:
+            data, d_len = self.prepare_data(self.test_loader.dataset) if len(self.mods) > 1 \
+                else  self.prepare_data(self.test_loader.dataset.tensors)
+            data = data[:num_samples]
+        d_len = num_samples if num_samples is not None else d_len
+        return data, d_len
 
     def iterate_epochs(self):
         self.lossmeter = Logger(trainer.mPath, self.mods)
@@ -129,8 +161,7 @@ class Trainer():
         eval_sample(self.mPath)
         eval_reconstruct(self.mPath)
         t1 = timer()
-        print("Training finished. Elapsed time: {}".format(timedelta(seconds=t1-t0)))
-
+        print("Training finished. Elapsed time: {}".format(timedelta(seconds=t1 - t0)))
 
     def train(self, epoch):
         """
@@ -140,29 +171,19 @@ class Trainer():
         self.model.train()
         loss_m = []
         kld_m = []
-        partial_losses =  [[] for _ in range(len(self.mods))]
+        partial_losses = [[] for _ in range(len(self.mods))]
         for it, dataT in enumerate(self.train_loader):
-            if len(self.mods) > 1:
-                if not isinstance(dataT, tuple):
-                    data = unpack_data(dataT, device=self.device)
-                else:
-                    data, masks = dataT
-                    data = pad_seq_data(data, masks)
-            else:
-                if "transformer" in self.config["modality_1"]["encoder"].lower():
-                    data, masks = dataT
-                    data = [data.to(self.device), masks]
-                else:
-                    data = unpack_data(dataT[0], device=self.device)
+            data, _ = self.prepare_data(dataT)
             self.optimizer.zero_grad()
             loss, kld, partial_l = self.objective(self.model, data, ltype=self.config["loss"])
             loss_m.append(loss)
             kld_m.append(kld)
-            for i,l in enumerate(partial_l):
+            for i, l in enumerate(partial_l):
                 partial_losses[i].append(l)
             loss.backward()
             self.optimizer.step()
-            print("Training iteration {}/{}, loss: {}".format(it, int(len(self.train_loader.dataset)/self.config["batch_size"]), float(loss)/self.config["batch_size"]))
+            print("Training iteration {}/{}, loss: {}".format(it, int(
+                len(self.train_loader.dataset) / self.config["batch_size"]), float(loss) / self.config["batch_size"]))
         progress_d = {"Epoch": epoch, "Train Loss": self.get_loss_mean(loss_m), "Train KLD": self.get_loss_mean(kld_m)}
         for i, x in enumerate(partial_losses):
             progress_d["Train Mod_{}".format(i)] = self.get_loss_mean(x)
@@ -177,25 +198,10 @@ class Trainer():
         self.model.eval()
         loss_m = []
         kld_m = []
-        partial_losses =  [[] for _ in range(len(self.mods))]
+        partial_losses = [[] for _ in range(len(self.mods))]
         with torch.no_grad():
             for ix, dataT in enumerate(self.test_loader):
-                if len(self.mods) > 1:
-                    if not isinstance(dataT, tuple):
-                        data = unpack_data(dataT, device=self.device)
-                        d_len = len(data[0])
-                    else:
-                        data, masks = dataT
-                        data = pad_seq_data(data, masks)
-                        d_len = len(data[0])
-                else:
-                    if "transformer" in self.config["modality_1"]["encoder"].lower():
-                        data, masks = dataT
-                        data = [data.to(self.device), masks]
-                        d_len = len(data[0])
-                    else:
-                        data = unpack_data(dataT[0], device=self.device)
-                        d_len = len(data)
+                data, d_len = self.prepare_data(dataT)
                 loss, kld, partial_l = self.objective(self.model, data, ltype=self.config["loss"])
                 loss_m.append(loss)
                 kld_m.append(kld)
@@ -204,16 +210,21 @@ class Trainer():
                 if ix == 0 and epoch % self.config["viz_freq"] == 0:
                     self.model.reconstruct(data, self.mPath, epoch)
                     self.model.generate(self.mPath, epoch)
-                    if self.labels:
-                         self.model.analyse(data, self.mPath, epoch,
-                                            self.labels[int(len(self.labels)*0.9):int(len(self.labels)*0.9)+d_len])
-                    else:
-                         self.model.analyse(data, self.mPath, epoch, labels=None)
+        if epoch % self.config["viz_freq"] == 0:
+            self.visualize_latents(epoch)
         progress_d = {"Epoch": epoch, "Test Loss": self.get_loss_mean(loss_m), "Test KLD": self.get_loss_mean(kld_m)}
         for i, x in enumerate(partial_losses):
             progress_d["Test Mod_{}".format(i)] = self.get_loss_mean(x)
         self.lossmeter.update(progress_d)
         print('====>             Test loss: {:.4f}'.format(self.get_loss_mean(loss_m)))
+
+    def visualize_latents(self, epoch):
+        testset, testset_len = self.prepare_testset(num_samples=250)
+        if self.labels:
+            lrange = int(len(self.labels) * (1 - self.config["test_split"]))
+            self.model.analyse(testset, self.mPath, epoch, self.labels[lrange:lrange + testset_len])
+        else:
+            self.model.analyse(testset, self.mPath, epoch, labels=None)
 
     def get_loss_mean(self, loss):
         """
@@ -221,7 +232,7 @@ class Trainer():
         :param loss: list of loss tensors
         :return: float; mean of the losses
         """
-        return round(float(torch.mean(torch.tensor(loss).detach().cpu())),3)
+        return round(float(torch.mean(torch.tensor(loss).detach().cpu())), 3)
 
 
 if __name__ == '__main__':
@@ -229,8 +240,6 @@ if __name__ == '__main__':
     torch.manual_seed(config["seed"])
     torch.cuda.manual_seed(config["seed"])
     np.random.seed(config["seed"])
-    #torch.backends.cudnn.benchmark = True
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     trainer = Trainer(config, dev)
     trainer.iterate_epochs()
-

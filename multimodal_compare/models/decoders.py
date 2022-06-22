@@ -294,7 +294,7 @@ class Dec_VideoGPT(nn.Module):
         """
         Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
         :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [10, 1, 12288] for 64x64x3 image sequences with max length 10 images)
+        :param data_dim: list, dimensions of the data (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images)
         :param n_res_layers: number of ResNet layers
         """
         super(Dec_VideoGPT, self).__init__()
@@ -323,6 +323,7 @@ class Dec_VideoGPT(nn.Module):
             if i < len(self.convts) - 1:
                 h = F.relu(h)
         h = h.permute(0, 1, 3, 4, 2)
+        h = torch.sigmoid(h)
         return h, torch.tensor(0.75).to(x.device)
 
 class Dec_Transformer(nn.Module):
@@ -386,7 +387,7 @@ class Dec_TxtTransformer(Dec_Transformer):
         :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
         """
         super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4,)
-        self.net_type = "TxtTransformer"
+        self.net_type = "Transformer"
         self.softmax = nn.Softmax(dim=2)
         self.sigmoid = nn.Sigmoid()
         self.conv2 = nn.ConvTranspose1d(self.latent_dim, self.input_feats,

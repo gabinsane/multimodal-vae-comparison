@@ -8,9 +8,9 @@ from torch.autograd import Variable
 
 class MOE(MMVAE):
     """Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae"""
-    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, batch_size):
+    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
         self.modelName = 'moe'
-        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, batch_size)
+        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size)
 
     def get_missing_modalities(self, mods):
         indices = []
@@ -47,9 +47,9 @@ class MOE(MMVAE):
 
 class POE(MMVAE):
     """Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public"""
-    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, batch_size):
+    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size):
         self.modelName = 'poe'
-        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, mod_types, feature_dims, n_latents, batch_size)
+        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, mod_types, feature_dims, n_latents, test_split, batch_size)
         self.n_latents = n_latents
 
     def forward(self, inputs, K=1):
@@ -119,9 +119,9 @@ class POE(MMVAE):
 
 class MoPOE(POE):
     """Multimodal Variaional Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE"""
-    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, batch_size):
+    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size):
         self.modelName = 'mopoe'
-        super(MoPOE, self).__init__(encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, batch_size)
+        super(MoPOE, self).__init__(encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size)
         self.n_latents = n_latents
         self.modelName = "mopoe"
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))

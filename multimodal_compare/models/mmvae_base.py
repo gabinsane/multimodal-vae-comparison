@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils import get_mean, kl_divergence, lengths_to_mask, output_onehot2text
 from data_proc.process_audio import numpy_to_wav
-from visualization import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
+from visualization import t_sne, tensors_to_df, plot_kls_df
 from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
 import numpy as np
@@ -16,7 +16,7 @@ from .vae import VAE
 module_types = {"moe":VAE, "poe":VAE}
 
 class MMVAE(nn.Module):
-    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, batch_size):
+    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
         super(MMVAE, self).__init__()
         self.device = None
         self.pz = prior_dist
@@ -25,7 +25,7 @@ class MMVAE(nn.Module):
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd, mt in zip(encoders, decoders, data_paths, feature_dims, mod_types):
-            vae_mods.append(module_types[self.modelName](e, d, pth, fd, mt, n_latents, batch_size))
+            vae_mods.append(module_types[self.modelName](e, d, pth, fd, mt, n_latents, test_split, batch_size))
         self.vaes = nn.ModuleList(vae_mods)
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu

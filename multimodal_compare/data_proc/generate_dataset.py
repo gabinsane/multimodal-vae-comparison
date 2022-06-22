@@ -5,9 +5,9 @@ import argparse
 from math import cos, sin, pi
 
 parser = argparse.ArgumentParser(description='GeBiD data generator')
-parser.add_argument('--dir', type=str, default="../data/level55", help='where to save the dataset the dataset')
+parser.add_argument('--dir', type=str, default="../data/level5", help='where to save the dataset the dataset')
 parser.add_argument('--level', type=int, default=5, help='difficulty level: 1-5')
-parser.add_argument('--size', type=int, default=100, help='size of the dataset')
+parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
 parser.add_argument('--noisycol', action='store_true', default=False,
                     help='add noise to image colors')
 args = parser.parse_args()

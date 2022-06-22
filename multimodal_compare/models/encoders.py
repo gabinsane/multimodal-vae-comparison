@@ -301,7 +301,7 @@ class Enc_VideoGPT(nn.Module):
         """
         Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
         :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [10, 1, 12288] for 64x64x3 image sequences with max length 10 images)
+        :param data_dim: list, dimensions of the data (e.g. [10, 64,64,3] for 64x64x3 image sequences with max length 10 images)
         :param n_res_layers: number of ResNet layers
         """
         super(Enc_VideoGPT, self).__init__()

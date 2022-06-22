@@ -6,7 +6,7 @@ import torch.distributions as dist
 from models import encoders, decoders
 from utils import get_mean, kl_divergence, load_images, lengths_to_mask
 from utils import one_hot_encode, output_onehot2text
-from visualization import t_sne, tensors_to_df, plot_embeddings, plot_kls_df
+from visualization import t_sne, tensors_to_df, plot_kls_df
 from torch.utils.data import DataLoader
 import pickle, os
 from data_proc.process_audio import numpy_to_wav
@@ -15,6 +15,14 @@ import torch.nn.functional as F
 
 class VaeDataset():
     def __init__(self, pth, data_dim, network_type, network_name, mod_type):
+        """
+        Class for dataset loading and adjustments for training
+        :param pth: string, path to the modality data
+        :param data_dim: list, dimensions of the modality, e.g. [64,64,3]
+        :param network_type: string, net_type parameter of the encoder/decoder
+        :param network_name: string, name of the encoder/decoder class
+        :param mod_type: string, e.g. image/text/action
+        """
         self.pth = pth
         self.data_dim = data_dim
         self.network_type = network_type
@@ -42,57 +50,63 @@ class VaeDataset():
         d, kwargs = self.prepare_for_encoder(d)
         return d, kwargs
 
+    def check_img_normalize(self, data):
+        """
+        Normalizes image data between 0 and 1 (if needed)
+        :param data: list of tensors or tensor with image data
+        :return: normalized data
+        """
+        if isinstance(data, list):
+            if torch.max(torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)) > 1:
+                data = [x/256 for x in data]
+        else:
+            data = data/256 if torch.max(data) > 1 else data
+        return data
+
     def prepare_for_encoder(self, data):
         kwargs = {}
-        if "image" in self.mod_type:
-            d = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in data] \
-                if self.network_name.lower() in ["transformerimg", "videogpt"] else\
-                [torch.from_numpy(np.asarray(x)) for x in data]
+        if self.network_type.lower() in ["transformer", "cnn", "3dcnn"]:
+            data = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in data]
             if self.network_type == "cnn":
-                d = torch.stack(d).transpose(1,3)
-            if "seq" in self.mod_type:
-                if len(d[0].shape) < 3:
-                    d = [torch.unsqueeze(i, dim=1) for i in d]
-                kwargs["collate_fn"] = self.seq_collate_fn
-        elif self.mod_type == "text":
+                data = torch.stack(data).transpose(1,3)
+            if "transformer" in self.network_type.lower():
+                if len(data[0].shape) < 3:
+                    data = [torch.unsqueeze(i, dim=1) for i in data]
+        elif "text" in self.mod_type:
             if len(data[0]) > 1 and not isinstance(data[0], str):
-                d = [" ".join(x) for x in data] if not "cub_" in self.pth else data
-            d = [one_hot_encode(len(f), f) for f in d]
-            d = [torch.from_numpy(np.asarray(x)) for x in d]
-            if self.network_type.lower() == "txttransformer":
-                kwargs["collate_fn"] = self.seq_collate_fn
-            else:
-                d = torch.nn.utils.rnn.pad_sequence(d, batch_first=True, padding_value=0.0)
+                data = [" ".join(x) for x in data] if not "cub_" in self.pth else data
+            data = [one_hot_encode(len(f), f) for f in data]
+            data = [torch.from_numpy(np.asarray(x)) for x in data]
+            if "transformer" not in self.network_type.lower():
+                data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
         if self.network_type.lower() == "audioconv":
-            self.prepare_audio(d)
-        return d, kwargs
+            self.prepare_audio(data)
+        if "image" in self.mod_type:
+            data = self.check_img_normalize(data)
+        return data, kwargs
 
     def prepare_audio(self, data):
         d = [torch.from_numpy(np.asarray(x).astype(np.int16)) for x in data]
         return torch.nn.utils.rnn.pad_packed_sequence(d, batch_first=True, padding_value=0.0)
 
     def get_train_test_splits(self, data, test_fraction):
+        """
+        Returns the data split into train and test set according to test_fraction
+        :param data: list/torch.tensor/numpy array
+        :param test_fraction: float, fraction of the data that will be used for test set
+        :return: train_split, test_split
+        """
         train_split = data[:int(len(data)*(1 - test_fraction))]
         test_split = data[int(len(data)*(1-test_fraction)):]
-        if self.network_name not in ["Transformer","TxtTransformer", "3DCNN"]:
+        if self.network_name.lower() not in ["transformer","txttransformer", "3dcnn"]:
             train_split = torch.utils.data.TensorDataset(torch.tensor(torch.stack(train_split)))
             test_split = torch.utils.data.TensorDataset(torch.tensor(torch.stack(test_split)))
         return train_split, test_split
 
-    def seq_collate_fn(self, batch):
-        """
-        Collate function for sequential data
-        :param batch: list with sequential data
-        :return: batch, masks
-        """
-        new_batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.0)
-        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in batch]))).to(self.device)
-        return new_batch, masks
-
-
 
 class VAE(nn.Module):
-    def __init__(self, enc, dec, data_path, feature_dim, mod_type, n_latents, batch_size, prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
+    def __init__(self, enc, dec, data_path, feature_dim, mod_type, n_latents, test_split, batch_size,
+                 prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
         super(VAE, self).__init__()
         self.device = None
         self.pz = prior_dist
@@ -101,6 +115,7 @@ class VAE(nn.Module):
         self.batch_size = batch_size
         self._qz_x_params = None
         self.llik_scaling = 1.0
+        self.test_split = test_split
         self.pth = data_path
         self.mod_type = mod_type
         self.data_dim = feature_dim
@@ -132,12 +147,14 @@ class VAE(nn.Module):
 
     def load_dataset(self, batch_size,device="cuda"):
         kwargs = {'num_workers': 1, 'pin_memory': True} if device == "cuda" else {}
-        dataset_kwargs = {"data_dim":self.data_dim, "network_name":self.enc.net_type,
-                          "network_type":self.enc_name, "mod_type":self.mod_type}
+        dataset_kwargs = {"data_dim":self.data_dim, "network_name":self.enc_name,
+                          "network_type":self.enc.net_type, "mod_type":self.mod_type}
         dataset = VaeDataset(self.pth, **dataset_kwargs)
         d, kws = dataset.load_data()
         kwargs.update(kws)
-        train_split, test_split = dataset.get_train_test_splits(d, 0.1)
+        if "transformer" in self.enc.net_type.lower():
+            kwargs["collate_fn"] = self.seq_collate_fn
+        train_split, test_split = dataset.get_train_test_splits(d, self.test_split)
         train = DataLoader(train_split, batch_size=batch_size, shuffle=False, **kwargs)
         test = DataLoader(test_split, batch_size=batch_size, shuffle=False, **kwargs)
         return train, test
@@ -151,6 +168,16 @@ class VAE(nn.Module):
         else: px_z = self.px_z(*self.dec(zs))
         return qz_x, px_z, zs
 
+    def seq_collate_fn(self, batch):
+        """
+        Collate function for sequential data
+        :param batch: list with sequential data
+        :return: batch, masks
+        """
+        new_batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.0)
+        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in batch]))).to(self.device)
+        return new_batch, masks
+
     def generate(self, runPath, epoch):
         N, K = 36, 1
         samples = self.generate_samples(N, K).cpu().squeeze()
@@ -162,23 +189,25 @@ class VAE(nn.Module):
             r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
             cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
 
-    def reconstruct(self, data, runPath, epoch, N=64):
+    def reconstruct(self, data, runPath, epoch, N=32):
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
-        if self.enc_name.lower() in ["transformerimg", "cnn", "videogpt"]:
+        if self.mod_type == "image":
             o_l, r_l = [], []
-            N = 3 if self.enc_name.lower() in ["transformerimg", "videogpt"] else 64
+            data = data[0] if "transformer" in self.enc.net_type.lower() else data
             for r, recons_list in enumerate(recons_mat[:N]):
-                    _data = data[0][r].cpu()[:N].reshape(data[0].shape[1], data[0].shape[1], 3) \
-                        if self.enc_name.lower() not in ["cnn", "videogpt"] else data.cpu()[r].reshape(data[0].shape[1], data[0].shape[1], 3)
+                    _data = data.cpu()[r][:N].reshape(-1, self.data_dim[-3], self.data_dim[-2], self.data_dim[-1]).squeeze()
                     _data = np.hstack(_data) if len(_data.shape) > 3 else _data
-                    recon = recons_list.cpu()
-                    recon = np.hstack(recon) if len(recon.shape) > 3 else recon
+                    recon = np.hstack(recons_list.cpu()) if len(recons_list.cpu().shape) > 3 else recons_list.cpu()
+                    _data = cv2.copyMakeBorder(np.asarray(_data), top=1, bottom=1, left=1, right=1,
+                                             borderType=cv2.BORDER_CONSTANT, value=[211, 211, 211])
+                    recon = cv2.copyMakeBorder(np.asarray(recon), top=1, bottom=1, left=1, right=1,
+                                             borderType=cv2.BORDER_CONSTANT, value=[211, 211, 211])
                     o_l = np.asarray(_data) if o_l == [] else np.concatenate((o_l, np.asarray(_data)), axis=1)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)), axis=1)
             img = cv2.cvtColor(np.float32(np.vstack((o_l, r_l)) * 255), cv2.COLOR_BGR2RGB)
             cv2.imwrite('{}/visuals/recon_epoch{}.png'.format(runPath, epoch),img)
-        elif self.enc_name.lower() in ["txttransformer", "textonehot"]:
-            recon_decoded, orig_decoded = output_onehot2text(recons_mat, data[0].squeeze().int())
+        elif self.enc_name.lower() in ["txttransformer"]:
+            recon_decoded, orig_decoded = output_onehot2text(recons_mat, list(data[0].squeeze().int()))
             output = open('{}/visuals/recon_{:03d}.txt'.format(runPath, epoch), "w")
             joined = []
             for o, r in zip(orig_decoded, recon_decoded):
@@ -188,12 +217,10 @@ class VAE(nn.Module):
             output.close()
         elif self.enc_name.lower() == "audio":
              for i in range(3):
-                if epoch < 101:
-                    numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_s{}.wav'.format(epoch, i)),
+                numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_s{}.wav'.format(epoch, i)),
                          np.asarray(data[i].cpu()).astype(np.int16), 16000)
                 numpy_to_wav(os.path.join(runPath,"visuals/",'recon_epoch{}_s{}.wav'.format(epoch, i)),
-                                 np.asarray(recons_mat[i].cpu()).astype(np.int16), 16000)
-
+                         np.asarray(recons_mat[i].cpu()).astype(np.int16), 16000)
 
     def analyse(self, data, runPath, epoch, labels=None):
         zsl, kls_df = self.analyse_data(data, K=1, runPath=runPath, epoch=epoch, labels=labels)
@@ -204,11 +231,10 @@ class VAE(nn.Module):
         with torch.no_grad():
             pz = self.pz(*self.pz_params)
             latents = pz.rsample(torch.Size([N]))
-            if self.enc_name == "Transformer":
+            if "transformer" in self.enc_name.lower():
                 px_z = self.px_z(*self.dec([latents, None]))
             else:
                 px_z = self.px_z(*self.dec(latents))
-            #data = px_z.sample(torch.Size([K]))
             data = get_mean(px_z)
         return data
 

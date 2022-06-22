@@ -5,7 +5,6 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from sklearn.manifold import TSNE
-from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 
@@ -46,17 +45,8 @@ def t_sne(data, runPath, epoch, K, labels):
     plt.clf()
 
 
-def plot_embeddings(emb, emb_l, labels, filepath):
-    cmap_obj, cmap_arr = custom_cmap(n=len(labels))
-    plt.figure()
-    plt.scatter(emb[:, 0], emb[:, 1], c=emb_l, cmap=cmap_obj, s=25, alpha=0.2, edgecolors='none')
-    l_elems = [Line2D([0], [0], marker='o', color=cm, label=l, alpha=0.5, linestyle='None')
-               for (cm, l) in zip(cmap_arr, labels)]
-    plt.legend(frameon=False, loc=2, handles=l_elems)
-    plt.savefig(filepath, bbox_inches='tight')
-    plt.close()
-
 def tensor_to_df(tensor, ax_names=None):
+    """Taken from https://github.com/iffsid/mmvae"""
     assert tensor.ndim == 2, "Can only currently convert 2D tensors to dataframes"
     df = pd.DataFrame(data=tensor, columns=np.arange(tensor.shape[1]))
     return df.melt(value_vars=df.columns,
@@ -65,6 +55,7 @@ def tensor_to_df(tensor, ax_names=None):
 
 
 def tensors_to_df(tensors, head=None, keys=None, ax_names=None):
+    """Taken from https://github.com/iffsid/mmvae"""
     dfs = [tensor_to_df(tensor, ax_names=ax_names) for tensor in tensors]
     df = pd.concat(dfs, keys=(np.arange(len(tensors)) if keys is None else keys))
     df.reset_index(level=0, inplace=True)
@@ -74,6 +65,7 @@ def tensors_to_df(tensors, head=None, keys=None, ax_names=None):
 
 
 def plot_kls_df(df, filepath):
+    """Taken from https://github.com/iffsid/mmvae"""
     _, cmap_arr = custom_cmap(df[df.columns[0]].nunique() + 1)
     with sns.plotting_context("notebook", font_scale=2.0):
         g = sns.FacetGrid(df, height=12, aspect=2)

@@ -1,23 +1,26 @@
 # objectives of choice
 import torch
 import torch.distributions as dist
-from utils import log_mean_exp, is_multidata, kl_divergence
+from utils import kl_divergence
 from torch.autograd import Variable
 
-def loss_fn(output, target, ltype, mod_type=None):
-    if len(target) == 2:
-        target = target[0]
-    target = torch.stack(target).float() if isinstance(target, list) else target
+def reshape_for_loss(output, target, ltype, mod_type):
     if mod_type is not None and "transformer" in mod_type.lower():
-        if ltype !="lprob":
+        target = torch.stack(target[0]).float() if isinstance(target[0], list) else target[0]
+        if ltype != "lprob":
             output.loc = output.loc[:,:target.shape[1]]
             output.scale = output.scale[:, :target.shape[1]]
-        if "txt" in mod_type.lower() and ltype !="lprob":
+        if "txt" in mod_type.lower() and ltype != "lprob":
             ltype = "category"
     else:
+        target = torch.stack(target).float() if isinstance(target, list) else target
         target = target.reshape(*output.loc.shape)
+    return output, target, ltype
+
+
+def loss_fn(output, target, ltype, mod_type=None):
+    output, target, ltype = reshape_for_loss(output, target, ltype, mod_type)
     if ltype == "bce":
-        assert torch.min(target.reshape(-1)) >= 0 and torch.max(target.reshape(-1)) <= 1, "Cannot use bce on data which is not normalised"
         loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
     elif ltype == "lprob":
         if "transformer" in mod_type.lower() and output.loc.shape != target.shape:
@@ -47,20 +50,23 @@ def normalize(target, data=None):
 
 
 def calc_klds(latent_dists, model):
+    """Calculated th KL-divergence between two distributions"""
     klds = []
     for d in latent_dists:
         klds.append(kl_divergence(d, model.pz(*model.pz_params)))
     return klds
 
+
 def elbo(model, x, ltype="lprob"):
     """Computes E_{p(x)}[ELBO] """
     qz_x, px_z, _ = model(x)
-    lpx_z = loss_fn(px_z, x, ltype=ltype)
+    lpx_z = loss_fn(px_z, x, ltype=ltype, mod_type=model.dec_name)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
+
 def multimodal_elbo_moe(model, x, ltype="lprob"):
-    """Computes ELBO for MoE VAE"""
+    """Computes ELBO for MoE VAE as in https://github.com/iffsid/mmvae"""
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
     for r, qz_x in enumerate(qz_xs):
@@ -100,6 +106,7 @@ def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
 
 
 def multimodal_elbo_poe(model, x,  ltype="lprob"):
+    """Subsampled ELBO with the POE approach as used in https://github.com/mhw32/multimodal-vae-public"""
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
         mods = [None for _ in range(len(x))]
