@@ -77,7 +77,7 @@ python main.py --cfg configs/config1.yml
 ### Set of experiments
 
 We provide an automated way to perform hyperparameter grid search for your models. First, set up the default config (e.g. _config1.yml_ in _./configs_)
-that should be adjusted in selected parameters. Then generate the full variability within the chosen parametes as follows:
+that should be adjusted in the selected parameters. Then generate the full variability within the chosen parameters as follows:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
@@ -94,14 +94,14 @@ To automatically run the whole set of experiments located in one folder, launch:
 ```./iterate_configs.sh "./configs/my_experiment/*" ```
 
 We provide sets of configs for the experiments reported in the paper. These are located in _./configs/batch_size_exp_
-and  _./configslatent_dim_exp_
+and  _./configs/latent_dim_exp_
 
 
 ### Training on other datasets
 
 By default, we also support training on MNIST_SVHN (or MNIST/SVHN only) and the Caltech-UCSD Birds 200 (CUB) dataset as 
-used for example in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf). We provide default training configs, which
- you can of course adjust according to your needs (e.g. change the model, loss objective etc.). 
+used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf). We provide the default training configs which
+ you can adjust according to your needs (e.g. change the model, loss objective etc.). 
 
 
 For training on MNIST_SVHN, first download the dataset (30 MB in total) before the training. You can run the following:
