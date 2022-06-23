@@ -50,7 +50,7 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level2.zip   # rep
 unzip level2.zip -d ./data/
 ```
 
-![Examples of levels 1, 3 and 5](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/dataset.png "GeBiD dataset")
+![Examples of GeBiD levels](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/dataset.png "GeBiD dataset")
 
 ### Dataset generation
 
@@ -74,9 +74,16 @@ cd ~/multimodal-vae-comparison/multimodal_compare
 python main.py --cfg configs/config1.yml
 ```
 
+The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
+The paths to all modalities are expected to have the data ordered so that they are semantically matching (e.g. the first image and the first text sample belong together).
+
+The usage and possible options for all the config arguments are below:
+
+![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/config.png "config documentation")
+
 ### Set of experiments
 
-We provide an automated way to perform hyperparameter grid search for your models. First, set up the default config (e.g. _config1.yml_ in _./configs_)
+We provide an automated way to perform a hyperparameter grid search for your models. First, set up the default config (e.g. _config1.yml_ in _./configs_)
 that should be adjusted in the selected parameters. Then generate the full variability within the chosen parameters as follows:
 
 ```
