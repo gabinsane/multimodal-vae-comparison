@@ -111,7 +111,7 @@ class MMVAE(nn.Module):
                 for s in range(l_s):
                     rows.append(np.hstack(r_l[(s*l_s):(s*l_s)+l_s]))
                 r_l = np.vstack(rows)
-                cv2.imwrite('{}/visuals/gen_samples_epoch_{}_m{}.png'.format(runPath, epoch, i), r_l * 255)
+                cv2.imwrite('{}/visuals/traversals_epoch_{}_m{}.png'.format(runPath, epoch, i), r_l * 255)
 
     def reconstruct(self, data):
         self.eval()

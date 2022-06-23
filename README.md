@@ -99,18 +99,28 @@ and  _./configslatent_dim_exp_
 
 ### Training on other datasets
 
-By default, we also support training on MNIST_SVHN (or MNIST/SVHN only) and the Caltech-UCSD Birds 200 (CUB) dataset.
+By default, we also support training on MNIST_SVHN (or MNIST/SVHN only) and the Caltech-UCSD Birds 200 (CUB) dataset as 
+used for example in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf). We provide default training configs, which
+ you can of course adjust according to your needs (e.g. change the model, loss objective etc.). 
 
-For training on MNIST_SVHN, run:
+
+For training on MNIST_SVHN, first download the dataset (30 MB in total) before the training. You can run the following:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # replace level2 with any of the 1-5 levels
+wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # download mnist_svhn dataset
 unzip mnist_svhn.zip -d ./data/
 python main.py --cfg configs/config_mnistsvhn.yml
 ```
 
+For training on CUB, we provide our preprocessed and cleaned version of the dataset (106 MB in total). To download and train, run:
 
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # download CUB dataset
+unzip cub.zip -d ./data/
+python main.py --cfg configs/config_cub.yml
+```
 
 
 ## Evaluation

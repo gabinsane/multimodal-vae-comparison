@@ -31,6 +31,7 @@ class VaeDataset():
         self.mod_type = mod_type
 
     def get_path_type(self, path):
+        assert os.path.exists(path), "Path does not exist: {}".format(path)
         if os.path.isdir(path):
             return "dir"
         if path[-4:] == ".pth":
@@ -192,7 +193,7 @@ class VAE(nn.Module):
             for s in range(l_s):
                 rows.append(np.hstack(r_l[(s * l_s):(s * l_s) + l_s]))
             r_l = np.vstack(rows)
-            cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
+            cv2.imwrite('{}/visuals/traversals_{:03d}.png'.format(runPath, epoch), r_l*255)
 
     def reconstruct(self, data, runPath, epoch, N=32):
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
