@@ -1,34 +1,45 @@
 name: multivae
 channels:
+  - anaconda
   - defaults
 dependencies:
+  - numpy-base=1.16.4=py36hde5b4d6_0
   - pillow=6.1.0=py36h34e0f95_0
-  - pip=20.1.1=py36_1
+  - pyparsing=2.4.7=py_0
+  - pyqt=5.9.2=py36h22d08a2_1
   - python=3.6.8=h0371630_0
   - pip:
+    - adabelief-pytorch==0.2.1
+    - chainer==7.8.1
+    - click==8.0.4
+    - colorama==0.4.4
+    - colorthief==0.2.1
+    - commentjson==0.9.0
+    - configparser==5.0.2
     - gensim==4.0.1
-    - jsonpatch==1.26
-    - jsonpointer==2.0
     - matplotlib==3.1.1
+    - mpmath==1.2.1
     - nltk==3.4.5
-    - numpy==1.19.5
+    - numba==0.53.1
+    - numpy==1.16.4
     - opencv-python==4.5.1.48
     - pandas==0.25.3
     - pickleshare==0.7.5
+    - pixyz==0.3.2
+    - protobuf==3.19.4
+    - pydub==0.25.1
+    - pyttsx3==2.90
     - pywavelets==1.1.1
-    - imageio==2.8.0
     - scikit-image==0.15.0
     - scikit-learn==0.23.1
     - scipy==1.3.2
     - seaborn==0.11.2
+    - sounddevice==0.4.4
+    - soundfile==0.10.3.post1
+    - tensorrt==0.0.1
     - torch==1.10.1
+    - torch2trt==0.3.0
+    - torchfile==0.1.0
+    - torchnet==0.0.4
     - torchvision==0.11.2
     - umap-learn==0.1.1
-    - visdom==0.1.8.9
-    - websocket-client==0.57.0
-    - pyttsx3==2.9.0
-    - sounddevice==0.4.4
-    - soundfile
-    - chainer==7.8.1
-    - pydub
-
