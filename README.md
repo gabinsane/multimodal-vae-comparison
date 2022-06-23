@@ -50,7 +50,7 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level2.zip   # rep
 unzip level2.zip -d ./data/
 ```
 
-![Examples of GeBiD levels](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/dataset.png "GeBiD dataset")
+![Examples of GeBiD levels](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/gebid_dataset.png "GeBiD dataset")
 
 ### Dataset generation
 
@@ -79,7 +79,7 @@ The paths to all modalities are expected to have the data ordered so that they a
 
 The usage and possible options for all the config arguments are below:
 
-![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/config.png "config documentation")
+![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/config_ex.png "config documentation")
 
 ### Set of experiments
 
