@@ -8,6 +8,7 @@ dependencies:
   - pyparsing=2.4.7=py_0
   - pyqt=5.9.2=py36h22d08a2_1
   - python=3.6.8=h0371630_0
+  - pip=20.1.1=py36_1
   - pip:
     - adabelief-pytorch==0.2.1
     - chainer==7.8.1
