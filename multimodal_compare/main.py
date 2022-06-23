@@ -10,7 +10,7 @@ from datetime import timedelta
 from eval.infer import plot_loss, eval_reconstruct, eval_sample
 import models
 from models import objectives
-from utils import Logger, save_model, unpack_data, pad_seq_data
+from utils import Logger, save_model, unpack_data, pad_seq_data, transpose_dataloader
 
 
 def parse_args():
@@ -127,7 +127,8 @@ class Trainer():
             data = pad_seq_data(list(data), masks) if len(self.mods) > 1 else [data.to(self.device), masks]
             data_len = len(data[0])
         else:
-            data = unpack_data(data, device=self.device) if len(self.mods) > 1 else unpack_data(data[0])
+            data = unpack_data(data, device=self.device) \
+                if len(self.mods) > 1 else unpack_data(data[0], device=self.device)
             data_len = len(data) if len(self.mods) == 1 else len(data[0])
         return data, data_len
 
@@ -144,9 +145,13 @@ class Trainer():
                     new_set.append([p[:num_samples] for p in x])
             data = new_set
         else:
-            data, d_len = self.prepare_data(self.test_loader.dataset) if len(self.mods) > 1 \
-                else  self.prepare_data(self.test_loader.dataset.tensors)
-            data = data[:num_samples]
+            if len(self.mods) > 1:
+                data = transpose_dataloader(self.test_loader.dataset, device=self.device)
+                data = [x[:num_samples] for x in data]
+                d_len = len(data[0])
+            else:
+                data = self.prepare_data(self.test_loader.dataset.tensors)
+                data, d_len = data[:num_samples]
         d_len = num_samples if num_samples is not None else d_len
         return data, d_len
 

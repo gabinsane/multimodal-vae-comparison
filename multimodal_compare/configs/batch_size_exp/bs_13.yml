@@ -23,7 +23,7 @@ modality_2:
   - 1
   mod_type: text
   path: ./data/level5/attrs.pkl
-n_latents: 64
+n_latents: 16
 obj: elbo
 optimizer: adam
 pre_trained: null

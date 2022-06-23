@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 import pickle, os
 from data_proc.process_audio import numpy_to_wav
 import torch.nn.functional as F
+import math
 
 
 class VaeDataset():
@@ -99,8 +100,8 @@ class VaeDataset():
         train_split = data[:int(len(data)*(1 - test_fraction))]
         test_split = data[int(len(data)*(1-test_fraction)):]
         if self.network_name.lower() not in ["transformer","txttransformer", "3dcnn"]:
-            train_split = torch.utils.data.TensorDataset(torch.tensor(torch.stack(train_split)))
-            test_split = torch.utils.data.TensorDataset(torch.tensor(torch.stack(test_split)))
+            train_split = torch.utils.data.TensorDataset(torch.stack(train_split).clone().detach())
+            test_split = torch.utils.data.TensorDataset(torch.stack(test_split).clone().detach())
         return train_split, test_split
 
 
@@ -180,13 +181,17 @@ class VAE(nn.Module):
 
     def generate(self, runPath, epoch):
         N, K = 36, 1
+        l_s = int(math.sqrt(N))
         samples = self.generate_samples(N, K).cpu().squeeze()
         r_l = []
         if "image" in self.pth:
             for r, recons_list in enumerate(samples):
                     recon = recons_list.cpu().reshape(*self.data_dim).unsqueeze(0)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
-            r_l = np.vstack((np.hstack(r_l[:6]), np.hstack(r_l[6:12]), np.hstack(r_l[12:18]), np.hstack(r_l[18:24]),  np.hstack(r_l[24:30]),  np.hstack(r_l[30:36])))
+            rows = []
+            for s in range(l_s):
+                rows.append(np.hstack(r_l[(s * l_s):(s * l_s) + l_s]))
+            r_l = np.vstack(rows)
             cv2.imwrite('{}/visuals/gen_samples_{:03d}.png'.format(runPath, epoch), r_l*255)
 
     def reconstruct(self, data, runPath, epoch, N=32):

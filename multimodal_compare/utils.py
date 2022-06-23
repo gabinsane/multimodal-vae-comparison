@@ -103,6 +103,12 @@ def save_model(model, filepath):
 def is_multidata(dataB):
     return isinstance(dataB, list) or isinstance(dataB, tuple)
 
+def transpose_dataloader(data, device):
+    mods = [[] for _ in range(len(data[0]))]
+    for num, o in enumerate(data):
+        for ix, mod in enumerate(o):
+            mods[ix].append(mod[0])
+    return [torch.stack(m).to(device) for m in mods]
 
 def unpack_data(dataB, device='cuda'):
     # dataB :: (Tensor, Idx) | [(Tensor, Idx)]
@@ -114,7 +120,7 @@ def unpack_data(dataB, device='cuda'):
             elif is_multidata(dataB[1]):
                 return dataB[0].to(device), dataB[1][0].to(device)  # cubISft
         elif is_multidata(dataB[0]):
-            return [d for d in list(zip(*dataB))[0]]  # mnist-svhn, cubIS
+            return [d.to(device) for d in list(zip(*dataB))[0]]  # mnist-svhn, cubIS
     elif torch.is_tensor(dataB):
         return dataB.to(device)
 

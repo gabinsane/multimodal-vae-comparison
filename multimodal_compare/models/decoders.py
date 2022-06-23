@@ -74,7 +74,7 @@ class Dec_SVHN(nn.Module):
         super(Dec_SVHN, self).__init__()
         latent_dim = latent_dim
         self.datadim = data_dim
-        self.type = "CNN"
+        self.net_type = "CNN"
         self.linear = nn.Linear(latent_dim, 128)
         self.conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=1, padding=0, dilation=1)
         self.conv2 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1, dilation=1)
@@ -86,7 +86,7 @@ class Dec_SVHN(nn.Module):
     def forward(self, z):
         z = z.squeeze(0)
         z = self.linear(z)
-        z = z.view(z.size(0), z.size(1), 1, 1)
+        z = z.view(-1, z.size(-1), 1, 1)
         x_hat = self.relu(z)
         x_hat = self.conv1(x_hat)
         x_hat = self.relu(x_hat)
@@ -108,20 +108,21 @@ class Dec_MNIST(nn.Module):
         latent_dim = latent_dim
         self.datadim = data_dim
         self.net_type = "CNN"
-        self.hidden_dim = 400;
+        self.hidden_dim = 400
         modules = []
         modules.append(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True)))
         modules.extend([nn.Sequential(nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(True)) for _ in range(2 - 1)])
         self.dec = nn.Sequential(*modules)
         self.fc3 = nn.Linear(self.hidden_dim, 784)
-        self.relu = nn.ReLU();
-        self.sigmoid = nn.Sigmoid();
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, z):
         x_hat = self.dec(z)
         x_hat = self.fc3(x_hat)
         x_hat = self.sigmoid(x_hat)
-        d = x_hat.view(*z.size()[:-1], *self.datadim).squeeze(0).permute(0,3,1,2)
+        d = x_hat.view(*z.size()[:-1], *self.datadim).squeeze(0)
+        d = d.permute(0,3,1,2) if len(d.shape) == 4 else d.permute(0,1,4,2,3)
         return d.squeeze(), torch.tensor(0.75).to(z.device)
 
 

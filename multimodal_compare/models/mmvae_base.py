@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torchnet.dataset import TensorDataset
 import numpy as np
 from torch.autograd import Variable
-import cv2
+import cv2, math
 from .vae import VAE
 
 module_types = {"moe":VAE, "poe":VAE}
@@ -88,26 +88,29 @@ class MMVAE(nn.Module):
         with torch.no_grad():
             data = []
             pz = self.pz(*self.pz_params)
-            latents = pz.rsample(torch.Size([N]))
+            latents = pz.rsample(torch.Size([N])).transpose(1,0)
             for d, vae in enumerate(self.vaes):
                 if "transformer" in vae.dec_name.lower():
                     px_z = vae.px_z(*vae.dec([latents, None]))
                 else:
                     px_z = vae.px_z(*vae.dec(latents))
-                data.append(px_z.mean.view(-1, *px_z.mean.size()[2:]))
+                data.append(px_z.mean)
         return data  # list of generations---one for each modality
 
-    def generate(self, runPath, epoch, N=36):
+    def generate(self, runPath, epoch, N=64):
+        l_s = int(math.sqrt(N))
         for i, samples in enumerate(self.generate_samples(N)):
-            if "image" in self.vaes[i].pth:
+            if "image" in self.vaes[i].mod_type:
                 samples = samples.reshape(N, *self.vaes[i].data_dim)
                 r_l = []
                 for r, recons_list in enumerate(samples):
                     recon = recons_list.cpu()
                     recon = recon.reshape(*self.vaes[i].data_dim).unsqueeze(0)
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
-                r_l = np.vstack((np.hstack(r_l[:int(N/6)]), np.hstack(r_l[int(N/6):int(N/3)]), np.hstack(r_l[int(N/3):int(N/2)]), np.hstack(r_l[int(N/2):int(2*N/3)]),
-                                 np.hstack(r_l[int(2*N/3):int(5*N/6)]), np.hstack(r_l[int(5*N/6):N])))
+                rows = []
+                for s in range(l_s):
+                    rows.append(np.hstack(r_l[(s*l_s):(s*l_s)+l_s]))
+                r_l = np.vstack(rows)
                 cv2.imwrite('{}/visuals/gen_samples_epoch_{}_m{}.png'.format(runPath, epoch, i), r_l * 255)
 
     def reconstruct(self, data):
@@ -124,7 +127,7 @@ class MMVAE(nn.Module):
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                if self.vaes[o].enc.type == "CNN":
+                if self.vaes[o].enc.net_type == "CNN":
                     _data = torch.stack(data[o]).cpu() if isinstance(data[0], list) else data[o].cpu()
                     recon = recon.squeeze(0).cpu()
                     if "cub_" in self.vaes[o].pth:

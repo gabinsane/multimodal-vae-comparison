@@ -97,6 +97,22 @@ We provide sets of configs for the experiments reported in the paper. These are 
 and  _./configslatent_dim_exp_
 
 
+### Training on other datasets
+
+By default, we also support training on MNIST_SVHN (or MNIST/SVHN only) and the Caltech-UCSD Birds 200 (CUB) dataset.
+
+For training on MNIST_SVHN, run:
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # replace level2 with any of the 1-5 levels
+unzip mnist_svhn.zip -d ./data/
+python main.py --cfg configs/config_mnistsvhn.yml
+```
+
+
+
+
 ## Evaluation
 
 After training, you will find various visualizations of the training progress in the _./visuals_ folder of your experiment.

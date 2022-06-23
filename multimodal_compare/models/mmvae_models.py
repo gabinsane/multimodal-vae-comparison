@@ -47,9 +47,9 @@ class MOE(MMVAE):
 
 class POE(MMVAE):
     """Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public"""
-    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size):
+    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
         self.modelName = 'poe'
-        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, mod_types, feature_dims, n_latents, test_split, batch_size)
+        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size)
         self.n_latents = n_latents
 
     def forward(self, inputs, K=1):

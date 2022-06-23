@@ -34,14 +34,17 @@ def t_sne(data, runPath, epoch, K, labels):
         else:
             palette = sns.color_palette("hls", len(data) * len(set(labels)))
             if len(data) > 1:
-                l = ["Class {} Mod {}".format(str(i), ind) for i in list(labels)]
+                l = ["Class {} Mod {}".format(str(i), ind +1) for i in list(labels)]
             else:
                 l = ["Class {}".format(str(i)) for i in list(labels)]
             data_labels.append([val for val in l for _ in range(K)])
     df["y"] = np.concatenate(data_labels)
-    sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = palette, data = df).set(title="T-SNE projection")
+    ax = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = palette, data = df)
+    ax.set(title="T-SNE projection")
+    cols = len(data) if labels else 1
+    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=cols)
     p = os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)) if not ".png" in runPath else runPath
-    plt.savefig(p)
+    plt.savefig(p, bbox_inches='tight')
     plt.clf()
 
 
