@@ -50,7 +50,7 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level2.zip   # rep
 unzip level2.zip -d ./data/
 ```
 
-![Examples of GeBiD levels](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/dataset.png "GeBiD dataset")
+![Examples of GeBiD levels](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/gebid_dataset.png "GeBiD dataset")
 
 ### Dataset generation
 
@@ -79,7 +79,7 @@ The paths to all modalities are expected to have the data ordered so that they a
 
 The usage and possible options for all the config arguments are below:
 
-![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/config.png "config documentation")
+![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/config_ex.png "config documentation")
 
 ### Set of experiments
 
@@ -128,8 +128,6 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # downlo
 unzip cub.zip -d ./data/
 python main.py --cfg configs/config_cub.yml
 ```
-
-
 ## Evaluation
 
 After training, you will find various visualizations of the training progress in the _./visuals_ folder of your experiment.
@@ -139,6 +137,27 @@ Furthermore, to calculate the joint- and cross-generation accuracy, you can run:
 cd ~/multimodal-vae-comparison/multimodal_compare
 python eval/eval_gebid.py --m /path/to/model/directory --level 4  # specify the level on which the model was trained
 ```
+
+
+## Extending for own models and networks
+
+The toolkit is designed so that it enables easy extension for new models, objectives or encoder/decoder networks. 
+<div style="text-align: left">
+ <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/uml.png" width="300" />
+</div>
+
+Here you can see the UML diagram of the _./models_ folder. The VAE class is initialized at every training (for both the uni/multimodal scenario) along with its
+specified encoder and decoder network.
+In the multimodal scenario, a new VAE class is instantiated for each modality by the MMVAE class (in mmvae_base.py). MMVAE is then wrapped by the selected
+model in multimodal_models (MOE, POE, MoPOE classes), where the multimodal fusion is specified.
+
+New encoder and decoder networks can be added in the corresponding scripts (encoders.py, decoders.py). For choosing these networks in the config,
+use only the part of the class name following after the underscore (e.g. CNN for the class Enc_**CNN**).
+
+The objectives and reconstruction loss terms are defined in objectives.py. By default, when you use more than one modality,
+the model will use the objective named "multimodal_" together with the objective and model defined in the config (e.g., for elbo objective and poe model, the objective _multimodal_elbo_poe_ will be used.).
+If you wish to add new objectives, keep the naming consistent with these rules so that it can be easily configured. 
+
 
 ## License
 
