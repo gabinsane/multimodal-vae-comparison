@@ -38,8 +38,8 @@ dependencies:
     - soundfile==0.10.3.post1
     - tensorrt==0.0.1
     - torch==1.10.1
-    - torch2trt==0.3.0
     - torchfile==0.1.0
-    - torchnet==0.0.4
+    - torchnet
     - torchvision==0.11.2
     - umap-learn==0.1.1
+    - pyyaml==6.0
