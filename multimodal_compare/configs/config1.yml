@@ -1,0 +1,26 @@
+batch_size: 32                # batch size
+n_latents: 16                 # latent space dimensionality
+epochs: 600                   # number of trainin epochs
+exp_name: gebid               # folder name to save results
+labels: null                  # (optional) path to data labels for t-SNE
+loss: bce                     # reconstruction loss (bce/l1/mse/lprob/category)
+lr: 1e-4                      # learning rate
+mixing: poe                   # multimodal mixing (poe/moe/mopoe)
+obj: elbo                     # objective (currently only elbo)
+optimizer: adam               # optimizer (adam/adabelief)
+pre_trained: null             # (optional) path to pre-trained weights
+seed: 2                       # seed number
+test_split: 0.1               # proportion of data to use for testset
+viz_freq: 1                   # visualize results after each N epochs
+modality_1:                   # define first modality
+  encoder: CNN                # name of the encoder class
+  decoder: CNN                # name of the decoder class
+  feature_dim: [64, 64, 3]    # dimensionality of the data (e.g. 64,64,3 for images)
+  mod_type: image             # how to treat the modality (image/text/action)
+  path: ./data/level5/image   # path to data
+modality_2:                   # define second modality
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  feature_dim: [52, 27, 1]
+  mod_type: text
+  path: ./data/level5/attrs.pkl

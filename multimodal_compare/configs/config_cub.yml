@@ -1,0 +1,26 @@
+batch_size: 32
+epochs: 600
+exp_name: cub
+labels:
+loss: bce
+lr: 1e-3
+mixing: moe
+n_latents: 16
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+viz_freq: 10
+test_split: 0.1
+modality_1:
+  decoder: CNN
+  encoder: CNN
+  feature_dim: [64, 64, 3]
+  mod_type: image
+  path: ./data/cub/images
+modality_2:
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  feature_dim: [256,27,1]
+  mod_type: text
+  path: ./data/cub/cub_captions.pkl
