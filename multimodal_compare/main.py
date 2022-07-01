@@ -102,8 +102,11 @@ class Trainer():
                   [m["feature_dim"] for m in self.mods], [m["mod_type"] for m in self.mods]]
         if len(self.mods) == 1:
             params = [x[0] for x in params]
-        self.model = m(*params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(self.device)
-
+        if "model_specific" in self.config.keys():
+            model_params = self.config["model_specific"]
+            self.model = m(*params, model_params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(self.device)
+        else:
+            self.model = m(*params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(self.device)
         if self.config["pre_trained"]:
             print('Loading model {} from {}'.format(model.modelName, self.config["pre_trained"]))
             self.model.load_state_dict(torch.load(self.config["pre_trained"] + '/model.rar'))
@@ -150,8 +153,9 @@ class Trainer():
                 data = [x[:num_samples] for x in data]
                 d_len = len(data[0])
             else:
-                data = self.prepare_data(self.test_loader.dataset.tensors)
-                data, d_len = data[:num_samples]
+                data, _ = self.prepare_data(self.test_loader.dataset.tensors)
+                data = data[:num_samples]
+                d_len = len(data)
         d_len = num_samples if num_samples is not None else d_len
         return data, d_len
 

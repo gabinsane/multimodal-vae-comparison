@@ -13,7 +13,7 @@ from torch.autograd import Variable
 import cv2, math
 from .vae import VAE
 
-module_types = {"moe":VAE, "poe":VAE}
+module_types = {"moe":VAE, "poe":VAE, "htvae":VAE}
 
 class MMVAE(nn.Module):
     def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
@@ -116,7 +116,7 @@ class MMVAE(nn.Module):
     def reconstruct(self, data):
         self.eval()
         with torch.no_grad():
-            if self.modelName != "mopoe":
+            if self.modelName not in ["mopoe"]:
                 _, px_zs, _ = self.forward(data)
             else:
                 _, px_zs, _, _ = self.forward(data)

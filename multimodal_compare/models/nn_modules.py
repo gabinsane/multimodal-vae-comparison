@@ -2,6 +2,65 @@ import torch, numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 
+
+class Transformer(nn.Module):
+    def __init__(self, latent_dim, zero_masking, output_mean,ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
+        """
+        Transformer network for multimodal fusion
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+        """
+        super(Transformer, self).__init__()
+        self.latent_dim = latent_dim
+
+        self.ff_size = ff_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.activation = activation
+        self.zero_masking = int(zero_masking) == 1
+        self.output_mean = int(output_mean) == 1
+
+        self.input_feats = self.latent_dim * 2
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+
+        self.skelEmbedding = torch.nn.DataParallel(nn.Linear(self.input_feats, self.latent_dim))
+        self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
+        seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.latent_dim,
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=self.activation))
+        self.seqTransEncoder = torch.nn.DataParallel(
+            nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+
+    def forward(self, batch):
+        x = batch.float()
+        nframes, bs, njoints, nfeats = x.shape
+        mask = torch.tensor(np.ones((bs, nframes), dtype=bool)).cuda()
+        if self.zero_masking:
+            for ix, sample in enumerate(x.permute(1,0,2,3)):
+                for ix2, frame in enumerate(sample):
+                     if torch.count_nonzero(frame) == 0:
+                            mask[ix][ix2] = torch.tensor(False).cuda()
+        x = x.reshape(nframes, bs, nfeats*njoints)
+        # embedding of the skeleton
+        x = self.skelEmbedding(x.cuda())
+        # add positional encoding
+        x = self.sequence_pos_encoder(x)
+        # transformer layers
+        final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
+        if self.output_mean:
+            z = final.mean(axis=0)
+        else:
+            z = final[0]
+        # extract mu and logvar
+        mu = self.mu_layer(z)
+        logvar = self.logvar_layer(z)
+        logvar = F.softmax(logvar, dim=-1)
+        return mu, logvar
+
 class SamePadConvTranspose3d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, bias=True):
         super().__init__()

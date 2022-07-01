@@ -4,8 +4,13 @@ epochs: 600                   # number of trainin epochs
 exp_name: gebid               # folder name to save results
 labels: null                  # (optional) path to data labels for t-SNE
 loss: bce                     # reconstruction loss (bce/l1/mse/lprob/category)
-lr: 1e-4                      # learning rate
-mixing: poe                   # multimodal mixing (poe/moe/mopoe)
+lr: 1e-3                      # learning rate
+mixing: htvae                 # multimodal mixing (poe/moe/mopoe)
+model_specific:
+  zero_masking: 1
+  output_mean:  1
+  single_joint: 1
+  multi_nets: 0
 obj: elbo                     # objective (currently only elbo)
 optimizer: adam               # optimizer (adam/adabelief)
 pre_trained: null             # (optional) path to pre-trained weights

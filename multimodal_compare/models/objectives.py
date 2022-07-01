@@ -85,6 +85,32 @@ def multimodal_elbo_moe(model, x, ltype="lprob"):
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
     return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
+def multimodal_elbo_htvae(model, x, ltype="lprob"):
+    """Computes ELBO for HTVAE"""
+    lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
+    for m in range(len(x) + 1):
+        mods = [None for _ in range(len(x))]
+        if m == len(x):
+            mods = x
+        else:
+            mods[m] = x[m]
+        qz_xs, px_zs, _ = model(mods)
+        kl_divs = []
+        for ix, qz_x in enumerate(qz_xs):
+            kld = kl_divergence(qz_x, model.pz(*model.pz_params))
+            kl_divs.append(kld.sum(-1))
+        klds.append(torch.stack(kl_divs).sum())
+        loc_lpx_z = []
+        for d in range(len(px_zs)):
+            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling
+            loc_lpx_z.append(lpx_z)
+            if d == m:
+                lpx_zs[m].append(lpx_z)
+        elbo = (torch.stack(loc_lpx_z).sum(0) - kld)
+        elbos.append(elbo)
+    individual_losses = [-torch.stack(m).sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
+    return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), individual_losses
+
 
 def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
     """Computes GENERALIZED MULTIMODAL ELBO https://arxiv.org/pdf/2105.02470.pdf """

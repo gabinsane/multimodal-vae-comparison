@@ -4,6 +4,7 @@ import torch.distributions as dist
 from utils import combinatorial
 from .mmvae_base import MMVAE
 from torch.autograd import Variable
+from models.nn_modules import Transformer
 
 
 class MOE(MMVAE):
@@ -197,80 +198,99 @@ class MoPOE(POE):
         return [mu_sel, logvar_sel]
 
 
-class Transformer(MMVAE):
-    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size):
-        self.modelName = 'trans'
-        super(MoPOE, self).__init__(encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size)
+class HTVAE(MMVAE):
+    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, model_params, n_latents, test_split, batch_size):
+        self.modelName = "htvae"
+        super(HTVAE, self).__init__(dist.Normal, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size)
+        self.modelName = "htvae"
         self.n_latents = n_latents
-        self.modelName = "trans"
-        self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
+        self.model_params = model_params
+        self.joint_tfm = None
+        self.setup_joint_network()
 
-    def infer(self, inputs, num_samples=None):
-        mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
+
+    def setup_joint_network(self):
+        nets = []
+        if int(self.model_params["multi_nets"]) == 0:
+            nets.append(Transformer(self.n_latents, self.model_params["zero_masking"], self.model_params["output_mean"]))
+        else:
+            assert int(self.model_params["single_joint"]) != 1, "Cannot have both multi_nets and single_joint parameters set to 1!"
+            for _ in self.encoders:
+                nets.append(Transformer(self.n_latents, self.model_params["zero_masking"], self.model_params["output_mean"]))
+        self.joint_tfm = torch.nn.ModuleList(nets)
+
+    def forward(self, inputs, K=1):
+        mus, logvars, single_params = self.infer(inputs)
+        recons = []
+        zs = []
+        if int(self.model_params["single_joint"]) == 0:
+            for ix, (mu, logvar) in enumerate(zip(mus, logvars)):
+                qz_x = dist.Normal(*[mu, logvar])
+                z = qz_x.rsample(torch.Size([1]))
+                zs.append(z)
+                if "transformer" in self.vaes[ix].dec_name.lower():
+                   z_dec = [z, inputs[ix][1]] if inputs[ix] is not None else [z, None]
+                else: z_dec = z
+                recons.append(self.vaes[ix].px_z(*self.vaes[ix].dec(z_dec)))
+        else:
+            qz_x = dist.Normal(*[mus[0], logvars[0]])
+            z = qz_x.rsample(torch.Size([1]))
+            zs.append(z)
+            for ix, vae in enumerate(self.vaes):
+                if "transformer" in self.vaes[ix].dec_name.lower():
+                   z_dec = [z, inputs[ix][1]] if inputs[ix] is not None else [z, None]
+                else: z_dec = z
+                recons.append(vae.px_z(*vae.dec(z_dec)))
+        qz_xs = []
+        for mu, logvar in zip(mus, logvars):
+            d = dist.Normal(*[mu, logvar])
+            qz_xs.append(d)
+        return qz_xs, recons, zs
+
+    def infer(self,inputs):
+        id = 0 if inputs[0] is not None else 1
+        batch_size = len(inputs[id]) if len(inputs[id]) is not 2 else len(inputs[id][0])
+        mu, logvar = None, None
         for ix, modality in enumerate(inputs):
             if modality is not None:
                 mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
-                mu[ix] = mod_mu.unsqueeze(0)
-                logvar[ix] = mod_logvar.unsqueeze(0)
-        mus, logvars = torch.Tensor().cuda(), torch.Tensor().cuda()
-        distr_subsets = dict()
-        for k, subset in enumerate(self.subsets):
-            mus_subset = torch.Tensor().cuda()
-            logvars_subset = torch.Tensor().cuda()
-            for vae in subset:
-                mod_index = list(self.vaes).index(vae)
-                if mu[mod_index] is not None:
-                    mus_subset = torch.cat((mus_subset, mu[mod_index].unsqueeze(0)), dim=0)
-                    logvars_subset = torch.cat((logvars_subset, logvar[mod_index].unsqueeze(0)), dim=0)
-            if mus_subset.nelement() != 0:
-                s_mu, s_logvar = self.poe_fusion(mus_subset, logvars_subset)
-                distr_subsets[k] = [s_mu, s_logvar]
-                if len(mus.shape) > 3:
-                    mus = mus.squeeze(0)
-                mus = torch.cat((mus, s_mu), dim=0)
-                logvars = torch.cat((logvars, s_logvar), dim=0)
-        weights = (1 / float(mus.shape[0])) * torch.ones(mus.shape[0]).cuda()
-        joint_mu, joint_logvar = self.moe_fusion(mus, logvars, weights)
-        return joint_mu, joint_logvar, [mus, logvars]
-
-    def reparameterize(self, mu, logvar):
-        std = logvar.mul(0.5).exp_()
-        eps = Variable(std.data.new(std.size()).normal_())
-        return eps.mul(std).add_(mu)
-
-
-    def reweight_weights(self, w):
-        return w / w.sum()
-
-    def moe_fusion(self, mus, logvars, weights=None):
-        if weights is None:
-            weights = self.weights
-        weights = self.reweight_weights(weights)
-        mu_moe, logvar_moe = self.mixture_component_selection(mus, logvars, weights)
-        return [mu_moe, logvar_moe]
-
-    def poe_fusion(self, mus, logvars):
-        if mus.shape[0] == len(self.vaes):
-            mus = torch.cat((mus.squeeze(1), torch.zeros(1, mus.shape[-2], self.n_latents).cuda()), dim=0)
-            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.n_latents).cuda()), dim=0)
-        mu_poe, logvar_poe = self.product_of_experts(mus, logvars)
-        if len(mu_poe.shape) < 3:
-            mu_poe = mu_poe.unsqueeze(0)
-            logvar_poe = logvar_poe.unsqueeze(0)
-        return [mu_poe, logvar_poe]
-
-    def mixture_component_selection(sellf, mus, logvars, w_modalities=None):
-        num_components, num_samples = mus.shape[0], mus.shape[1]
-        idx_start, idx_end = [], []
-        for k in range(0, num_components):
-            i_start = 0 if k == 0 else int(idx_end[k - 1])
-            if k == w_modalities.shape[0] - 1:
-                i_end = num_samples
+                mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0) if mu is not None else mod_mu.unsqueeze(0)
+                logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0) if logvar is not None else mod_logvar.unsqueeze(0)
             else:
-                i_end = i_start + int(torch.floor(num_samples * w_modalities[k]))
-            idx_start.append(i_start)
-            idx_end.append(i_end)
-        idx_end[-1] = num_samples
-        mu_sel = torch.cat([mus[k, idx_start[k]:idx_end[k], :] for k in range(w_modalities.shape[0])])
-        logvar_sel = torch.cat([logvars[k, idx_start[k]:idx_end[k], :] for k in range(w_modalities.shape[0])])
-        return [mu_sel, logvar_sel]
+                mod_mu, mod_logvar = torch.zeros(batch_size, self.n_latents).to(self.device), torch.zeros(batch_size, self.n_latents).to(self.device)
+                mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0) if mu is not None else mod_mu.unsqueeze(0)
+                logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0) if logvar is not None else mod_logvar.unsqueeze(0)
+        mu_before, logvar_before = mu, logvar
+        mus, logvars = self.transformer_fusion([mu, logvar])
+        return mus, logvars, [mu_before, logvar_before]
+
+    def transformer_fusion(self, qzs):
+        all_qzs = list(torch.stack(qzs))
+        qzs_fused = []
+        if int(self.model_params["single_joint"]) == 0:
+            qzs_mod = []
+            for ix, m in enumerate(all_qzs):
+                mod_order = all_qzs.copy()
+                mod_order[0], mod_order[ix] = mod_order[ix], mod_order[0]
+                qzs_mod.append(torch.stack(mod_order))
+            for ix, latents in enumerate(qzs_mod):
+                qzs_fused.append(self.iter_fuse(latents, ix))
+        else:
+            qzs_fused.append(self.iter_fuse(torch.stack(all_qzs)))
+        mus = [x[0] for x in qzs_fused]
+        logvars = [x[1] for x in qzs_fused]
+        return mus, logvars
+
+    def iter_fuse(self, latents, ix=0):
+        i = 0 if int(self.model_params["multi_nets"]) == 0 else ix
+        z_fused = self.joint_tfm[i](latents.permute(1, 2, 0, 3))
+        return z_fused
+
+    def reconstruct(self, data, runPath, epoch, N=64):
+        recons_mat = []
+        for ix, i in enumerate(data):
+            input_mat = [None] * len(data)
+            input_mat[ix] = i[:N]
+            rec = super(HTVAE, self).reconstruct(input_mat)
+            recons_mat.append(rec)
+        self.process_reconstructions(recons_mat, data, epoch, runPath)
