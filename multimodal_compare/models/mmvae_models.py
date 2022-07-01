@@ -253,9 +253,9 @@ class HTVAE(MMVAE):
         mu, logvar = None, None
         for ix, modality in enumerate(inputs):
             if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
-                mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0) if mu is not None else mod_mu.unsqueeze(0)
-                logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0) if logvar is not None else mod_logvar.unsqueeze(0)
+                mod_mu, mod_logvar = self.vaes[ix].enc(modality if not isinstance(modality, list) else modality)
+                mu = torch.cat((mu.cuda(), mod_mu.unsqueeze(0)), dim=0) if mu is not None else mod_mu.unsqueeze(0)
+                logvar = torch.cat((logvar.cuda(), mod_logvar.unsqueeze(0)), dim=0) if logvar is not None else mod_logvar.unsqueeze(0)
             else:
                 mod_mu, mod_logvar = torch.zeros(batch_size, self.n_latents).to(self.device), torch.zeros(batch_size, self.n_latents).to(self.device)
                 mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0) if mu is not None else mod_mu.unsqueeze(0)

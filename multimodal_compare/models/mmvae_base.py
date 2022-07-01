@@ -204,6 +204,6 @@ class MMVAE(nn.Module):
             else:
                 kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
                     keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
-        K = 1 if (self.modelName == "poe" or (self.modelName == "htvae" and int(self.model_params["single_joint"]) == 1)) else K
+        K = 1 if self.modelName in ["poe","htvae"] else K
         t_sne([x.cpu() for x in zss_sampled[1:]], runPath, epoch, K, labels)
         return torch.cat(zsl, 0).cpu().numpy(), kls_df

@@ -275,7 +275,8 @@ def labelled_tsne(model):
             labels.append(d)
     for i, label in enumerate(labels):
         lrange = int(len(label) * (1 - config["test_split"]))
-        model.analyse(testset, trainer.mPath, i, label[lrange:lrange + testset_len])
+        model.analyse(testset, trainer.mPath, i+9999, label[lrange:lrange + testset_len])
+    print("Saved labelled T-SNEs in {}".format(os.path.join(trainer.mPath, "visuals")))
 
 
 if __name__ == "__main__":
@@ -287,6 +288,7 @@ if __name__ == "__main__":
     difflevel = args.level
     model, config = load_model(args.model)
     trainer = Trainer(config, dev)
+    model = model
     labelled_tsne(model)
     calculate_cross_coherency(model)
     calculate_joint_coherency(model)
