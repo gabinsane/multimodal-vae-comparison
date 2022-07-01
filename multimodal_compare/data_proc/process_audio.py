@@ -1,5 +1,8 @@
-import sounddevice as sd
-import soundfile as sf
+try:
+    import sounddevice as sd
+    import soundfile as sf
+except:
+    print("Could not load audio libraries, training with audio might not work")
 import numpy as np
 import time, pickle, random
 
