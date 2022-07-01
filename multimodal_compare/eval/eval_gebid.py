@@ -3,7 +3,9 @@ from eval.infer import load_model, text_to_image, get_traversal_samples
 import cv2, pickle
 from math import sqrt
 import os, glob, imageio
+from main import Trainer
 import numpy as np
+import torch
 from PIL import Image
 from utils import output_onehot2text
 import glob
@@ -262,13 +264,30 @@ def listdirs(rootdir):
             dirs.append(d)
     return dirs
 
+
+def labelled_tsne(model):
+    testset, testset_len = trainer.prepare_testset(num_samples=250)
+    labels = []
+    for p in level_attributes[args.level]:
+        lp = "./data/level{}/{}_labels.pkl".format(args.level, p)
+        with open(lp, 'rb') as handle:
+            d = pickle.load(handle)
+            labels.append(d)
+    for i, label in enumerate(labels):
+        lrange = int(len(label) * (1 - config["test_split"]))
+        model.analyse(testset, trainer.mPath, i, label[lrange:lrange + testset_len])
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", type=str, help="path to the model directory")
     parser.add_argument("-l", "--level", type=int, help="difficulty level: 1-5")
+    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
     difflevel = args.level
-    model = load_model(args.model)
+    model, config = load_model(args.model)
+    trainer = Trainer(config, dev)
+    labelled_tsne(model)
     calculate_cross_coherency(model)
     calculate_joint_coherency(model)
 

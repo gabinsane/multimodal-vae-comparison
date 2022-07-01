@@ -12,8 +12,9 @@ import glob
 
 def parse_args(pth):
     if os.path.isdir(pth):
-        pth = os.path.join(pth, "config.json")
-    with open(pth) as file: config = json.load(file)
+        pth = os.path.join(pth, "config.yml")
+    with open(pth, 'r') as stream:
+        config = yaml.safe_load(stream)
     modalities = []
     for x in range(20):
         if "modality_{}".format(x) in list(config.keys()):
@@ -39,7 +40,7 @@ def estimate_log_marginal(model, device="cuda"):
     return marginal_loglik
 
 def eval_reconstruct(path):
-    model = load_model(path, batch=1)
+    model, c = load_model(path, batch=1)
     device = torch.device("cuda")
     recons = []
     for i, data in enumerate(testloader):
@@ -54,7 +55,7 @@ def eval_reconstruct(path):
     print("Saved reconstructions for {}".format(path))
 
 def eval_sample(path):
-    model = load_model(path, batch=1)
+    model, c = load_model(path, batch=1)
     N, K = 36, 1
     samples = model.generate_samples(N, K).cpu().squeeze()
     with open(os.path.join(path, "visuals/latent_samples.pkl"), 'wb') as handle:
@@ -124,15 +125,19 @@ def load_model(path):
     model = "VAE" if len(mods) == 1 else config["mixing"].lower()
     modelC = getattr(models, model)
     params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
-              [m["feature_dim"] for m in mods]]
+              [m["feature_dim"] for m in mods], [m["mod_type"] for m in mods]]
     if len(mods) == 1:
         params = [x[0] for x in params]
-    model = modelC(*params, config["n_latents"], config["batch_size"]).to(device)
+    if "model_specific" in config.keys():
+        model_params = config["model_specific"]
+        model = modelC(*params, model_params, config["n_latents"], config["test_split"], config["batch_size"]).to(device)
+    else:
+        model = modelC(*params, config["n_latents"], config["test_split"], config["batch_size"]).to(device)
     print('Loading model {} from {}'.format(model.modelName, path))
     model.load_state_dict(torch.load(os.path.join(path,'model.rar')))
     model._pz_params = model._pz_params
     model.eval()
-    return model
+    return model, config
 
 def get_traversal_samples(latent_dim, n_samples_per_dim):
     all_samples = []
@@ -176,7 +181,7 @@ def listdirs(rootdir):
 
 if __name__ == "__main__":
     p = ""
-    model = load_model(p)
+    model, c = load_model(p)
     t = ["pieslice", "circle","spiral", "line", "square", "semicircle", "pieslice", "circle","spiral", "line", "square", "semicircle", "pieslice", "circle","spiral", "line", "square", "semicircle" ]
     text_to_image(t, model, p)
 

@@ -81,7 +81,7 @@ class Trainer():
         os.makedirs(self.mPath, exist_ok=True)
         os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
         print('Experiment path:', self.mPath)
-        with open('{}/config.json'.format(self.mPath), 'w') as yaml_file:
+        with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
             yaml.dump(self.config, yaml_file, default_flow_style=False)
 
     def _configure_optimizer(self):
