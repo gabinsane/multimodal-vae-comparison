@@ -5,11 +5,13 @@ import argparse
 from math import cos, sin, pi
 
 parser = argparse.ArgumentParser(description='GeBiD data generator')
-parser.add_argument('--dir', type=str, default="../data/level5", help='where to save the dataset the dataset')
-parser.add_argument('--level', type=int, default=5, help='difficulty level: 1-5')
-parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
+parser.add_argument('--dir', type=str, default="../data/level3res", help='where to save the dataset the dataset')
+parser.add_argument('--level', type=int, default=3, help='difficulty level: 1-5')
+parser.add_argument('--size', type=int, default=15000, help='size of the dataset')
 parser.add_argument('--noisycol', action='store_true', default=False,
                     help='add noise to image colors')
+parser.add_argument('--restricted', action='store_true', default=False,
+                    help='restrict shapes only to certain colors')
 args = parser.parse_args()
 
 shapes = ["line", "circle", "square", "semicircle", "pieslice", "spiral"]
@@ -20,6 +22,8 @@ sizes = ["small", "large"]
 locations1 = ["at the top", "at the bottom"]
 locations2 = ["left", "right"]
 backgrounds = ["on white", "on black"]
+colors_restricted = {"line":["yellow", "red", "green"], "circle":["blue", "grey", "brown"], "square":["purple", "teal", "navy"],
+                     "semicircle":["orange", "beige", "pink"], "pieslice":["teal", "green", "navy"], "spiral":["yellow", "orange", "brown"]}
 
 def randomize_rgb(rgb):
     new_rgb = [0,0,0]
@@ -62,13 +66,13 @@ def make_attrs(path):
     print("Making ../data/attrs.pkl")
     attrs = []
     for x in range(args.size):
-        size, color, shape, loc1, loc2, bkgr = "", "", "", "", "", ""
-        if sizes:
-            size = random.choice(sizes)
-        if colors:
-            color = random.choice(list(colors.keys()))
-        if shapes:
-            shape = random.choice(shapes)
+        shape = random.choice(shapes)
+        size = random.choice(sizes)
+        if args.restricted:
+            collist = colors_restricted[shape]
+        else:
+            collist = list(colors.keys())
+        color = random.choice(collist)
         loc1 = random.choice(locations1)
         loc2 = random.choice(locations2)
         bkgr = random.choice(backgrounds)

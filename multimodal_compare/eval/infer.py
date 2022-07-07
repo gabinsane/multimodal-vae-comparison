@@ -13,6 +13,8 @@ import glob
 def parse_args(pth):
     if os.path.isdir(pth):
         pth = os.path.join(pth, "config.yml")
+        if not os.path.exists(pth) and os.path.exists(pth.replace("config.yml", "config.json")):
+            os.rename(pth.replace("config.yml", "config.json"), pth)
     with open(pth, 'r') as stream:
         config = yaml.safe_load(stream)
     modalities = []
@@ -180,8 +182,8 @@ def listdirs(rootdir):
     return dirs
 
 if __name__ == "__main__":
-    p = ""
+    p = "/home/gabi/mirracle_multimodal/multimodal_compare/results/level3/subsampled/0110/htvae_0110_bs_3"
     model, c = load_model(p)
-    t = ["pieslice", "circle","spiral", "line", "square", "semicircle", "pieslice", "circle","spiral", "line", "square", "semicircle", "pieslice", "circle","spiral", "line", "square", "semicircle" ]
+    t = ["large green pieslice", "small red circle","large yellow spiral", "small beige line", "large teal square", "small orange semicircle", "large brown pieslice", "small grey circle","small pink spiral", "large blue line", "small navy square", "small red semicircle", "large beige pieslice", "small green circle","large yellow spiral", "large navy line", "small pink square", "small grey semicircle" ]
     text_to_image(t, model, p)
 

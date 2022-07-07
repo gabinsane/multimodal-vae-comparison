@@ -1,5 +1,5 @@
 ### code for qualitative evaluation of multimodal VAEs trained on GeBiD dataset
-from eval.infer import load_model, text_to_image, get_traversal_samples
+from eval.infer import load_model, text_to_image, get_traversal_samples, listdirs
 import cv2, pickle
 from math import sqrt
 import os, glob, imageio
@@ -246,8 +246,10 @@ def calculate_joint_coherency(model):
     for ind, txt in enumerate(txt_recons):
         text = output_onehot2text(recon=txt.unsqueeze(0))[0][0]
         atts = try_retrieve_atts(text)
+        img = np.asarray(img_recons[ind].detach().cpu() * 255, dtype="uint8")
+        os.makedirs(os.path.join(m, "joint_gen"), exist_ok=True)
+        cv2.imwrite(os.path.join(m, "joint_gen", "_".join(text.split(" ")) + ".png"), img)
         if atts is not None:
-            img = np.asarray(img_recons[ind].detach().cpu()*255, dtype="uint8")
             correct = check_cross_sample_correct(testtext=atts, reconimage=img)
         else:
             correct = 0
@@ -275,9 +277,11 @@ def labelled_tsne(model):
             labels.append(d)
     for i, label in enumerate(labels):
         lrange = int(len(label) * (1 - config["test_split"]))
-        model.analyse(testset, trainer.mPath, i+9999, label[lrange:lrange + testset_len])
+        model.analyse(testset, m, i+9999, label[lrange:lrange + testset_len])
     print("Saved labelled T-SNEs in {}".format(os.path.join(trainer.mPath, "visuals")))
 
+def last_letter(word):
+    return word[::-1]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -286,12 +290,21 @@ if __name__ == "__main__":
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
     difflevel = args.level
-    model, config = load_model(args.model)
-    trainer = Trainer(config, dev)
-    model = model
-    labelled_tsne(model)
-    calculate_cross_coherency(model)
-    calculate_joint_coherency(model)
+    all_models = listdirs("/home/gabi/mirracle_multimodal/multimodal_compare/results/level3/subsampled/0110")
+    all_models = sorted(all_models, key=last_letter)
+    cross_coherencies = []
+    joint_coherencies = []
+    for m in all_models:
+        model, config = load_model(m)
+        #trainer = Trainer(config, dev)
+        model = model
+        #labelled_tsne(model)
+        #cross_coherencies.append(calculate_cross_coherency(model))
+        joint_coherencies.append(calculate_joint_coherency(model))
+    print("Models: ")
+    print(all_models)
+    print("Cross coherencies: {}".format(cross_coherencies))
+    print("Joint coherencies: {}".format(joint_coherencies))
 
 
 
