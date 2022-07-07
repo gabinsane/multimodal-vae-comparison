@@ -338,7 +338,7 @@ class Enc_VideoGPT(nn.Module):
 
 class Enc_Transformer(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
-    def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
+    def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
         """
         Transformer encoder for arbitrary sequential data
         :param latent_dim: int, latent vector dimensionality
@@ -398,13 +398,14 @@ class Enc_Transformer(nn.Module):
         return mu, logvar
 
 class Enc_TxtTransformer(Enc_Transformer):
-    def __init__(self, latent_dim, data_dim=1):
+    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=2, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer encoder configured for character-level text reconstructions
         :param latent_dim: int, latent vector dimensionality
         :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
         """
-        super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim)
+        super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim, ff_size=ff_size, num_layers=num_layers, num_heads=num_heads,
+                                                 dropout=dropout, activation=activation)
         self.net_type = "TxtTransformer"
         self.embedding = nn.Embedding(self.input_feats,2)
         self.sequence_pos_encoder = PositionalEncoding(2, self.dropout)
