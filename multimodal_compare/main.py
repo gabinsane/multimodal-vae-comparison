@@ -55,6 +55,8 @@ class Trainer():
         :param device: torch.device object (cuda/cpu)
         """
         self.config = cfg
+        if "beta" not in self.config.keys():
+            self.config["beta"] = 1
         self.mods = None
         self.device = device
         self.labels = None
@@ -184,7 +186,7 @@ class Trainer():
         for it, dataT in enumerate(self.train_loader):
             data, _ = self.prepare_data(dataT)
             self.optimizer.zero_grad()
-            loss, kld, partial_l = self.objective(self.model, data, ltype=self.config["loss"])
+            loss, kld, partial_l = self.objective(self.model, data, ltype=self.config["loss"], beta=self.config["beta"])
             loss_m.append(loss)
             kld_m.append(kld)
             for i, l in enumerate(partial_l):
@@ -211,7 +213,7 @@ class Trainer():
         with torch.no_grad():
             for ix, dataT in enumerate(self.test_loader):
                 data, d_len = self.prepare_data(dataT)
-                loss, kld, partial_l = self.objective(self.model, data, ltype=self.config["loss"])
+                loss, kld, partial_l = self.objective(self.model, data, ltype=self.config["loss"], beta=self.config["beta"])
                 loss_m.append(loss)
                 kld_m.append(kld)
                 for i, l in enumerate(partial_l):

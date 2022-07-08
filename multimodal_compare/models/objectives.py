@@ -57,7 +57,7 @@ def calc_klds(latent_dists, model):
     return klds
 
 
-def elbo(model, x, ltype="lprob"):
+def elbo(model, x, ltype="lprob", beta=1):
     """Computes E_{p(x)}[ELBO] """
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype, mod_type=model.dec_name)
@@ -65,7 +65,7 @@ def elbo(model, x, ltype="lprob"):
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
 
-def multimodal_elbo_moe(model, x, ltype="lprob"):
+def multimodal_elbo_moe(model, x, ltype="lprob", beta=1):
     """Computes ELBO for MoE VAE as in https://github.com/iffsid/mmvae"""
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
@@ -81,11 +81,11 @@ def multimodal_elbo_moe(model, x, ltype="lprob"):
                   qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
                   lwt = (qz_x.log_prob(zs)- qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
             lpx_zs.append((lwt.exp() * lpx_z))
-    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
+    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - beta * torch.stack(klds).sum(0))
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
     return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
-def multimodal_elbo_htvae(model, x, ltype="lprob"):
+def multimodal_elbo_htvae(model, x, ltype="lprob", beta=1):
     """Computes ELBO for HTVAE"""
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
@@ -106,12 +106,12 @@ def multimodal_elbo_htvae(model, x, ltype="lprob"):
             loc_lpx_z.append(lpx_z)
             if d == m:
                 lpx_zs[m].append(lpx_z)
-        elbo = (torch.stack(loc_lpx_z).sum(0) - kld)
+        elbo = (torch.stack(loc_lpx_z).sum(0) - beta * kld)
         elbos.append(elbo)
     individual_losses = [-torch.stack(m).sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
     return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
-def multimodal_elbononsub_htvae(model, x, ltype="lprob"):
+def multimodal_elbononsub_htvae(model, x, ltype="lprob", beta=1):
     """Computes ELBO for HTVAE without subsampling"""
     qz_xs, px_zs, _ = model(x)
     kl_divs = []
@@ -123,7 +123,7 @@ def multimodal_elbononsub_htvae(model, x, ltype="lprob"):
     for d in range(len(px_zs)):
         lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling
         lpx_zs.append(lpx_z)
-    elbo = (torch.stack(lpx_zs).sum(0) - kld)
+    elbo = (torch.stack(lpx_zs).sum(0) - beta * kld)
     individual_losses = [-m / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
     return -elbo, kld, individual_losses
 
@@ -142,12 +142,12 @@ def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
     group_divergence = kl_divergence(qz_xs, model.pz(*model.pz_params))
     kld_mods = calc_klds(uni_dists, model)
     kld_weighted = (torch.stack(kld_mods).sum(0) + group_divergence).sum()
-    obj = rec_loss #- beta * kld_weighted
+    obj = rec_loss - beta * kld_weighted
     individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
     return -obj.sum(), kld_weighted, individual_losses
 
 
-def multimodal_elbo_poe(model, x,  ltype="lprob"):
+def multimodal_elbo_poe(model, x,  ltype="lprob", beta=1):
     """Subsampled ELBO with the POE approach as used in https://github.com/mhw32/multimodal-vae-public"""
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
@@ -165,7 +165,7 @@ def multimodal_elbo_poe(model, x,  ltype="lprob"):
             loc_lpx_z.append(lpx_z)
             if d == m:
                 lpx_zs[m].append(lpx_z)
-        elbo = (torch.stack(loc_lpx_z).sum(0) - kld.sum(-1).sum())
+        elbo = (torch.stack(loc_lpx_z).sum(0) - beta *  kld.sum(-1).sum())
         elbos.append(elbo)
     individual_losses = [-torch.stack(m).sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
     return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), individual_losses

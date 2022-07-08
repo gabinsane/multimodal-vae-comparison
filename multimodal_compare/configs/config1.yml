@@ -15,6 +15,7 @@ obj: elbo                     # objective (currently only elbo)
 optimizer: adam               # optimizer (adam/adabelief)
 pre_trained: null             # (optional) path to pre-trained weights
 seed: 2                       # seed number
+beta: 2
 test_split: 0.1               # proportion of data to use for testset
 viz_freq: 1                   # visualize results after each N epochs
 modality_1:                   # define first modality
