@@ -212,11 +212,13 @@ class HTVAE(MMVAE):
     def setup_joint_network(self):
         nets = []
         if int(self.model_params["multi_nets"]) == 0:
-            nets.append(Transformer(self.n_latents, self.model_params["zero_masking"], self.model_params["output_mean"]))
+            nets.append(Transformer(self.n_latents, self.model_params["zero_masking"], self.model_params["output_mean"], self.model_params["t_ff"],
+                                    self.model_params["t_heads"], self.model_params["t_layers"]))
         else:
             assert int(self.model_params["single_joint"]) != 1, "Cannot have both multi_nets and single_joint parameters set to 1!"
             for _ in self.encoders:
-                nets.append(Transformer(self.n_latents, self.model_params["zero_masking"], self.model_params["output_mean"]))
+                nets.append(Transformer(self.n_latents, self.model_params["zero_masking"], self.model_params["output_mean"], self.model_params["t_ff"],
+                                    self.model_params["t_heads"], self.model_params["t_layers"]))
         self.joint_tfm = torch.nn.ModuleList(nets)
 
     def forward(self, inputs, K=1):

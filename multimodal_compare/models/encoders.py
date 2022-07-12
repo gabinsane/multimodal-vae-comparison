@@ -338,7 +338,7 @@ class Enc_VideoGPT(nn.Module):
 
 class Enc_Transformer(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
-    def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
+    def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer encoder for arbitrary sequential data
         :param latent_dim: int, latent vector dimensionality

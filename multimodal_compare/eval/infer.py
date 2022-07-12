@@ -173,6 +173,7 @@ def text_to_image(text, model, path):
         cv2.imwrite(os.path.join(path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)],i)), image)
     return img_outputs, txtoutputs
 
+
 def listdirs(rootdir):
     dirs = []
     for file in os.listdir(rootdir):
@@ -180,6 +181,7 @@ def listdirs(rootdir):
         if os.path.isdir(d):
             dirs.append(d)
     return dirs
+
 
 if __name__ == "__main__":
     p = "/home/gabi/mirracle_multimodal/multimodal_compare/results/level3/subsampled/0110/htvae_0110_bs_3"

@@ -7,7 +7,7 @@ from main import Trainer
 import numpy as np
 import torch
 from PIL import Image
-from utils import output_onehot2text
+from utils import output_onehot2text, one_hot_encode
 import glob
 import argparse
 
@@ -218,16 +218,28 @@ def check_cross_sample_correct(testimage=None, testtext=None, reconimage=None, r
         return True
     return False
 
-def calculate_cross_coherency(model):
-    with open("./eval/templates/cross_level{}.pkl".format(difflevel), 'rb') as handle:
-        t = pickle.load(handle)
+def calculate_cross_coherency(model, robustness=None):
+    if not robustness:
+        with open("./eval/templates/cross_level{}.pkl".format(difflevel), 'rb') as handle:
+            t = pickle.load(handle)
+    elif robustness == "new_combos":
+        with open("./eval/templates/cross_level{}_restricted.pkl".format(difflevel), 'rb') as handle:
+            t = pickle.load(handle)
+        t = [" ".join(s) for s in t]
+    elif robustness == "old_combos":
+        with open("./eval/templates/cross_level{}_restricted_easy.pkl".format(difflevel), 'rb') as handle:
+            t = pickle.load(handle)
+        t = [" ".join(s) for s in t]
     acc_all = []
     for x in range(10):
         images, texts = text_to_image(t, model, args.model)
         correct_pairs = []
+        os.makedirs(os.path.join(m, "cross_gen"), exist_ok=True)
         for ind, img in enumerate(images):
             img = np.asarray(img, dtype="uint8")
             correct = check_cross_sample_correct(testtext=t[ind], reconimage=img)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            cv2.imwrite(os.path.join(m, "cross_gen", "_".join(t[ind].split(" ")) + ".png"), img)
             correct_pairs.append(int(correct))
         acc = sum(correct_pairs) / len(correct_pairs)
         acc_all.append(acc)
@@ -242,17 +254,19 @@ def calculate_joint_coherency(model):
     recons = model.generate_from_latents(samples.unsqueeze(0).cuda())
     img_recons = recons[0].loc
     txt_recons = recons[1].loc
+    texts_dec = [output_onehot2text(recon=t.unsqueeze(0))[0][0][:23] for t in txt_recons]
     correct_pairs = []
     for ind, txt in enumerate(txt_recons):
         text = output_onehot2text(recon=txt.unsqueeze(0))[0][0]
         atts = try_retrieve_atts(text)
         img = np.asarray(img_recons[ind].detach().cpu() * 255, dtype="uint8")
         os.makedirs(os.path.join(m, "joint_gen"), exist_ok=True)
-        cv2.imwrite(os.path.join(m, "joint_gen", "_".join(text.split(" ")) + ".png"), img)
         if atts is not None:
             correct = check_cross_sample_correct(testtext=atts, reconimage=img)
         else:
             correct = 0
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(os.path.join(m, "joint_gen", "_".join(text.split(" ")) + ".png"), img)
         correct_pairs.append(int(correct))
     acc = sum(correct_pairs) / len(correct_pairs)
     print("Joint-generation accuracy is {} %".format(acc*100))
@@ -290,20 +304,29 @@ if __name__ == "__main__":
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
     difflevel = args.level
-    all_models = listdirs("/home/gabi/mirracle_multimodal/multimodal_compare/results/level3/subsampled/0110")
+    all_models = listdirs("/home/gabi/mirracle_multimodal/multimodal_compare/results/beta_experiments")
     all_models = sorted(all_models, key=last_letter)
+    cross_coherencies_rob = []
     cross_coherencies = []
     joint_coherencies = []
     for m in all_models:
         model, config = load_model(m)
-        #trainer = Trainer(config, dev)
-        model = model
-        #labelled_tsne(model)
-        #cross_coherencies.append(calculate_cross_coherency(model))
-        joint_coherencies.append(calculate_joint_coherency(model))
+        trainer = Trainer(config, dev)
+        labelled_tsne(model)
+        c1 = calculate_cross_coherency(model, robustness="old_combos")
+        c2 = calculate_cross_coherency(model, robustness="new_combos")
+        cross_coherencies.append(c1)
+        cross_coherencies_rob.append(c2)
+        j = calculate_joint_coherency(model)
+        joint_coherencies.append(j)
+        with open(os.path.join(m,'eval_stats.txt'), 'w') as f:
+            f.write("Cross-coherency on known combinations: {} \n".format(round(c1,3)))
+            f.write("Cross-coherency on NEW combinations: {} \n".format(round(c2,3)))
+            f.write("Joint-coherency: {}".format(round(j,3)))
     print("Models: ")
     print(all_models)
-    print("Cross coherencies: {}".format(cross_coherencies))
+    print("Cross coherencies (known combinations): {}".format([round(x, 3) for x in cross_coherencies]))
+    print("Cross coherencies (new combinations): {}".format([round(x, 3) for x in cross_coherencies_rob]))
     print("Joint coherencies: {}".format(joint_coherencies))
 
 
