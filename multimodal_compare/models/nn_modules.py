@@ -26,7 +26,7 @@ class Transformer(nn.Module):
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
 
         self.skelEmbedding = torch.nn.DataParallel(nn.Linear(self.input_feats, self.latent_dim))
-        self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
+        self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.latent_dim, self.dropout))
         seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.latent_dim,
                                                                                 nhead=self.num_heads,
                                                                                 dim_feedforward=self.ff_size,
@@ -34,6 +34,15 @@ class Transformer(nn.Module):
                                                                                 activation=self.activation))
         self.seqTransEncoder = torch.nn.DataParallel(
             nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+        seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.latent_dim,
+                                                          nhead=self.num_heads,
+                                                          dim_feedforward=self.ff_size,
+                                                          dropout=self.dropout,
+                                                          activation=activation))
+        self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
+                                                     num_layers=self.num_layers))
+        self.finallayer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.input_feats))
+
 
     def forward(self, batch):
         x = batch.float()
@@ -50,12 +59,16 @@ class Transformer(nn.Module):
         # add positional encoding
         x = self.sequence_pos_encoder(x)
         # transformer layers
-        final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
-        if self.output_mean:
-            z = final.mean(axis=0)
-        else:
-            z = final[0]
+        encoded = self.seqTransEncoder(x, src_key_padding_mask=~mask)
         # extract mu and logvar
+        timequeries = torch.zeros(mask.shape[1], bs, self.latent_dim, device=encoded.device)
+        timequeries = self.sequence_pos_encoder(timequeries)
+        output = self.seqTransDecoder(tgt=timequeries, memory=encoded,
+                                      tgt_key_padding_mask=~mask)
+        if self.output_mean:
+             z = output.mean(axis=0)
+        else:
+             z = output[0]
         mu = self.mu_layer(z)
         logvar = self.logvar_layer(z)
         logvar = F.softmax(logvar, dim=-1)
