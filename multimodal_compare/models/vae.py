@@ -193,7 +193,8 @@ class VAE(nn.Module):
             for s in range(l_s):
                 rows.append(np.hstack(r_l[(s * l_s):(s * l_s) + l_s]))
             r_l = np.vstack(rows)
-            cv2.imwrite('{}/visuals/traversals_{:03d}.png'.format(runPath, epoch), r_l*255)
+            im = cv2.cvtColor(r_l*255, cv2.COLOR_BGR2RGB)
+            cv2.imwrite('{}/visuals/traversals_{:03d}.png'.format(runPath, epoch), im)
 
     def reconstruct(self, data, runPath, epoch, N=32):
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()

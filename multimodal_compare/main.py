@@ -104,7 +104,7 @@ class Trainer():
                   [m["feature_dim"] for m in self.mods], [m["mod_type"] for m in self.mods]]
         if len(self.mods) == 1:
             params = [x[0] for x in params]
-        if "model_specific" in self.config.keys():
+        if "model_specific" in self.config.keys() and len(self.mods) > 1:
             model_params = self.config["model_specific"]
             self.model = m(*params, model_params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(self.device)
         else:

@@ -1,10 +1,11 @@
 # objectives of choice
 import torch
+from numpy import prod
 import torch.distributions as dist
-from utils import kl_divergence
+from utils import kl_divergence, log_mean_exp, is_multidata
 from torch.autograd import Variable
 
-def reshape_for_loss(output, target, ltype, mod_type):
+def reshape_for_loss(output, target, ltype, mod_type, K=1):
     if mod_type is not None and "transformer" in mod_type.lower():
         target = torch.stack(target[0]).float() if isinstance(target[0], list) else target[0]
         if ltype != "lprob":
@@ -14,12 +15,12 @@ def reshape_for_loss(output, target, ltype, mod_type):
             ltype = "category"
     else:
         target = torch.stack(target).float() if isinstance(target, list) else target
-        target = target.reshape(*output.loc.shape)
+        target = target.repeat(K, 1, 1, 1).reshape(*output.loc.shape)
     return output, target, ltype
 
 
-def loss_fn(output, target, ltype, mod_type=None):
-    output, target, ltype = reshape_for_loss(output, target, ltype, mod_type)
+def loss_fn(output, target, ltype, mod_type=None, K=1):
+    output, target, ltype = reshape_for_loss(output, target, ltype, mod_type, K)
     if ltype == "bce":
         loss = -torch.nn.functional.binary_cross_entropy(output.loc.squeeze().cpu(), target.float().cpu().detach(), reduction="sum").cuda()
     elif ltype == "lprob":
@@ -56,13 +57,23 @@ def calc_klds(latent_dists, model):
         klds.append(kl_divergence(d, model.pz(*model.pz_params)))
     return klds
 
+def iwae(model, x,  ltype="lprob", beta=1, K=20):
+    """Computes an importance-weighted ELBO estimate for log p_\theta(x)
+    Iterates over the batch as necessary.
+    """
+    qz_x, px_z, zs = model(x, K)
+    lpz = model.pz(*model.pz_params).log_prob(zs).sum(-1)
+    lpx_z = loss_fn(px_z, x, ltype=ltype, mod_type=model.dec_name, K=K) * model.llik_scaling
+    lqz_x = qz_x.log_prob(zs).sum(-1)
+    lw = lpz + lpx_z.sum(-1) - lqz_x
+    return -log_mean_exp(lw).sum(), torch.zeros(1), [torch.zeros(1)]
 
 def elbo(model, x, ltype="lprob", beta=1):
     """Computes E_{p(x)}[ELBO] """
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype, mod_type=model.dec_name)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
-    return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
+    return -(lpx_z.sum(-1) - beta * kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
 
 
 def multimodal_elbo_moe(model, x, ltype="lprob", beta=1):
