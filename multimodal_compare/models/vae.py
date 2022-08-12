@@ -67,9 +67,9 @@ class VaeDataset():
 
     def prepare_for_encoder(self, data):
         kwargs = {}
-        if self.network_type.lower() in ["transformer", "cnn", "3dcnn"]:
+        if self.network_type.lower() in ["transformer", "cnn", "3dcnn", "fnn"]:
             data = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in data]
-            if self.network_type == "cnn":
+            if self.network_type in ["cnn", "fnn"]:
                 data = torch.stack(data).transpose(1,3)
             if "transformer" in self.network_type.lower():
                 if len(data[0].shape) < 3:

@@ -11,9 +11,8 @@ import csv
 import glob
 
 def parse_args(pth):
-    if os.path.isdir(pth):
-        pth = os.path.join(pth, "config.json")
-    with open(pth) as file: config = json.load(file)
+    with open(pth, 'r') as stream:
+        config = yaml.safe_load(stream)
     modalities = []
     for x in range(20):
         if "modality_{}".format(x) in list(config.keys()):
@@ -38,7 +37,7 @@ def estimate_log_marginal(model, device="cuda"):
     marginal_loglik /= len(test_loader.dataset)
     return marginal_loglik
 
-def eval_reconstruct(path):
+def eval_reconstruct(path, testloader):
     model = load_model(path, batch=1)
     device = torch.device("cuda")
     recons = []
@@ -124,10 +123,10 @@ def load_model(path):
     model = "VAE" if len(mods) == 1 else config["mixing"].lower()
     modelC = getattr(models, model)
     params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
-              [m["feature_dim"] for m in mods]]
+              [m["feature_dim"] for m in mods],  ["image", "text"]]
     if len(mods) == 1:
         params = [x[0] for x in params]
-    model = modelC(*params, config["n_latents"], config["batch_size"]).to(device)
+    model = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
     print('Loading model {} from {}'.format(model.modelName, path))
     model.load_state_dict(torch.load(os.path.join(path,'model.rar')))
     model._pz_params = model._pz_params
@@ -153,18 +152,35 @@ def text_to_image(text, model, path):
         recons = model.forward([None,[txt_inp.unsqueeze(0), None]])[1]
         if model.modelName == 'moe':
             recons = recons[0]
-        recons_image = recons[0] if isinstance(recons, list) else recons
-        recons_image = recons_image[0] if isinstance(recons_image, list) else recons_image
-        recons_text = recons[1][0] if isinstance(recons[1], list) else recons[1]
-        image = np.asarray(recons_image.loc[0].cpu().detach())
-        recon_text = recons_text.loc[0]
-        recon_text = output_onehot2text(recon=recon_text.unsqueeze(0))
-        #print("Reconstructed text: {}".format(recon_text[0][0][:len(w)]))
+        image, recon_text = process_recons(recons)
         txtoutputs.append(recon_text[0][0])
         img_outputs.append(image*255)
         image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
         cv2.imwrite(os.path.join(path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)],i)), image)
     return img_outputs, txtoutputs
+
+def process_recons(recons):
+    recons_image = recons[0] if isinstance(recons, list) else recons
+    recons_image = recons_image[0] if isinstance(recons_image, list) else recons_image
+    recons_text = recons[1][1] if isinstance(recons[1], list) else recons[1]
+    image = np.asarray(recons_image.loc[0].cpu().detach())
+    recon_text = recons_text.loc[0]
+    recon_text = output_onehot2text(recon=recon_text.unsqueeze(0))
+    return image, recon_text
+
+
+def image_to_text(imgs, model, path):
+    txt_outputs, img_outputs = [], []
+    model.eval()
+    for i, w in enumerate(imgs):
+        recons = model.forward([w.unsqueeze(0),None])[1]
+        image, recon_text = process_recons(recons)
+        txt_outputs.append(recon_text[0][0])
+        img_outputs.append(image * 255)
+        image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
+        cv2.imwrite(os.path.join(path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)], i)), image)
+    return img_outputs, txt_outputs
+
 
 def listdirs(rootdir):
     dirs = []
@@ -173,6 +189,7 @@ def listdirs(rootdir):
         if os.path.isdir(d):
             dirs.append(d)
     return dirs
+
 
 if __name__ == "__main__":
     p = ""
