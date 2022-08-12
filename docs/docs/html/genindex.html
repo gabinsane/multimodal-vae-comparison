@@ -42,7 +42,15 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="code/trainer.html">Trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/trainer.html">Trainer class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/vae.html">VAE class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/mmvae_base.html">Multimodal VAE Base Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/mmvae_models.html">Multimodal VAE models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/encoders.html">Encoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/objectives.html">Objectives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/infer.html">Inference module</a></li>
 </ul>
 
         </div>
@@ -72,7 +80,12 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#G"><strong>G</strong></a>
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -81,10 +94,182 @@
  | <a href="#V"><strong>V</strong></a>
  
 </div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.DMVAE.apply_poe">apply_poe() (multimodal_compare.models.mmvae_models.DMVAE method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.calc_klds">calc_klds() (in module multimodal_compare.models.objectives)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.compute_microbatch_split">compute_microbatch_split() (in module multimodal_compare.models.objectives)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Audio">Dec_Audio (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN">Dec_CNN (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_FNN">Dec_FNN (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST">Dec_MNIST (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST_DMVAE">Dec_MNIST_DMVAE (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNISTMoE">Dec_MNISTMoE (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN">Dec_SVHN (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN_DMVAE">Dec_SVHN_DMVAE (class in multimodal_compare.models.decoders)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHNMoE">Dec_SVHNMoE (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Transformer">Dec_Transformer (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_TransformerIMG">Dec_TransformerIMG (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_TxtTransformer">Dec_TxtTransformer (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_VideoGPT">Dec_VideoGPT (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Decoder_Conv2">Decoder_Conv2 (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.DMVAE">DMVAE (class in multimodal_compare.models.mmvae_models)</a>
+</li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.dreg">dreg() (in module multimodal_compare.models.objectives)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.elbo">elbo() (in module multimodal_compare.models.objectives)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Audio">Enc_Audio (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_CNN">Enc_CNN (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Conv2">Enc_Conv2 (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_FNN">Enc_FNN (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST">Enc_MNIST (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST_DMVAE">Enc_MNIST_DMVAE (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNISTMoE">Enc_MNISTMoE (class in multimodal_compare.models.encoders)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN">Enc_SVHN (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN_DMVAE">Enc_SVHN_DMVAE (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHNMoE">Enc_SVHNMoE (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Transformer">Enc_Transformer (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_TransformerIMG">Enc_TransformerIMG (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_TxtTransformer">Enc_TxtTransformer (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_VideoGPT">Enc_VideoGPT (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.estimate_log_marginal">estimate_log_marginal() (in module multimodal_compare.eval.infer)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Audio.forward">forward() (multimodal_compare.models.decoders.Dec_Audio method)</a>
+
+      <ul>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN.forward">(multimodal_compare.models.decoders.Dec_CNN method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_FNN.forward">(multimodal_compare.models.decoders.Dec_FNN method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST.forward">(multimodal_compare.models.decoders.Dec_MNIST method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST_DMVAE.forward">(multimodal_compare.models.decoders.Dec_MNIST_DMVAE method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNISTMoE.forward">(multimodal_compare.models.decoders.Dec_MNISTMoE method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN.forward">(multimodal_compare.models.decoders.Dec_SVHN method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN_DMVAE.forward">(multimodal_compare.models.decoders.Dec_SVHN_DMVAE method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHNMoE.forward">(multimodal_compare.models.decoders.Dec_SVHNMoE method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Transformer.forward">(multimodal_compare.models.decoders.Dec_Transformer method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_TransformerIMG.forward">(multimodal_compare.models.decoders.Dec_TransformerIMG method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_TxtTransformer.forward">(multimodal_compare.models.decoders.Dec_TxtTransformer method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_VideoGPT.forward">(multimodal_compare.models.decoders.Dec_VideoGPT method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Decoder_Conv2.forward">(multimodal_compare.models.decoders.Decoder_Conv2 method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Audio.forward">(multimodal_compare.models.encoders.Enc_Audio method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_CNN.forward">(multimodal_compare.models.encoders.Enc_CNN method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Conv2.forward">(multimodal_compare.models.encoders.Enc_Conv2 method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_FNN.forward">(multimodal_compare.models.encoders.Enc_FNN method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST.forward">(multimodal_compare.models.encoders.Enc_MNIST method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST_DMVAE.forward">(multimodal_compare.models.encoders.Enc_MNIST_DMVAE method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNISTMoE.forward">(multimodal_compare.models.encoders.Enc_MNISTMoE method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN.forward">(multimodal_compare.models.encoders.Enc_SVHN method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN_DMVAE.forward">(multimodal_compare.models.encoders.Enc_SVHN_DMVAE method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHNMoE.forward">(multimodal_compare.models.encoders.Enc_SVHNMoE method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Transformer.forward">(multimodal_compare.models.encoders.Enc_Transformer method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_TransformerIMG.forward">(multimodal_compare.models.encoders.Enc_TransformerIMG method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_TxtTransformer.forward">(multimodal_compare.models.encoders.Enc_TxtTransformer method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_VideoGPT.forward">(multimodal_compare.models.encoders.Enc_VideoGPT method)</a>
+</li>
+        <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.DMVAE.forward">(multimodal_compare.models.mmvae_models.DMVAE method)</a>
+</li>
+        <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MOE.forward">(multimodal_compare.models.mmvae_models.MOE method)</a>
+</li>
+        <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE.forward">(multimodal_compare.models.mmvae_models.POE method)</a>
+</li>
+        <li><a href="code/vae.html#multimodal_compare.models.vae.VAE.forward">(multimodal_compare.models.vae.VAE method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/trainer.html#multimodal_compare.main.Trainer.get_loss_mean">get_loss_mean() (multimodal_compare.main.Trainer method)</a>
+      <li><a href="code/trainer.html#multimodal_compare.main.Trainer.get_torch_mean">get_torch_mean() (multimodal_compare.main.Trainer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -95,20 +280,58 @@
       <li><a href="code/trainer.html#multimodal_compare.main.Trainer.iterate_epochs">iterate_epochs() (multimodal_compare.main.Trainer method)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.iwae">iwae() (in module multimodal_compare.models.objectives)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.MMVAE">MMVAE (class in multimodal_compare.models.mmvae_base)</a>
+</li>
       <li>
     module
 
       <ul>
+        <li><a href="code/eval_gebid.html#module-multimodal_compare.eval.eval_gebid">multimodal_compare.eval.eval_gebid</a>
+</li>
+        <li><a href="code/infer.html#module-multimodal_compare.eval.infer">multimodal_compare.eval.infer</a>
+</li>
         <li><a href="code/trainer.html#module-multimodal_compare.main">multimodal_compare.main</a>
 </li>
+        <li><a href="code/decoders.html#module-multimodal_compare.models.decoders">multimodal_compare.models.decoders</a>
+</li>
+        <li><a href="code/encoders.html#module-multimodal_compare.models.encoders">multimodal_compare.models.encoders</a>
+</li>
+        <li><a href="code/mmvae_base.html#module-multimodal_compare.models.mmvae_base">multimodal_compare.models.mmvae_base</a>
+</li>
+        <li><a href="code/mmvae_models.html#module-multimodal_compare.models.mmvae_models">multimodal_compare.models.mmvae_models</a>
+</li>
+        <li><a href="code/objectives.html#module-multimodal_compare.models.objectives">multimodal_compare.models.objectives</a>
+</li>
+        <li><a href="code/vae.html#module-multimodal_compare.models.vae">multimodal_compare.models.vae</a>
+</li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MOE">MOE (class in multimodal_compare.models.mmvae_models)</a>
+</li>
+      <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MoPOE">MoPOE (class in multimodal_compare.models.mmvae_models)</a>
+</li>
+      <li>
+    multimodal_compare.eval.eval_gebid
+
+      <ul>
+        <li><a href="code/eval_gebid.html#module-multimodal_compare.eval.eval_gebid">module</a>
+</li>
+      </ul></li>
+      <li>
+    multimodal_compare.eval.infer
+
+      <ul>
+        <li><a href="code/infer.html#module-multimodal_compare.eval.infer">module</a>
+</li>
+      </ul></li>
       <li>
     multimodal_compare.main
 
@@ -117,6 +340,62 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    multimodal_compare.models.decoders
+
+      <ul>
+        <li><a href="code/decoders.html#module-multimodal_compare.models.decoders">module</a>
+</li>
+      </ul></li>
+      <li>
+    multimodal_compare.models.encoders
+
+      <ul>
+        <li><a href="code/encoders.html#module-multimodal_compare.models.encoders">module</a>
+</li>
+      </ul></li>
+      <li>
+    multimodal_compare.models.mmvae_base
+
+      <ul>
+        <li><a href="code/mmvae_base.html#module-multimodal_compare.models.mmvae_base">module</a>
+</li>
+      </ul></li>
+      <li>
+    multimodal_compare.models.mmvae_models
+
+      <ul>
+        <li><a href="code/mmvae_models.html#module-multimodal_compare.models.mmvae_models">module</a>
+</li>
+      </ul></li>
+      <li>
+    multimodal_compare.models.objectives
+
+      <ul>
+        <li><a href="code/objectives.html#module-multimodal_compare.models.objectives">module</a>
+</li>
+      </ul></li>
+      <li>
+    multimodal_compare.models.vae
+
+      <ul>
+        <li><a href="code/vae.html#module-multimodal_compare.models.vae">module</a>
+</li>
+      </ul></li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.multimodal_dreg_looser_moe">multimodal_dreg_looser_moe() (in module multimodal_compare.models.objectives)</a>
+</li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.multimodal_elbo_dmvae">multimodal_elbo_dmvae() (in module multimodal_compare.models.objectives)</a>
+</li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.multimodal_elbo_moe">multimodal_elbo_moe() (in module multimodal_compare.models.objectives)</a>
+</li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.multimodal_elbo_mopoe">multimodal_elbo_mopoe() (in module multimodal_compare.models.objectives)</a>
+</li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.multimodal_elbo_poe">multimodal_elbo_poe() (in module multimodal_compare.models.objectives)</a>
+</li>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.multimodal_iwae_moe">multimodal_iwae_moe() (in module multimodal_compare.models.objectives)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
@@ -124,17 +403,25 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/trainer.html#multimodal_compare.main.parse_args">parse_args() (in module multimodal_compare.main)</a>
 </li>
+      <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE">POE (class in multimodal_compare.models.mmvae_models)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/trainer.html#multimodal_compare.main.Trainer.prepare_data">prepare_data() (multimodal_compare.main.Trainer method)</a>
 </li>
       <li><a href="code/trainer.html#multimodal_compare.main.Trainer.prepare_testset">prepare_testset() (multimodal_compare.main.Trainer method)</a>
 </li>
+      <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE.prior_expert">prior_expert() (multimodal_compare.models.mmvae_models.POE method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/vae.html#multimodal_compare.models.vae.VAE.seq_collate_fn">seq_collate_fn() (multimodal_compare.models.vae.VAE method)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/trainer.html#multimodal_compare.main.Trainer.setup">setup() (multimodal_compare.main.Trainer method)</a>
 </li>
@@ -157,6 +444,10 @@
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/vae.html#multimodal_compare.models.vae.VAE">VAE (class in multimodal_compare.models.vae)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/trainer.html#multimodal_compare.main.Trainer.visualize_latents">visualize_latents() (multimodal_compare.main.Trainer method)</a>
 </li>

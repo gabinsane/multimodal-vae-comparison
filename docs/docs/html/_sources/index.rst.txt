@@ -3,10 +3,10 @@ Multimodal VAE Comparison Toolkit Documentation
 
 The purpose of the Multimodal VAE Comparison toolkit is to offer a systematic and unified way to train, evaluate and compare the state-of-the-art
 multimodal variational autoencoders. The toolkit can be used with arbitrary datasets and both uni/multimodal settings.
-By default, we provide implementations of the Link text `MVAE <https://github.com/mhw32/multimodal-vae-public>`_
+By default, we provide implementations of the `MVAE <https://github.com/mhw32/multimodal-vae-public>`_
 (`paper <https://arxiv.org/abs/1802.05335>`_), `MMVAE <https://github.com/iffsid/mmvae>`_
-(`paper <https://arxiv.org/pdf/1911.03393.pdf>`_) and `MoPoE <https://github.com/thomassutter/MoPoE>`_
-(`paper <https://openreview.net/forum?id=5Y21V0RDBV>`_) models, but anyone is free to contribute with their own
+(`paper <https://arxiv.org/pdf/1911.03393.pdf>`_), `MoPoE <https://github.com/thomassutter/MoPoE>`_
+(`paper <https://openreview.net/forum?id=5Y21V0RDBV>`_) and `DMVAE <https://github.com/seqam-lab/DMVAE>`_ models, but anyone is free to contribute with their own
 implementation.
 
 We also provide a custom synthetic bimodal dataset, called GeBiD, designed specifically for comparison of the
@@ -34,3 +34,11 @@ evaluation of the generated samples. For more info, see below.
    :caption: Code documentation
 
    code/trainer
+   code/vae
+   code/mmvae_base
+   code/mmvae_models
+   code/encoders
+   code/decoders
+   code/objectives
+   code/eval_gebid
+   code/infer

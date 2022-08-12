@@ -1,6 +1,6 @@
 .. _trainer:
 
-Trainer
+Trainer class
 ===============
 
 
