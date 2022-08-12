@@ -4,6 +4,7 @@ import torch.distributions as dist
 from utils import combinatorial
 from .mmvae_base import MMVAE
 from torch.autograd import Variable
+from utils import Constants
 
 
 class MOE(MMVAE):
@@ -30,7 +31,8 @@ class MOE(MMVAE):
                 zss.append(zs)
                 px_zs[m][m] = px_z  # fill-in diagonal
         for ind in self.get_missing_modalities(x):
-            px_zs[ind][ind] = self.vaes[ind].px_z(*self.vaes[ind].dec(zss[0]))
+            lat = zss[0] if "transformer" not in self.vaes[ind].dec_name.lower() else [zss[0], None]
+            px_zs[ind][ind] = self.vaes[ind].px_z(*self.vaes[ind].dec(lat))
         for e, zs in enumerate(zss):
             for d, vae in enumerate(self.vaes):
                 if e != d:  # fill-in off-diagonal
@@ -195,3 +197,67 @@ class MoPOE(POE):
         mu_sel = torch.cat([mus[k, idx_start[k]:idx_end[k], :] for k in range(w_modalities.shape[0])])
         logvar_sel = torch.cat([logvars[k, idx_start[k]:idx_end[k], :] for k in range(w_modalities.shape[0])])
         return [mu_sel, logvar_sel]
+
+
+class DMVAE(MMVAE):
+    """Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE"""
+    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+        self.modelName = 'dmvae'
+        super(DMVAE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size)
+        self.n_latents = n_latents
+        self.qz_x = dist.Normal
+
+
+    def forward(self, x, K=1):
+        qz_xs_shared, px_zs= [], [[None for _ in range(len(self.vaes)+1)] for _ in range(len(self.vaes))]
+        qz_xs_private = [None for _ in range(len(self.vaes))]
+        # initialise cross-modal matrix
+        for m, vae in enumerate(self.vaes):
+            if x[m] is not None:
+                mod_mu, mod_std = self.vaes[m].enc(x[m].to("cuda") if not isinstance(x[m], list) else x[m])
+                qz_xs_private[m] = self.vaes[m].qz_x(*[mod_mu[0], mod_std[0]])
+                qz_xs_shared.append(self.vaes[m].qz_x(*[mod_mu[1], mod_std[1]]))
+        mu_joint, std_joint = self.apply_poe(qz_xs_shared)
+        joint_d = self.qz_x(*[mu_joint, std_joint])
+        all_shared = qz_xs_shared + [joint_d]
+        zss = []
+        for d, vae in enumerate(self.vaes):
+            for e, dist in enumerate(all_shared):
+                    zs_shared = dist.rsample(torch.Size([K]))
+                    zs_private = qz_xs_private[d].rsample(torch.Size([K]))
+                    zs = torch.cat([zs_private, zs_shared], -1)[0]
+                    zss.append(zs)
+                    if "transformer" in vae.dec_name.lower():
+                        px_zs[d][e] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None]))
+                    else:
+                        px_zs[d][e] = vae.px_z(*vae.dec(zs))
+        return qz_xs_private + all_shared, px_zs, zss
+
+
+    def apply_poe(self, qz_xs_shared):
+        '''
+        induce zS = encAB(xA,xB) via POE, that is,
+            q(zI,zT,zS|xI,xT) := qI(zI|xI) * qT(zT|xT) * q(zS|xI,xT)
+                where q(zS|xI,xT) \propto p(zS) * qI(zS|xI) * qT(zS|xT)
+        '''
+        zero = torch.zeros(qz_xs_shared[0].scale.shape).cuda()
+        logvars = [-torch.log(x.scale ** 2 + Constants.eps) for x in qz_xs_shared]
+        logvarShared = -self.logsumexp(torch.stack((zero, *logvars), dim=2), dim=2)
+        stdS = torch.sqrt(torch.exp(logvarShared))
+
+        muS = 0
+        for dist in qz_xs_shared:
+            muS += dist.loc / (dist.scale ** 2 + Constants.eps)
+        muS = muS * (stdS ** 2)
+        return muS, stdS
+
+
+    def logsumexp(self, x, dim=None, keepdim=False):
+        if dim is None:
+            x, dim = x.view(-1), 0
+        xm, _ = torch.max(x, dim, keepdim=True)
+        x = torch.where(
+            (xm == float('inf')) | (xm == float('-inf')),
+            xm,
+            xm + torch.log(torch.sum(torch.exp(x - xm), dim, keepdim=True)))
+        return x if keepdim else x.squeeze(dim)

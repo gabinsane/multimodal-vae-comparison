@@ -13,7 +13,7 @@ from torch.autograd import Variable
 import cv2, math
 from .vae import VAE
 
-module_types = {"moe":VAE, "poe":VAE}
+module_types = {"moe":VAE, "poe":VAE, "mopoe":VAE, "dmvae":VAE}
 
 class MMVAE(nn.Module):
     def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
@@ -127,17 +127,23 @@ class MMVAE(nn.Module):
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
-                if self.vaes[o].enc.net_type == "CNN":
+                if self.vaes[o].enc.net_type in ["CNN", "FNN"]:
                     _data = torch.stack(data[o]).cpu() if isinstance(data[0], list) else data[o].cpu()
                     recon = recon.squeeze(0).cpu()
                     if "cub_" in self.vaes[o].pth:
                         _data = _data.permute(0,3,2,1)
-                    elif self.vaes[o].enc_name in ["MNIST", "SVHN"]:
+                    elif self.vaes[o].enc_name in ["MNIST", "SVHN", "MNISTMoE", "SVHNMoE"]:
                         if self.vaes[o].enc_name == "MNIST":
                             _data = _data.permute(0,2,3,1).cpu()
-                            recon = recon.unsqueeze(-1).cpu()
-                        else:
-                            _data = _data.reshape(-1, 32,32,3)
+                            recon = recon.unsqueeze(-1).cpu().reshape(-1, 28,28,1)
+                        elif self.vaes[o].enc_name == "MNISTMoE":
+                            _data = _data.permute(0,2,3,1).cpu()
+                            recon = recon.permute(0,2,3,1).cpu()
+                        elif self.vaes[o].enc_name == "SVHNMoE":
+                            recon = recon.reshape(-1, 32, 32, 3)
+                            _data = _data.reshape(-1, 32, 32, 3)
+                        elif self.vaes[o].enc_name == "SVHN":
+                            _data = _data.reshape(-1, 32, 32, 3)
                     else:
                         _data = _data.reshape(len(_data), *self.vaes[o].data_dim)
                     o_l, r_l = [], []
@@ -180,7 +186,7 @@ class MMVAE(nn.Module):
 
 
     def analyse(self, data, runPath, epoch, labels):
-        zsl, kls_df = self.analyse_data(data, K=10, runPath=runPath, epoch=epoch, labels=labels)
+        zsl, kls_df = self.analyse_data(data, K=1, runPath=runPath, epoch=epoch, labels=labels)
         plot_kls_df(kls_df, '{}/visuals/kl_distance_{}.png'.format(runPath, epoch))
 
     def analyse_data(self, data, K, runPath, epoch, labels):

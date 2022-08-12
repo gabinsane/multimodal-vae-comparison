@@ -1,5 +1,6 @@
 import torch, numpy as np
 import torch.nn as nn
+from numpy import prod
 import chainer.links as L
 import chainer, math
 from chainer import cuda, Variable
@@ -99,6 +100,58 @@ class Enc_MNIST(nn.Module):
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
+def extra_hidden_layer(hidden_dim):
+    return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
+
+class Enc_MNISTMoE(nn.Module):
+    """Encoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae"""
+
+    def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
+        super(Enc_MNISTMoE, self).__init__()
+        modules = []
+        hidden_dim = 400
+        self.net_type = "FNN"
+        data_d = int(prod(data_dim))
+        modules.append(nn.Sequential(nn.Linear(data_d, hidden_dim), nn.ReLU(True)))
+        modules.extend([extra_hidden_layer(hidden_dim) for _ in range(num_hidden_layers - 1)])
+        self.enc = nn.Sequential(*modules)
+        self.fc21 = nn.Linear(hidden_dim, latent_dim)
+        self.fc22 = nn.Linear(hidden_dim, latent_dim)
+
+    def forward(self, x):
+        e = self.enc(x.view(*x.size()[:-3], -1).float())  # flatten data
+        lv = self.fc22(e)
+        return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
+
+class Enc_SVHNMoE(nn.Module):
+    """Encoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae"""
+
+    def __init__(self, latent_dim, data_dim):
+        super(Enc_SVHNMoE, self).__init__()
+        imgChans = 3
+        fBase = 32
+        self.net_type = "CNN"
+        self.enc = nn.Sequential(
+            # input size: 3 x 32 x 32
+            nn.Conv2d(imgChans, fBase, 4, 2, 1, bias=True),
+            nn.ReLU(True),
+            # size: (fBase) x 16 x 16
+            nn.Conv2d(fBase, fBase * 2, 4, 2, 1, bias=True),
+            nn.ReLU(True),
+            # size: (fBase * 2) x 8 x 8
+            nn.Conv2d(fBase * 2, fBase * 4, 4, 2, 1, bias=True),
+            nn.ReLU(True),
+            # size: (fBase * 4) x 4 x 4
+        )
+        self.c1 = nn.Conv2d(fBase * 4, latent_dim, 4, 1, 0, bias=True)
+        self.c2 = nn.Conv2d(fBase * 4, latent_dim, 4, 1, 0, bias=True)
+        # c1, c2 size: latent_dim x 1 x 1
+
+    def forward(self, x):
+        e = self.enc(x.float())
+        lv = self.c2(e).squeeze()
+        return self.c1(e).squeeze(), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
+
 
 class Enc_SVHN(nn.Module):
     def __init__(self, latent_dim, data_dim):
@@ -132,6 +185,71 @@ class Enc_SVHN(nn.Module):
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 
+
+class Enc_MNIST_DMVAE(nn.Module):
+    def __init__(self, latent_dim, data_dim, num_pixels=784, num_hidden=256, zPrivate_dim=1):
+        super(Enc_MNIST_DMVAE, self).__init__()
+        self.net_type = "FNN"
+        temp = 0.66
+        self.digit_temp = torch.tensor(temp)
+        self.zPrivate_dim = zPrivate_dim
+        self.zShared_dim = latent_dim
+        self.enc_hidden = nn.Sequential(
+            nn.Linear(num_pixels, num_hidden),
+            nn.ReLU())
+        self.fc = nn.Linear(num_hidden, 2 * zPrivate_dim + 2 * latent_dim)
+
+    def forward(self, x):
+        hiddens = self.enc_hidden(x.reshape(1,x.shape[0], -1).float())
+        stats = self.fc(hiddens)
+        muPrivate = stats[:, :, :self.zPrivate_dim]
+        logvarPrivate = stats[:, :, self.zPrivate_dim:(2 * self.zPrivate_dim)]
+        stdPrivate = torch.sqrt(torch.exp(logvarPrivate) + Constants.eps)
+        muShared = stats[:, :, (2 * self.zPrivate_dim):(2 * self.zPrivate_dim + self.zShared_dim)]
+        logvarShared = stats[:, :, (2 * self.zPrivate_dim + self.zShared_dim):]
+        stdShared = torch.sqrt(torch.exp(logvarShared) + Constants.eps)
+        return [muPrivate, muShared], [stdPrivate, stdShared]
+
+
+class Enc_SVHN_DMVAE(nn.Module):
+    def __init__(self, latent_dim, data_dim, zPrivate_dim=4):
+        super(Enc_SVHN_DMVAE, self).__init__()
+        self.net_type = "CNN"
+        temp = 0.66
+        self.digit_temp = torch.tensor(temp)
+        self.zPrivate_dim = zPrivate_dim
+        self.zShared_dim = latent_dim
+
+        self.enc_hidden = nn.Sequential(
+            nn.Conv2d(3, 32, 4, 2, 1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, 4, 2, 1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, 4, 2, 1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, 4, 2, 1, bias=False),
+            nn.ReLU()
+        )
+
+        self.fc = nn.Sequential(
+            nn.Linear(256 * 2 * 2, 512),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(512, 2 * zPrivate_dim + 2 * latent_dim))
+
+    def forward(self, x):
+        hiddens = self.enc_hidden(x.float())
+        hiddens = hiddens.view(hiddens.size(0), -1)
+        stats = self.fc(hiddens)
+        stats = stats.unsqueeze(0)
+        muPrivate = stats[:, :, :self.zPrivate_dim]
+        logvarPrivate = stats[:, :, self.zPrivate_dim:(2 * self.zPrivate_dim)]
+        stdPrivate = torch.sqrt(torch.exp(logvarPrivate) + Constants.eps)
+
+        muShared = stats[:, :, (2 * self.zPrivate_dim):(2 * self.zPrivate_dim + self.zShared_dim)]
+        logvarShared = stats[:, :, (2 * self.zPrivate_dim + self.zShared_dim):]
+        stdShared = torch.sqrt(torch.exp(logvarShared) + Constants.eps)
+        return [muPrivate, muShared], [stdPrivate, stdShared]
 
 # Classes
 class Enc_FNN(nn.Module):
@@ -396,6 +514,7 @@ class Enc_Transformer(nn.Module):
         logvar = self.logvar_layer(z)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
+
 
 class Enc_TxtTransformer(Enc_Transformer):
     def __init__(self, latent_dim, data_dim=1):

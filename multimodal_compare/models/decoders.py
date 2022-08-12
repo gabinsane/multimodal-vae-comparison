@@ -1,6 +1,7 @@
 import torch, numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+from numpy import prod
 from models.nn_modules import PositionalEncoding, DeconvNet
 from utils import Constants
 import chainer, math
@@ -97,6 +98,30 @@ class Dec_SVHN(nn.Module):
         d = torch.sigmoid(self.conv4(x_hat)).permute(0,2,3,1)
         return d.squeeze(), torch.tensor(0.75).to(z.device)
 
+def extra_hidden_layer(hidden_dim):
+    return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
+
+class Dec_MNISTMoE(nn.Module):
+    """Decoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae"""
+    def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
+        super(Dec_MNISTMoE, self).__init__()
+        modules = []
+        self.data_dim = data_dim
+        hidden_dim = 400
+        self.net_type = "FNN"
+        data_d = int(prod(data_dim))
+        modules.append(nn.Sequential(nn.Linear(latent_dim, hidden_dim), nn.ReLU(True)))
+        modules.extend([extra_hidden_layer(hidden_dim) for _ in range(num_hidden_layers - 1)])
+        self.dec = nn.Sequential(*modules)
+        self.fc3 = nn.Linear(hidden_dim, data_d)
+
+    def forward(self, z):
+        p = self.fc3(self.dec(z))
+        d = torch.sigmoid(p.view(*z.size()[:-1], *[1,28,28]))  # reshape data
+        d = d.clamp(Constants.eta, 1 - Constants.eta)
+        return d, torch.tensor(0.75).to(z.device)  # mean, length scale
+
+
 class Dec_MNIST(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
@@ -123,10 +148,86 @@ class Dec_MNIST(nn.Module):
         x_hat = self.sigmoid(x_hat)
         d = x_hat.view(*z.size()[:-1], *self.datadim).squeeze(0)
         d = d.permute(0,3,1,2) if len(d.shape) == 4 else d.permute(0,1,4,2,3)
-        return d.squeeze(), torch.tensor(0.75).to(z.device)
+        return d.squeeze(0), torch.tensor(0.75).to(z.device)
 
 
+class Dec_MNIST_DMVAE(nn.Module):
+    def __init__(self, latent_dim, data_dim, num_pixels=784, num_hidden=256, zPrivate_dim=1):
+        super(Dec_MNIST_DMVAE, self).__init__()
+        self.net_type = "FNN"
+        self.digit_temp = 0.66
+        self.style_mean = zPrivate_dim
+        self.style_std = zPrivate_dim
+        self.num_digits = latent_dim
 
+        self.dec_hidden = nn.Sequential(
+            nn.Linear(zPrivate_dim + latent_dim, num_hidden),
+            nn.ReLU())
+        self.dec_image = nn.Sequential(
+            nn.Linear(num_hidden, num_pixels),
+            nn.Sigmoid())
+
+    def forward(self, z):
+        hiddens = self.dec_hidden(z)
+        x = self.dec_image(hiddens)
+        return x, torch.tensor(0.75).to(x.device)
+
+
+class Dec_SVHN_DMVAE(nn.Module):
+    def __init__(self, latent_dim, data_dim, zPrivate_dim=4):
+        super(Dec_SVHN_DMVAE, self).__init__()
+        self.net_type = "CNN"
+        self.digit_temp = 0.66
+        self.num_digits = latent_dim
+        self.dec_hidden = nn.Sequential(
+            nn.Linear(zPrivate_dim + latent_dim, 256 * 2 * 2),
+            nn.ReLU())
+        self.dec_image = nn.Sequential(
+            nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),
+            nn.ReLU(),
+            nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, 4, 2, 1, bias=False),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 3, 4, 2, 1, bias=False),
+            nn.Sigmoid())
+
+    def forward(self, z):
+        hiddens = self.dec_hidden(z)
+        hiddens = hiddens.view(-1, 256, 2, 2)
+        x = self.dec_image(hiddens)
+        return x, torch.tensor(0.75).to(x.device)
+
+
+class Dec_SVHNMoE(nn.Module):
+    """Decoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae"""
+
+    def __init__(self, latent_dim, data_dim):
+        super(Dec_SVHNMoE, self).__init__()
+        fBase = 32
+        imgChans = 3
+        self.net_type = "CNN"
+        self.dec = nn.Sequential(
+            nn.ConvTranspose2d(latent_dim, fBase * 4, 4, 1, 0, bias=True),
+            nn.ReLU(True),
+            # size: (fBase * 4) x 4 x 4
+            nn.ConvTranspose2d(fBase * 4, fBase * 2, 4, 2, 1, bias=True),
+            nn.ReLU(True),
+            # size: (fBase * 2) x 8 x 8
+            nn.ConvTranspose2d(fBase * 2, fBase, 4, 2, 1, bias=True),
+            nn.ReLU(True),
+            # size: (fBase) x 16 x 16
+            nn.ConvTranspose2d(fBase, imgChans, 4, 2, 1, bias=True),
+            nn.Sigmoid()
+            # Output size: 3 x 32 x 32
+        )
+
+    def forward(self, z):
+        z = z.unsqueeze(-1).unsqueeze(-1)  # fit deconv layers
+        out = self.dec(z.view(-1, *z.size()[-3:]))
+        out = out.view(*z.size()[:-3], *out.size()[1:])
+        # consider also predicting the length scale
+        return out, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 class Dec_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
@@ -367,9 +468,15 @@ class Dec_Transformer(nn.Module):
 
     def forward(self, batch):
         z, mask = batch[0], batch[1]
+        z = z.reshape(-1, self.latent_dim).unsqueeze(0)
         latent_dim = z.shape[-1]
         bs = z.shape[1]
-        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
+        if mask is not None:
+            if bs > mask.shape[0]:
+                mask = mask.repeat(int(bs/mask.shape[0]), 1)
+            mask = mask.to(z.device)
+        else:
+            mask = torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
@@ -400,9 +507,15 @@ class Dec_TxtTransformer(Dec_Transformer):
 
     def forward(self, batch):
         z, mask = batch[0], batch[1]
+        z = z.reshape(-1, self.latent_dim).unsqueeze(0)
         latent_dim = z.shape[-1]
         bs = z.shape[1]
-        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
+        if mask is not None:
+            if bs > mask.shape[0]:
+                mask = mask.repeat(int(bs/mask.shape[0]), 1)
+            mask = mask.to(z.device)
+        else:
+            mask = torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
