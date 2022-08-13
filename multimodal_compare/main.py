@@ -17,6 +17,7 @@ def parse_args():
     """
     Loads the .yml config specified in the --cfg argument. Any additional arguments override the values in the config.
     :return: dict; config
+    :rtype: dict
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--cfg", help="Specify config file", metavar="FILE")
@@ -48,12 +49,15 @@ def parse_args():
 
 
 class Trainer():
+    """
+    Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
+
+    :param cfg: parsed .yml config
+    :type cfg: dict
+    :param device: cuda/cpu
+    :type device: object
+    """
     def __init__(self, cfg, device):
-        """
-        Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
-        :param cfg: dict, parsed .yml config
-        :param device: torch.device object (cuda/cpu)
-        """
         self.config = cfg
         self.mods = None
         self.device = device
@@ -67,6 +71,9 @@ class Trainer():
         self.setup()
 
     def setup(self):
+        """
+        Initiates the model, get dataloaders, find the selected objective
+        """
         self._get_mods_config()
         self._get_model()
         self._setup_savedir()
@@ -77,6 +84,9 @@ class Trainer():
                                     else self.config["obj"]))
 
     def _setup_savedir(self):
+        """
+        Creates the model directory in the results folder and saves the config copy
+        """
         self.mPath = os.path.join('results/', self.config["exp_name"])
         os.makedirs(self.mPath, exist_ok=True)
         os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
@@ -85,6 +95,9 @@ class Trainer():
             yaml.dump(self.config, yaml_file, default_flow_style=False)
 
     def _configure_optimizer(self):
+        """
+        Sets up the optimizer specified in the config
+        """
         assert self.config["optimizer"].lower() in ["adam", "adabelief"], "unsupported optimizer"
         if self.config["optimizer"].lower() == "adam":
             self.optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()),
@@ -96,6 +109,9 @@ class Trainer():
                                        weight_decouple=True, rectify=False, print_change_log=False)
 
     def _get_model(self):
+        """
+        Sets up the model according to the config file
+        """
         model = "VAE" if len(self.mods) == 1 else self.config["mixing"].lower()
         m = getattr(models, model)
         params = [[m["encoder"] for m in self.mods], [m["decoder"] for m in self.mods], [m["path"] for m in self.mods],
@@ -122,6 +138,13 @@ class Trainer():
                 self.labels = pickle.load(handle)
 
     def prepare_data(self, data):
+        """
+        Unpacks the data sent in the batch for training/testing
+
+        :rtype: object
+        :param data: data coming from the DataLoader iterator
+        :return: data prepared for training/testing, (int) length of the batch
+        """
         if any(["transformer" in x["encoder"].lower() for x in self.mods]):
             data, masks = data
             data = pad_seq_data(list(data), masks) if len(self.mods) > 1 else [data.to(self.device), masks]
@@ -133,6 +156,15 @@ class Trainer():
         return data, data_len
 
     def prepare_testset(self, num_samples=None):
+        """
+        Retrieves the TestLoader and prepares it for visualization methods
+
+        :param num_samples: how many samples to prepare
+        :type num_samples: int
+        Returns:
+            :return data: (list)
+            :return d_len: (int)
+        """
         full_len = len(self.test_loader.dataset)
         if any(["transformer" in x["encoder"].lower() for x in self.mods]):
             data = self.model.seq_collate_fn(self.test_loader.dataset)
@@ -156,6 +188,9 @@ class Trainer():
         return data, d_len
 
     def iterate_epochs(self):
+        """
+        The main training and testing iterator.
+        """
         self.lossmeter = Logger(trainer.mPath, self.mods)
         t0 = timer()
         for epoch in range(1, int(self.config["epochs"]) + 1):
@@ -171,7 +206,9 @@ class Trainer():
     def train(self, epoch):
         """
         Iterates over the train loader
-        :param epoch: (int) Current epoch
+
+        :param epoch: current epoch
+        :type epoch: int
         """
         self.model.train()
         loss_m = []
@@ -198,7 +235,9 @@ class Trainer():
     def test(self, epoch):
         """
         Iterates over the test loader
-        :param epoch: (int) Current epoch
+
+        :param epoch: current epoch
+        :type epoch: int
         """
         self.model.eval()
         loss_m = []
@@ -224,6 +263,12 @@ class Trainer():
         print('====>             Test loss: {:.4f}'.format(self.get_loss_mean(loss_m)))
 
     def visualize_latents(self, epoch):
+        """
+        Runs the model analysis, saves T-SNE and KL-Divergences
+
+        :param epoch: current epoch
+        :type epoch: int
+        """
         testset, testset_len = self.prepare_testset(num_samples=250)
         if self.labels:
             lrange = int(len(self.labels) * (1 - self.config["test_split"]))
@@ -231,11 +276,14 @@ class Trainer():
         else:
             self.model.analyse(testset, self.mPath, epoch, labels=None)
 
-    def get_loss_mean(self, loss):
+    def get_torch_mean(self, loss):
         """
-        Get the mean from the list of loss tensors
+        Get the mean of the list of torch tensors
+
         :param loss: list of loss tensors
-        :return: float; mean of the losses
+        :type loss: list
+        :return: mean of the losses
+        :rtype: torch.float32
         """
         return round(float(torch.mean(torch.tensor(loss).detach().cpu())), 3)
 

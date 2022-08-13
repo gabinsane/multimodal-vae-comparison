@@ -18,11 +18,17 @@ class VaeDataset():
     def __init__(self, pth, data_dim, network_type, network_name, mod_type):
         """
         Class for dataset loading and adjustments for training
-        :param pth: string, path to the modality data
-        :param data_dim: list, dimensions of the modality, e.g. [64,64,3]
-        :param network_type: string, net_type parameter of the encoder/decoder
-        :param network_name: string, name of the encoder/decoder class
-        :param mod_type: string, e.g. image/text/action
+
+        :param pth: path to the modality data
+        :type pth: str
+        :param data_dim: dimensions of the modality, e.g. [64,64,3]
+        :type data_dim: list
+        :param network_type: net_type parameter of the encoder/decoder
+        :type network_type: str
+        :param network_name: name of the encoder/decoder class
+        :type network_name: str
+        :param mod_type: how to treat the modality (image/text)
+        :type mod_type: str
         """
         self.pth = pth
         self.data_dim = data_dim
@@ -31,6 +37,14 @@ class VaeDataset():
         self.mod_type = mod_type
 
     def get_path_type(self, path):
+        """
+        See if the provided data path is supported.
+
+        :param path: Path to the dataset
+        :type path: str
+        :return: recognised type of the data
+        :rtype: str
+        """
         assert os.path.exists(path), "Path does not exist: {}".format(path)
         if os.path.isdir(path):
             return "dir"
@@ -41,6 +55,12 @@ class VaeDataset():
         raise Exception("Unrecognized dataset format. Supported types are: .pkl, .pth or directory with images")
 
     def load_data(self):
+        """
+        Loads the data from path
+
+        :return: data prepared for training
+        :rtype: torch.tensor
+        """
         dtype = self.get_path_type(self.pth)
         if dtype == "dir":
             d = load_images(self.pth, self.data_dim)
@@ -49,14 +69,17 @@ class VaeDataset():
         elif dtype == "pickle":
             with open(self.pth, 'rb') as handle:
                  d = pickle.load(handle)
-        d, kwargs = self.prepare_for_encoder(d)
-        return d, kwargs
+        d = self.prepare_for_encoder(d)
+        return d
 
     def check_img_normalize(self, data):
         """
         Normalizes image data between 0 and 1 (if needed)
-        :param data: list of tensors or tensor with image data
-        :return: normalized data
+
+        :param data: input images for normalisation
+        :type data: Union[torch.tensor, list]
+        :return: normalised data
+        :rtype: list, torch.tensor
         """
         if isinstance(data, list):
             if torch.max(torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)) > 1:
@@ -66,7 +89,14 @@ class VaeDataset():
         return data
 
     def prepare_for_encoder(self, data):
-        kwargs = {}
+        """
+        Prepares the data for training.
+
+        :param data: the loaded data
+        :type data: Union[list, torch.tensor, ndarray]
+        :return: data reshaped for training,
+        :rtype: torch.tensor
+        """
         if self.network_type.lower() in ["transformer", "cnn", "3dcnn", "fnn"]:
             data = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in data]
             if self.network_type in ["cnn", "fnn"]:
@@ -85,18 +115,30 @@ class VaeDataset():
             self.prepare_audio(data)
         if "image" in self.mod_type:
             data = self.check_img_normalize(data)
-        return data, kwargs
+        return data
 
     def prepare_audio(self, data):
+        """
+        @TODO Support for audio data
+
+        :param data: input audio sequences
+        :type data: list
+        :return: padded sequences for training
+        :rtype: torch.tensor
+        """
+
         d = [torch.from_numpy(np.asarray(x).astype(np.int16)) for x in data]
         return torch.nn.utils.rnn.pad_packed_sequence(d, batch_first=True, padding_value=0.0)
 
     def get_train_test_splits(self, data, test_fraction):
         """
-        Returns the data split into train and test set according to test_fraction
-        :param data: list/torch.tensor/numpy array
-        :param test_fraction: float, fraction of the data that will be used for test set
-        :return: train_split, test_split
+        Returns the data split into train and validation set according to test_fraction
+
+        :param data: input data
+        :type data: Union[torch.tensor, ndarray]
+        :param test_fraction: fraction of the data that will be used for test set
+        :type test_fraction: float32
+        :return: tuple(train_split, test_split)
         """
         train_split = data[:int(len(data)*(1 - test_fraction))]
         test_split = data[int(len(data)*(1-test_fraction)):]
@@ -152,8 +194,7 @@ class VAE(nn.Module):
         dataset_kwargs = {"data_dim":self.data_dim, "network_name":self.enc_name,
                           "network_type":self.enc.net_type, "mod_type":self.mod_type}
         dataset = VaeDataset(self.pth, **dataset_kwargs)
-        d, kws = dataset.load_data()
-        kwargs.update(kws)
+        d = dataset.load_data()
         if "transformer" in self.enc.net_type.lower():
             kwargs["collate_fn"] = self.seq_collate_fn
         train_split, test_split = dataset.get_train_test_splits(d, self.test_split)

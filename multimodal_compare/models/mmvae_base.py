@@ -13,7 +13,6 @@ from torch.autograd import Variable
 import cv2, math
 from .vae import VAE
 
-module_types = {"moe":VAE, "poe":VAE, "mopoe":VAE, "dmvae":VAE}
 
 class MMVAE(nn.Module):
     def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
@@ -25,7 +24,7 @@ class MMVAE(nn.Module):
         vae_mods = []
         self.encoders, self.decoders = encoders, decoders
         for e, d, pth, fd, mt in zip(encoders, decoders, data_paths, feature_dims, mod_types):
-            vae_mods.append(module_types[self.modelName](e, d, pth, fd, mt, n_latents, test_split, batch_size))
+            vae_mods.append(VAE(e, d, pth, fd, mt, n_latents, test_split, batch_size))
         self.vaes = nn.ModuleList(vae_mods)
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
