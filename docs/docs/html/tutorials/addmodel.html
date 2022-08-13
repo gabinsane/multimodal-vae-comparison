@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Add a new dataset" href="adddataset.html" />
-    <link rel="prev" title="Multimodal VAE Comparison Toolkit Documentation" href="../index.html" /> 
+    <link rel="prev" title="Multimodal VAE Comparison Toolkit" href="../index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -101,13 +101,13 @@ in their <a class="reference external" href="https://github.com/seqam-lab/DMVAE"
 class defined in <code class="docutils literal notranslate"><span class="pre">mmvae_base.py</span></code>. This class handles some common functions for dataset loading, sample visualisation etc.
 The init parameters are passed from the config file and should have this fixed structure.
 <code class="docutils literal notranslate"><span class="pre">self.modelName</span></code> will be used for model selection from the config file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"> <span class="k">class</span> <span class="nc">DMVAE</span><span class="p">(</span><span class="n">MMVAE</span><span class="p">):</span>
-</span>     <span class="sd">&quot;&quot;&quot;Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE&quot;&quot;&quot;</span>
-<span class="hll">     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoders</span><span class="p">,</span> <span class="n">decoders</span><span class="p">,</span> <span class="n">data_paths</span><span class="p">,</span> <span class="n">feature_dims</span><span class="p">,</span> <span class="n">mod_types</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">,</span> <span class="n">test_split</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
-</span>         <span class="bp">self</span><span class="o">.</span><span class="n">modelName</span> <span class="o">=</span> <span class="s1">&#39;dmvae&#39;</span>
-         <span class="nb">super</span><span class="p">(</span><span class="n">DMVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span> <span class="n">encoders</span><span class="p">,</span> <span class="n">decoders</span><span class="p">,</span> <span class="n">data_paths</span><span class="p">,</span> <span class="n">feature_dims</span><span class="p">,</span> <span class="n">mod_types</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">,</span> <span class="n">test_split</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
-         <span class="bp">self</span><span class="o">.</span><span class="n">n_latents</span> <span class="o">=</span> <span class="n">n_latents</span>
-         <span class="bp">self</span><span class="o">.</span><span class="n">qz_x</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DMVAE</span><span class="p">(</span><span class="n">MMVAE</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoders</span><span class="p">,</span> <span class="n">decoders</span><span class="p">,</span> <span class="n">data_paths</span><span class="p">,</span> <span class="n">feature_dims</span><span class="p">,</span> <span class="n">mod_types</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">,</span> <span class="n">test_split</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modelName</span> <span class="o">=</span> <span class="s1">&#39;dmvae&#39;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DMVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span> <span class="n">encoders</span><span class="p">,</span> <span class="n">decoders</span><span class="p">,</span> <span class="n">data_paths</span><span class="p">,</span> <span class="n">feature_dims</span><span class="p">,</span> <span class="n">mod_types</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">,</span> <span class="n">test_split</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_latents</span> <span class="o">=</span> <span class="n">n_latents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qz_x</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
 </pre></div>
 </div>
 <p>Now we need to add the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> pass and all methods necessary for the multimodal data integration. The first input parameter
@@ -283,10 +283,10 @@ modality-specific losses (a list with <code class="docutils literal notranslate"
 </div>
 <p>You can see that we specified “dmvae” as our multimodal mixing model and selected the previously defined encoder and
 decoder networks. After configuring the experiment, we can run the training:</p>
-<p><code class="docutils literal notranslate"><span class="pre">`</span>
-<span class="pre">cd</span> <span class="pre">multimodal-compare</span>
-<span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">--cfg</span> <span class="pre">./configs/config.yml</span>
-<span class="pre">`</span></code></p>
+<p>``
+cd multimodal-compare</p>
+<p>python main.py –cfg ./configs/config.yml
+``</p>
 </section>
 </section>
 
@@ -294,7 +294,7 @@ decoder networks. After configuring the experiment, we can run the training:</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../index.html" class="btn btn-neutral float-left" title="Multimodal VAE Comparison Toolkit Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../index.html" class="btn btn-neutral float-left" title="Multimodal VAE Comparison Toolkit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="adddataset.html" class="btn btn-neutral float-right" title="Add a new dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

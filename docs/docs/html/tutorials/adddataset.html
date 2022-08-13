@@ -41,7 +41,11 @@
               <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="addmodel.html">Add a new model</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Add a new dataset</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Add a new dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-data-formats">Supported data formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-a-new-dataset">Adding a new dataset</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul>
@@ -82,6 +86,132 @@
              
   <section id="add-a-new-dataset">
 <span id="adddataset"></span><h1>Add a new dataset<a class="headerlink" href="#add-a-new-dataset" title="Permalink to this heading"></a></h1>
+<p>By default, we support the proposed GeBiD dataset as well as MNIST, SVHN or the Caltech-UCSD Birds (CUB) dataset. Here we describe how
+you can train the models on your own data.</p>
+<section id="supported-data-formats">
+<h2>Supported data formats<a class="headerlink" href="#supported-data-formats" title="Permalink to this heading"></a></h2>
+<p>By default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
+text data (arbitrary strings which we encode on the character-level) and sequential data (e.g. actions suitable for a Transformer network).</p>
+<p>The prefered data formats (supported by default) ar pickle (<code class="docutils literal notranslate"><span class="pre">.pkl</span></code>), the pytorch format (<code class="docutils literal notranslate"><span class="pre">.pth</span></code>) or a directory containing <code class="docutils literal notranslate"><span class="pre">.png</span></code> images.
+To train with any of these, specify the path to your data in the <code class="docutils literal notranslate"><span class="pre">config.yml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w"></span>
+<span class="w"> </span><span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w"></span>
+<span class="w"> </span><span class="nt">exp_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cub</span><span class="w"></span>
+<span class="w"> </span><span class="nt">labels</span><span class="p">:</span><span class="w"></span>
+<span class="w"> </span><span class="nt">loss</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bce</span><span class="w"></span>
+<span class="w"> </span><span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span><span class="w"></span>
+<span class="w"> </span><span class="nt">mixing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">moe</span><span class="w"></span>
+<span class="w"> </span><span class="nt">n_latents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
+<span class="w"> </span><span class="nt">obj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elbo</span><span class="w"></span>
+<span class="w"> </span><span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adam</span><span class="w"></span>
+<span class="w"> </span><span class="nt">pre_trained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
+<span class="w"> </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
+<span class="w"> </span><span class="nt">viz_freq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
+<span class="w"> </span><span class="nt">test_split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w"></span>
+<span class="w"> </span><span class="nt">modality_1</span><span class="p">:</span><span class="w"></span>
+<span class="hll"><span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/cub/images</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">feature_dim</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">64</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">64</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">3</span><span class="p p-Indicator">]</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNN</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNN</span><span class="w"></span>
+</span><span class="w"> </span><span class="nt">modality_2</span><span class="p">:</span><span class="w"></span>
+<span class="hll"><span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/cub/cub_captions.pkl</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">feature_dim</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">256</span><span class="p p-Indicator">,</span><span class="nv">27</span><span class="p p-Indicator">,</span><span class="nv">1</span><span class="p p-Indicator">]</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TxtTransformer</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TxtTransformer</span><span class="w"></span>
+</span></pre></div>
+</div>
+<p>This is an example of the config file for the CUB dataset (for download, see our
+<a class="reference external" href="https://github.com/gabinsane/multimodal-vae-comparison#training-on-other-datasets">README</a>).</p>
+<p>As you can see, we specified the path to an image folder (<code class="docutils literal notranslate"><span class="pre">./data/cub/images</span></code>) and to the pickled captions (<code class="docutils literal notranslate"><span class="pre">./data/cub/cub_captions.pkl</span></code>). Both
+modalities are expected to be ordered so that they can be semantically matched into pairs (e.g. the first image should match with the first caption).
+We also provided the data feature dimensions (<code class="docutils literal notranslate"><span class="pre">feature_dim</span></code>) - this is helpful for visualization methods and for the encoder/decoder networks to
+reshape the data as needed. In case of sequential data (text in this case), the first value should be the maximum length of a sequence in the dataset. The value
+27 here corresponds to the one-hot encodings with the length of the alphabet.
+<code class="docutils literal notranslate"><span class="pre">mod_type</span></code> is a string which helps the visualization methods to recognize how to display the reconstructions. We currently only support “image” or “text”.</p>
+<p>Finally, specify the corresponding encoder and decoder networks which suit your data type.</p>
+<p>If your own dataset is in the supported format, you should be ready to train just after making your config. If you find bugs,
+please let us know.</p>
+</section>
+<section id="adding-a-new-dataset">
+<h2>Adding a new dataset<a class="headerlink" href="#adding-a-new-dataset" title="Permalink to this heading"></a></h2>
+<p>If you want to train on an unsupported data format, you can file an issue on our <a class="reference external" href="https://github.com/gabinsane/multimodal-vae-comparison">GitHub repository</a>.
+Alternatively, you can try to incorporate it on your own. You will need to adjust three methods in the <code class="docutils literal notranslate"><span class="pre">VaeDataset</span></code> class in  <code class="docutils literal notranslate"><span class="pre">vae.py</span></code>.</p>
+<p>First, add your new data format in <code class="docutils literal notranslate"><span class="pre">get_path_type()</span></code> so that it is recognised from the path.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_path_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    See if the provided data path is supported.</span>
+
+<span class="sd">    :param path: Path to the dataset</span>
+<span class="sd">    :type path: str</span>
+<span class="sd">    :return: recognised type of the data</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="s2">&quot;Path does not exist: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;dir&quot;</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.pth&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;torch&quot;</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.pkl&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;pickle&quot;</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unrecognized dataset format. Supported types are: .pkl, .pth or directory with images&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, decide how you will load the data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads the data from path</span>
+
+<span class="sd">    :return: data prepared for training</span>
+<span class="sd">    :rtype: torch.tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pth</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;dir&quot;</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">load_images</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_dim</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;torch&quot;</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pth</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dtype</span> <span class="o">==</span> <span class="s2">&quot;pickle&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pth</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+             <span class="n">d</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_for_encoder</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span>
+</pre></div>
+</div>
+<p>Finally, add any preprocessing that you need so that your data is in the <code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code> format.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_for_encoder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepares the data for training.</span>
+
+<span class="sd">    :param data: the loaded data</span>
+<span class="sd">    :type data: Union[list, torch.tensor, ndarray]</span>
+<span class="sd">    :return: data reshaped for training,</span>
+<span class="sd">    :rtype: torch.tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;transformer&quot;</span><span class="p">,</span> <span class="s2">&quot;cnn&quot;</span><span class="p">,</span> <span class="s2">&quot;3dcnn&quot;</span><span class="p">,</span> <span class="s2">&quot;fnn&quot;</span><span class="p">]:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;cnn&quot;</span><span class="p">,</span> <span class="s2">&quot;fnn&quot;</span><span class="p">]:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;transformer&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_type</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;text&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mod_type</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;cub_&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pth</span> <span class="k">else</span> <span class="n">data</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">one_hot_encode</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;transformer&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_type</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">pad_sequence</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;audioconv&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prepare_audio</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;image&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mod_type</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_img_normalize</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>That should be it. If needed, you can also add visualization methods to see the results during training. For unimodal VAE,
+this would be the <code class="docutils literal notranslate"><span class="pre">reconstruct()</span></code> method in <code class="docutils literal notranslate"><span class="pre">vae.py</span></code>. For multimodal VAEs, it is <code class="docutils literal notranslate"><span class="pre">process_reconstructions()</span></code> in <code class="docutils literal notranslate"><span class="pre">mmvae_models.py</span></code></p>
+</section>
 </section>
 
 

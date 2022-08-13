@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 project = 'multimodal-vae-comparison'
 copyright = '2022, Gabriela Sejnova'
 author = 'Gabriela Sejnova'
+email_automode = True
 
 # The full version, including alpha/beta/rc tags
 release = '1.0'

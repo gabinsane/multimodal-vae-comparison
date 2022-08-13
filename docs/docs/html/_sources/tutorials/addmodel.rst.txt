@@ -25,7 +25,6 @@ The init parameters are passed from the config file and should have this fixed s
 ``self.modelName`` will be used for model selection from the config file.
 
 .. code-block:: python
-   :emphasize-lines: 1, 3
 
     class DMVAE(MMVAE):
         """Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE"""
@@ -40,7 +39,7 @@ will be the multimodal data concatenated in a list, possible missing modalities 
 other input parameters in case you only want to use this model with your custom objective which you will define later.
 
 .. code-block:: python
-   :emphasize-lines: 1
+   :emphasize-lines: 1, 25
 
     def forward(self, x):
         qz_xs_shared, px_zs= [], [[None for _ in range(len(self.vaes)+1)] for _ in range(len(self.vaes))]
@@ -234,7 +233,8 @@ You can see that we specified "dmvae" as our multimodal mixing model and selecte
 decoder networks. After configuring the experiment, we can run the training:
 
 
-```
+``
 cd multimodal-compare
+
 python main.py --cfg ./configs/config.yml
-```
+``

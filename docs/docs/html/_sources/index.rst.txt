@@ -1,5 +1,8 @@
-Multimodal VAE Comparison Toolkit Documentation
-================================================
+
+Multimodal VAE Comparison Toolkit
+=====================================
+
+This is the official documentation for the Multimodal VAE Comparison Toolkit  `GitHub repository <https://github.com/gabinsane/multimodal-vae-comparison>`_
 
 The purpose of the Multimodal VAE Comparison toolkit is to offer a systematic and unified way to train, evaluate and compare the state-of-the-art
 multimodal variational autoencoders. The toolkit can be used with arbitrary datasets and both uni/multimodal settings.
