@@ -11,6 +11,14 @@ import csv
 import glob
 
 def parse_args(pth):
+    """
+    Parses the YAML config provided in the file path
+
+    :param pth: Path to config
+    :type pth: str
+    :return: returns the config dict and modality-specific dict
+    :rtype: tuple(dict, dict)
+    """
     with open(pth, 'r') as stream:
         config = yaml.safe_load(stream)
     modalities = []
@@ -22,7 +30,17 @@ def parse_args(pth):
 plot_colors = ["blue", "green", "red", "cyan", "magenta", "orange", "navy", "maroon", "brown"]
 
 def estimate_log_marginal(model, device="cuda"):
-    """Compute an estimate of the log-marginal likelihood of test data."""
+    """
+    Estimate of the log-marginal likelihood of test data.
+
+
+    :param model: VAE model
+    :type model: object
+    :param device: device (cuda/cpu)
+    :type device: str
+    :return: marginal log-likelihood
+    :rtype: float32
+    """
     train_loader, test_loader = model.load_dataset(32, device=device)
     model.eval()
     marginal_loglik = 0
@@ -38,6 +56,14 @@ def estimate_log_marginal(model, device="cuda"):
     return marginal_loglik
 
 def eval_reconstruct(path, testloader):
+    """
+    Makes reconstructions from the testloader for the given model and dumps them into pickle
+
+    :param path: path to the model directory
+    :type path: str
+    :param testloader: Testloader (torch.utils.data.DataLoader)
+    :type testloader: object
+    """
     model = load_model(path, batch=1)
     device = torch.device("cuda")
     recons = []
@@ -53,6 +79,12 @@ def eval_reconstruct(path, testloader):
     print("Saved reconstructions for {}".format(path))
 
 def eval_sample(path):
+    """
+    Generates random samples from the learned posterior and saves them in the model directory
+
+    :param path: path to the model
+    :type path: str
+    """
     model = load_model(path, batch=1)
     N, K = 36, 1
     samples = model.generate_samples(N, K).cpu().squeeze()
@@ -61,6 +93,18 @@ def eval_sample(path):
     print("Saved samples for {}".format(path))
 
 def plot_setup(xname, yname, pth, figname):
+    """
+    General plot set up functions
+
+    :param xname: Name of x axis
+    :type xname: str
+    :param yname: Name of y axis
+    :type yname: str
+    :param pth: path to save the plot to
+    :type pth: str
+    :param figname: name of the figure
+    :type figname: str
+    """
     plt.xlabel(xname)
     plt.ylabel(yname)
     p = pth if os.path.isdir(pth) else os.path.dirname(pth)
@@ -68,6 +112,12 @@ def plot_setup(xname, yname, pth, figname):
     plt.clf()
 
 def plot_loss(path):
+    """
+    Plots the Test loss saved in loss.csv in the provided model directory.
+
+    :param path: path to model directory
+    :type path: str
+    """
     pth = os.path.join(path, "loss.csv") if not "loss.csv" in path else path
     loss = pd.read_csv(pth, delimiter=",")
     epochs = loss["Epoch"]
@@ -80,6 +130,14 @@ def plot_loss(path):
     print("Saved loss plot")
 
 def compare_loss(paths, label_tag):
+    """
+    Compares losses for several models in one plot.
+
+    :param paths: list of paths to model directories
+    :type paths: list
+    :param label_tag: list of strings to label the models in the legend
+    :type label_tag: list
+    """
     for ll in ["Test Loss", "Test Mod_0", "Test Mod_1"]:
         for p in paths:
             pth = os.path.join(p, "loss.csv") if not "loss.csv" in p else p
@@ -97,17 +155,29 @@ def compare_loss(paths, label_tag):
         plt.clf()
 
 def get_all_csvs(pth):
+    """
+    Extracts paths to all csv files within a directory and its subdirectories
+
+    :param pth: path to directory
+    :type pth: str
+    :return: list of loss paths
+    :rtype: list
+    """
     pth = pth + "/" if pth[-1] != "/" else pth
     return glob.glob(pth + "**/loss.csv", recursive=True)
 
 def compare_models_numbers(pth):
-    pth = pth + "/" if pth[-1] != "/" else pth
-    f = open(os.path.join(pth, "comparison.csv"), 'w')
+    """
+    Compares losses for multiple models and prints it into a text file
+
+    :param pth: list of model directories to compare
+    :type pth: list
+    """
+    f = open(os.path.join(pth[0], "comparison.csv"), 'w')
     writer = csv.writer(f)
     all_csvs = get_all_csvs(pth)
     header = None
     for c in all_csvs:
-        plot_loss(c)
         model_csv = pd.read_csv(c, delimiter=",")
         if not header:
             writer.writerow(["Model", "Epochs"] + list(model_csv.keys())[1:])
@@ -115,9 +185,17 @@ def compare_models_numbers(pth):
         row = [c.split(pth)[-1].split("/loss.csv")[0]] + [int(model_csv.values[-1][0])] + [round(x, 4) for x in list(model_csv.values[-1][1:])]
         writer.writerow(row)
     f.close()
-    print("Saved comparison at {}".format(os.path.join(pth, "comparison.csv")))
+    print("Saved comparison at {}".format(os.path.join(pth[0], "comparison.csv")))
 
 def load_model(path):
+    """
+    Loads the model from directory path
+
+    :param path: path to model directory
+    :type path: str
+    :return: model object
+    :rtype: object
+    """
     device = torch.device("cuda")
     config, mods = parse_args(path)
     model = "VAE" if len(mods) == 1 else config["mixing"].lower()
@@ -134,6 +212,16 @@ def load_model(path):
     return model
 
 def get_traversal_samples(latent_dim, n_samples_per_dim):
+    """
+    Generates random sample traversals across the whole latent space.
+
+    :param latent_dim: dimensionality of the latent space
+    :type latent_dim: int
+    :param n_samples_per_dim: how many samples to make per dimension (they will be equally distributed)
+    :type n_samples_per_dim: int
+    :return: torch tensor samples
+    :rtype: torch.tensor
+    """
     all_samples = []
     for idx in range(latent_dim):
         samples = torch.zeros(n_samples_per_dim, latent_dim)
@@ -145,6 +233,18 @@ def get_traversal_samples(latent_dim, n_samples_per_dim):
     return samples
 
 def text_to_image(text, model, path):
+    """
+    Reconstructs text from the image input using the provided model
+
+    :param text: list of strings to reconstruct
+    :type text: list
+    :param model: model object
+    :type model: object
+    :param path: where to save the outputs
+    :type path: str
+    :return: returns reconstructed images and also texts
+    :rtype: tuple(list, list)
+    """
     img_outputs, txtoutputs = [], []
     for i, w in enumerate(text):
         txt_inp = one_hot_encode(len(w), w.lower())
@@ -160,6 +260,14 @@ def text_to_image(text, model, path):
     return img_outputs, txtoutputs
 
 def process_recons(recons):
+    """
+    Processes the reconstructions from the model so that they can be visualized
+
+    :param recons: list of the model outputs
+    :type recons: list
+    :return: image and text
+    :rtype: tuple(ndarray, string)
+    """
     recons_image = recons[0] if isinstance(recons, list) else recons
     recons_image = recons_image[0] if isinstance(recons_image, list) else recons_image
     recons_text = recons[1][1] if isinstance(recons[1], list) else recons[1]
@@ -170,6 +278,18 @@ def process_recons(recons):
 
 
 def image_to_text(imgs, model, path):
+    """
+    Reconstructs image from the text input using the provided model
+
+    :param text: list of strings to reconstruct
+    :type text: list
+    :param model: model object
+    :type model: object
+    :param path: where to save the outputs
+    :type path: str
+    :return: returns reconstructed images and texts
+    :rtype: tuple(list, list)
+    """
     txt_outputs, img_outputs = [], []
     model.eval()
     for i, w in enumerate(imgs):
@@ -183,6 +303,14 @@ def image_to_text(imgs, model, path):
 
 
 def listdirs(rootdir):
+    """
+    Lists all subdirectories within a directory
+
+    :param rootdir: root directory path
+    :type rootdir: str
+    :return: list of subdirectories
+    :rtype: list
+    """
     dirs = []
     for file in os.listdir(rootdir):
         d = os.path.join(rootdir, file)

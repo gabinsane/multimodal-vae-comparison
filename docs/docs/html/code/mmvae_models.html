@@ -132,12 +132,47 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.reconstruct" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">MoPOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE" title="Permalink to this definition"></a></dt>
 <dd><p>Multimodal Variaional Autoencoder with Generalized Multimodal Elbo <a class="reference external" href="https://github.com/thomassutter/MoPoE">https://github.com/thomassutter/MoPoE</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.reparameterize">
+<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.reparameterize" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> – </p></li>
+<li><p><strong>logvar</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -167,6 +202,22 @@ Gaussian: N(0, 1).</p>
 <dt>&#64;param size: integer</dt><dd><p>dimensionality of Gaussian</p>
 </dd>
 <dt>&#64;param use_cuda: boolean [default: False]</dt><dd><p>cast CUDA on variables</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.reconstruct" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p></p>
 </dd>
 </dl>
 </dd></dl>

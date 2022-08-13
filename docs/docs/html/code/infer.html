@@ -82,9 +82,247 @@
   <section id="module-multimodal_compare.eval.infer">
 <span id="inference-module"></span><span id="infer"></span><h1>Inference module<a class="headerlink" href="#module-multimodal_compare.eval.infer" title="Permalink to this heading"></a></h1>
 <dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.compare_loss">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">compare_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.compare_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Compares losses for several models in one plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>list</em>) – list of paths to model directories</p></li>
+<li><p><strong>label_tag</strong> (<em>list</em>) – list of strings to label the models in the legend</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.compare_models_numbers">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">compare_models_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.compare_models_numbers" title="Permalink to this definition"></a></dt>
+<dd><p>Compares losses for multiple models and prints it into a text file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pth</strong> (<em>list</em>) – list of model directories to compare</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.infer.estimate_log_marginal">
 <span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">estimate_log_marginal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.estimate_log_marginal" title="Permalink to this definition"></a></dt>
-<dd><p>Compute an estimate of the log-marginal likelihood of test data.</p>
+<dd><p>Estimate of the log-marginal likelihood of test data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>object</em>) – VAE model</p></li>
+<li><p><strong>device</strong> (<em>str</em>) – device (cuda/cpu)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>marginal log-likelihood</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float32</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.eval_reconstruct">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">eval_reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testloader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.eval_reconstruct" title="Permalink to this definition"></a></dt>
+<dd><p>Makes reconstructions from the testloader for the given model and dumps them into pickle</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – path to the model directory</p></li>
+<li><p><strong>testloader</strong> (<em>object</em>) – Testloader (torch.utils.data.DataLoader)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.eval_sample">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">eval_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.eval_sample" title="Permalink to this definition"></a></dt>
+<dd><p>Generates random samples from the learned posterior and saves them in the model directory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to the model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.get_all_csvs">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">get_all_csvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.get_all_csvs" title="Permalink to this definition"></a></dt>
+<dd><p>Extracts paths to all csv files within a directory and its subdirectories</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pth</strong> (<em>str</em>) – path to directory</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of loss paths</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.get_traversal_samples">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">get_traversal_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples_per_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.get_traversal_samples" title="Permalink to this definition"></a></dt>
+<dd><p>Generates random sample traversals across the whole latent space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latent_dim</strong> (<em>int</em>) – dimensionality of the latent space</p></li>
+<li><p><strong>n_samples_per_dim</strong> (<em>int</em>) – how many samples to make per dimension (they will be equally distributed)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>torch tensor samples</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.image_to_text">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">image_to_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.image_to_text" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstructs image from the text input using the provided model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>list</em>) – list of strings to reconstruct</p></li>
+<li><p><strong>model</strong> (<em>object</em>) – model object</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – where to save the outputs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns reconstructed images and texts</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.listdirs">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">listdirs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.listdirs" title="Permalink to this definition"></a></dt>
+<dd><p>Lists all subdirectories within a directory</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rootdir</strong> (<em>str</em>) – root directory path</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of subdirectories</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.load_model">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.load_model" title="Permalink to this definition"></a></dt>
+<dd><p>Loads the model from directory path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to model directory</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>model object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.parse_args">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.parse_args" title="Permalink to this definition"></a></dt>
+<dd><p>Parses the YAML config provided in the file path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pth</strong> (<em>str</em>) – Path to config</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns the config dict and modality-specific dict</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(dict, dict)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.plot_loss">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">plot_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.plot_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the Test loss saved in loss.csv in the provided model directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to model directory</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.plot_setup">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">plot_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.plot_setup" title="Permalink to this definition"></a></dt>
+<dd><p>General plot set up functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xname</strong> (<em>str</em>) – Name of x axis</p></li>
+<li><p><strong>yname</strong> (<em>str</em>) – Name of y axis</p></li>
+<li><p><strong>pth</strong> (<em>str</em>) – path to save the plot to</p></li>
+<li><p><strong>figname</strong> (<em>str</em>) – name of the figure</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.process_recons">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">process_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.process_recons" title="Permalink to this definition"></a></dt>
+<dd><p>Processes the reconstructions from the model so that they can be visualized</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>recons</strong> (<em>list</em>) – list of the model outputs</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>image and text</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(ndarray, string)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.text_to_image">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">text_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.text_to_image" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstructs text from the image input using the provided model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> (<em>list</em>) – list of strings to reconstruct</p></li>
+<li><p><strong>model</strong> (<em>object</em>) – model object</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – where to save the outputs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns reconstructed images and also texts</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(list, list)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
