@@ -147,7 +147,7 @@ python eval/eval_gebid.py --m /path/to/model/directory --level 4  # specify the 
 
 The toolkit is designed so that it enables easy extension for new models, objectives or encoder/decoder networks. 
 <div style="text-align: left">
- <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/uml.png" width="300" />
+ <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/uml2.png" width="300" />
 </div>
 
 Here you can see the UML diagram of the _./models_ folder. The VAE class is initialized at every training (for both the uni/multimodal scenario) along with its
