@@ -18,8 +18,6 @@ evaluation of the generated samples. For more info, see below.
 
 [Link to Documentation](https://gabinsane.github.io/multimodal-vae-comparison)
 
-See the **[GeBiD Leaderboard](#gebid-leaderboard)**
-
 ## Preliminaries
 
 This code was tested with:
