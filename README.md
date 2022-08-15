@@ -17,6 +17,8 @@ to find the minimal functioning scenario for each model. Moreover, its rigid str
 evaluation of the generated samples. For more info, see below. 
 
 [Link to Documentation](https://gabinsane.github.io/multimodal-vae-comparison)
+[How to train on your own dataset](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/adddataset.html)
+[How to add a new model](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/addmodel.html)
 
 ## Preliminaries
 
