@@ -141,6 +141,163 @@ python eval/eval_gebid.py --m /path/to/model/directory --level 4  # specify the 
 ```
 
 
+## GeBiD leaderboard
+
+Here we show a leaderboard of the state-of-the-art models evaluated on our GeBiD benchmark dataset. The experiments can be 
+reproduced by running the configs specified in _./configs/gebid_benchmark_. For example, to reproduce the leaderboard results
+for Level 1, run:
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+./iterate_configs.sh "./configs/gebid_benchmark/level_1/*"
+```
+ 
+ All experiments will be run with 5 seeds, the results here are reported as a mean over those seeds.
+ Here is a legend for the leaderboard tables:
+ 
+ - **Pos.** - position of the model in the leaderboard
+ - **Model** - refers to the multimodal VAE model shortcut (e.g. MMVAE, MVAE). 
+ - **Obj.** - objective function used for training (ELBO, IWAE, DREG) 
+  - **Accuracy (Text&rarr;Image)** - provided only text on the input, we report accuracy of the reconstructed images.
+ We show **two** numbers: 
+     - **Strict** - percentage of completely correct samples (out of 500 test samples)
+     - **Feats** - mean percentage of correct features per sample (for Level 1 same as Strict)
+ - **Accuracy (Image&rarr;Text)** - provided only images on the input, we report accuracy of the reconstructed text.
+ We show **three** numbers: 
+     - **Strict** - percentage of completely correct samples (out of 500 test samples)
+     - **Feats** - mean percentage of correct words per sample (for Level 1 same as Strict)
+     - **Letters** - mean percentage of correct letters per sample
+ - **Accuracy Joint** -  we sample _N_ x 20 (_N_ is the Latent Dim) random vectors from the latent space and reconstruct both text and image. We report **two** numbers:
+     - **Strict** - percentage of completely correct and matching samples (out of 500 test samples)
+     - **Feats** - mean percentage of correct features (matching for image and text) per sample (for Level 1 same as Strict)
+ were matching in the image and text outputs) 
+ - **Weights** - download the pretrained weights
+ - **Config** - config to reproduce the results
+
+ 
+In brackets we show standard deviations over the 5 seeds.
+
+### Level 1
+
+<table>
+  <tr> 
+    <td style="text-align:center "><b>Pos.</b></td>
+    <td style="text-align:center"><b>Model</b></td>
+    <td style="text-align:center"><b>Obj.</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
+    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+  </tr>
+  <tr>
+    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    </tr>
+  <tr>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">97 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">16 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">25 (1)</td><td style="text-align:center ">7 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">18 (6)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">0 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">16 (5)</td><td style="text-align:center ">21 (7)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+</table>
+
+
+### Level 2
+
+<table>
+  <tr> 
+    <td style="text-align:center "><b>Pos.</b></td>
+    <td style="text-align:center"><b>Model</b></td>
+    <td style="text-align:center"><b>Obj.</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
+    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+  </tr>
+  <tr>
+    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    </tr>
+  <tr>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">70 (0)</td><td style="text-align:center ">84 (0)</td><td style="text-align:center ">7 (0)</td><td style="text-align:center ">27 (2)</td><td style="text-align:center ">41 (3)</td><td style="text-align:center ">6 (1)</td><td style="text-align:center ">49 (0)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">6 (2)</td><td style="text-align:center ">28 (6)</td><td style="text-align:center ">6 (2)</td><td style="text-align:center ">32 (2)</td><td style="text-align:center ">43 (1)</td><td style="text-align:center ">3 (1)</td><td style="text-align:center ">20 (3)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+</table>
+
+
+### Level 3
+
+<table>
+  <tr> 
+    <td style="text-align:center "><b>Pos.</b></td>
+    <td style="text-align:center"><b>Model</b></td>
+    <td style="text-align:center"><b>Obj.</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
+    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+  </tr>
+  <tr>
+    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    </tr>
+  <tr>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">49 (2)</td><td style="text-align:center ">72 (1)</td><td style="text-align:center ">0 (1)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">27 (0)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">31 (1)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">22 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">12 (4)</td><td style="text-align:center ">26 (3)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">12 (2)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+</table>
+
+
+### Level 4
+
+<table>
+  <tr> 
+    <td style="text-align:center "><b>Pos.</b></td>
+    <td style="text-align:center"><b>Model</b></td>
+    <td style="text-align:center"><b>Obj.</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
+    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+  </tr>
+  <tr>
+    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    </tr>
+  <tr>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">1 (1)</td><td style="text-align:center ">38 (5)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">24 (1)</td><td style="text-align:center ">26 (2)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">23 (8)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">8 (7)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">7 (10)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+</table>
+
+
+### Level 5
+
+<table>
+  <tr> 
+    <td style="text-align:center "><b>Pos.</b></td>
+    <td style="text-align:center"><b>Model</b></td>
+    <td style="text-align:center"><b>Obj.</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
+    <td style="text-align:center"><b>Weights</b></td>
+   <td style="text-align:center"><b>Config</b></td>
+  </tr>
+  <tr>
+    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    </tr>
+  <tr>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">1 (0)</td><td style="text-align:center ">35 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">8 (0)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">2 (0)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">16 (2)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">15 (2)</td><td style="text-align:center ">15 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">9 (2)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
+  </tr>
+</table>
+
+
+
+Please feel free to propose your own model and training config so that we can add the results in these tables. 
+
+
+
 ## Extending for own models and networks
 
 The toolkit is designed so that it enables easy extension for new models, objectives or encoder/decoder networks. 
