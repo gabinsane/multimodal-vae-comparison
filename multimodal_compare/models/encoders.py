@@ -1,28 +1,22 @@
 import torch, numpy as np
 import torch.nn as nn
 from numpy import prod
-import chainer.links as L
-import chainer, math
-from chainer import cuda, Variable
 import torch.nn.functional as F
 from utils import Constants
+import math
 from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock, FeatureExtractorText, LinearFeatureCompressor
 
-
-def unpack(d):
-    if isinstance(d, list):
-        while len(d) == 1:
-            d = d[0]
-        d = torch.tensor(d)
-    return d
 
 # Classes
 class Enc_CNN(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
-        CNN decoder for RGB images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        CNN encoder for RGB images of size 64x64x3
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Enc_CNN, self).__init__()
         self.net_type = "CNN"
@@ -52,6 +46,14 @@ class Enc_CNN(nn.Module):
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(hidden_dim, self.latent_dim))
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         x = torch.stack(x) if isinstance(x, list) else x
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
         # Convolutional layers with ReLu activations
@@ -75,9 +77,12 @@ class Enc_CNN(nn.Module):
 class Enc_MNIST(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
-        Image encoder for the MNIST BW images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [28,28,1] for 28x28 bw images)
+        Image encoder for the MNIST images
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Enc_MNIST, self).__init__()
         self.net_type = "CNN"
@@ -92,6 +97,14 @@ class Enc_MNIST(nn.Module):
         self.hidden_logvar = nn.Linear(in_features=self.hidden_dim, out_features=latent_dim, bias=True)
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         h = x.view(*x.size()[:-3], -1)
         h = self.enc(h.float())
         h = h.view(h.size(0), -1)
@@ -103,10 +116,19 @@ class Enc_MNIST(nn.Module):
 def extra_hidden_layer(hidden_dim):
     return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
 
-class Enc_MNISTMoE(nn.Module):
-    """Encoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae"""
 
+class Enc_MNISTMoE(nn.Module):
     def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
+        """
+        Encoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param num_hidden_layers: how many hidden layers to add
+        :type num_hidden_layers: int
+        """
         super(Enc_MNISTMoE, self).__init__()
         modules = []
         hidden_dim = 400
@@ -119,14 +141,28 @@ class Enc_MNISTMoE(nn.Module):
         self.fc22 = nn.Linear(hidden_dim, latent_dim)
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         e = self.enc(x.view(*x.size()[:-3], -1).float())  # flatten data
         lv = self.fc22(e)
         return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
 
 class Enc_SVHNMoE(nn.Module):
-    """Encoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae"""
-
     def __init__(self, latent_dim, data_dim):
+        """
+        Encoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        """
         super(Enc_SVHNMoE, self).__init__()
         imgChans = 3
         fBase = 32
@@ -148,6 +184,14 @@ class Enc_SVHNMoE(nn.Module):
         # c1, c2 size: latent_dim x 1 x 1
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         e = self.enc(x.float())
         lv = self.c2(e).squeeze()
         return self.c1(e).squeeze(), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
@@ -156,9 +200,12 @@ class Enc_SVHNMoE(nn.Module):
 class Enc_SVHN(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
-        Image encoder for the SVHN dataset
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [32,32,3] for 32x32x3 images)
+        Image encoder for the SVHN dataset or images 32x32x3
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Enc_SVHN, self).__init__()
         self.net_type = "CNN"
@@ -171,6 +218,14 @@ class Enc_SVHN(nn.Module):
         self.hidden_logvar = nn.Linear(in_features=128, out_features=latent_dim, bias=True)
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         h = self.conv1(x.float())
         h = self.relu(h)
         h = self.conv2(h)
@@ -187,7 +242,19 @@ class Enc_SVHN(nn.Module):
 
 
 class Enc_MNIST_DMVAE(nn.Module):
-    def __init__(self, latent_dim, data_dim, num_pixels=784, num_hidden=256, zPrivate_dim=1):
+    def __init__(self, latent_dim, data_dim, num_hidden=256, zPrivate_dim=1):
+        """
+        Encoder for the MNIST dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param num_hidden: size of the output features
+        :type num_hidden: int
+        :param zPrivate_dim: dimensionality of the private latent space
+        :type zPrivate_dim: int
+        """
         super(Enc_MNIST_DMVAE, self).__init__()
         self.net_type = "FNN"
         temp = 0.66
@@ -195,11 +262,19 @@ class Enc_MNIST_DMVAE(nn.Module):
         self.zPrivate_dim = zPrivate_dim
         self.zShared_dim = latent_dim
         self.enc_hidden = nn.Sequential(
-            nn.Linear(num_pixels, num_hidden),
+            nn.Linear(np.prod(data_dim), num_hidden),
             nn.ReLU())
         self.fc = nn.Linear(num_hidden, 2 * zPrivate_dim + 2 * latent_dim)
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         hiddens = self.enc_hidden(x.reshape(1,x.shape[0], -1).float())
         stats = self.fc(hiddens)
         muPrivate = stats[:, :, :self.zPrivate_dim]
@@ -213,6 +288,16 @@ class Enc_MNIST_DMVAE(nn.Module):
 
 class Enc_SVHN_DMVAE(nn.Module):
     def __init__(self, latent_dim, data_dim, zPrivate_dim=4):
+        """
+        Encoder for the SVHN dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param zPrivate_dim: dimensionality of the private latent space
+        :type zPrivate_dim: int
+        """
         super(Enc_SVHN_DMVAE, self).__init__()
         self.net_type = "CNN"
         temp = 0.66
@@ -238,6 +323,14 @@ class Enc_SVHN_DMVAE(nn.Module):
             nn.Linear(512, 2 * zPrivate_dim + 2 * latent_dim))
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: list of private and shared tensors of means, list of private and shared tensors of log variances
+        :rtype: tuple(list, list)
+        """
         hiddens = self.enc_hidden(x.float())
         hiddens = hiddens.view(hiddens.size(0), -1)
         stats = self.fc(hiddens)
@@ -256,8 +349,11 @@ class Enc_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         """
         Fully connected layer encoder for any type of data
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Enc_FNN, self).__init__()
         self.net_type = "FNN"
@@ -270,6 +366,14 @@ class Enc_FNN(nn.Module):
         self.fc22 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, latent_dim))
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         x = (x).float()
         e = torch.relu(self.lin1(x.view(x.shape[0], -1)))
         e = torch.relu(self.lin2(e))
@@ -281,9 +385,12 @@ class Enc_FNN(nn.Module):
 class Enc_Audio(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         """
-        Decoder for audio data
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [4000,1])
+        Encoder for audio data
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Enc_Audio, self).__init__()
         self.net_type = "AudioConv"
@@ -292,11 +399,16 @@ class Enc_Audio(nn.Module):
         self.mu_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
         self.logvar_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
 
-    def forward(self, inputs):
-        """Args:
-            inputs: input tensor of shape: (B, T, C)
+    def forward(self, x):
         """
-        inputs = torch.stack(inputs).cuda() if isinstance(inputs, list) else inputs
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
+        inputs = torch.stack(x).cuda() if isinstance(x, list) else x
         output = self.TCN(inputs.float()).permute(0,2,1)
         x = output.reshape(inputs.shape[0], -1)
         mu = self.mu_layer(x)
@@ -305,17 +417,24 @@ class Enc_Audio(nn.Module):
         return mu, logvar
 
 class Enc_TransformerIMG(nn.Module):
-    """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
         """
-        Decoder for a sequence of images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        Encoder for a sequence of images
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         :param ff_size: feature dimension of the Transformer
+        :type ff_size: int
         :param num_layers: number of Transformer layers
+        :type num_layers: int
         :param num_heads: number of Transformer attention heads
+        :type num_heads: int
         :param dropout: dropout ofr the Transformer
+        :type dropout: float32
         :param activation: activation function
+        :type activation: str
         """
         super(Enc_TransformerIMG, self).__init__()
         self.net_type = "Transformer"
@@ -354,6 +473,14 @@ class Enc_TransformerIMG(nn.Module):
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.datadim[0] *  self.latent_dim, self.latent_dim))
 
     def forward(self, batch):
+        """
+        Forward pass
+
+        :param batch: list of a data batch and boolean masks for the sequences
+        :type batch: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         if isinstance(batch, list):
             x, mask = batch
             x = torch.stack(x).cuda() if isinstance(x, list) else x
@@ -375,52 +502,17 @@ class Enc_TransformerIMG(nn.Module):
         return mu, logvar
 
 
-class Enc_Conv2(nn.Module):
-    def __init__(self, latent_dim, channel=1, density=1, initial_size=64, Normal=1):
-        """
-        2D Convolutional network for images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
-        """
-        super(Enc_Conv2, self).__init__()
-        self.dc1= L.Convolution2D(channel, int(16 * density), 4, stride=2, pad=1,
-                            initialW=Normal(0.02))
-        self.dc2= L.Convolution2D(int(16 * density), int(32 * density), 4, stride=2, pad=1,
-                            initialW=Normal(0.02))
-        self.norm2= L.BatchNormalization(int(32 * density))
-        self.dc3= L.Convolution2D(int(32 * density), int(64 * density), 4, stride=2, pad=1,
-                            initialW=Normal(0.02))
-        self.norm3= L.BatchNormalization(int(64 * density))
-        self.dc4= L.Convolution2D(int(64 * density), int(128 * density), 4, stride=2, pad=1,
-                            initialW=Normal(0.02))
-        self.norm4= L.BatchNormalization(int(128 * density))
-        self.mean= L.Linear(initial_size * initial_size * int(128 * density), latent_dim,
-                      initialW=Normal(0.02))
-        self.var= L.Linear(initial_size * initial_size * int(128 * density), latent_dim,
-                     initialW=Normal(0.02))
-
-    def forward(self, x, train=True):
-        with chainer.using_config('train', train), chainer.using_config('enable_backprop', train):
-            xp = cuda.get_array_module(x.data)
-            h1 = F.leaky_relu(self.dc1(x))
-            h2 = F.leaky_relu(self.norm2(self.dc2(h1)))
-            h3 = F.leaky_relu(self.norm3(self.dc3(h2)))
-            h4 = F.leaky_relu(self.norm4(self.dc4(h3)))
-            mean = self.mean(h4)
-            var = self.var(h4)
-            rand = xp.random.normal(0, 1, var.data.shape).astype(np.float32)
-            z = mean + F.clip(F.exp(var), .001, 100.) * Variable(rand)
-            # z  = mean + F.exp(var) * Variable(rand, volatile=not train)
-            return mean, var
-
-
 class Enc_VideoGPT(nn.Module):
     def __init__(self,  latent_dim, data_dim=1, n_res_layers=4, downsample=(2,4,4)):
         """
-        Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [10, 64,64,3] for 64x64x3 image sequences with max length 10 images)
+        Encoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images)
+        :type data_dim: list
         :param n_res_layers: number of ResNet layers
+        :type n_res_layers: int
         """
         super(Enc_VideoGPT, self).__init__()
         self.net_type = "3DCNN"
@@ -443,6 +535,14 @@ class Enc_VideoGPT(nn.Module):
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(latent_dim*16*16, latent_dim))
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         h = x.permute(0,4,1,2,3)
         for conv in self.convs:
             h = F.relu(conv(h.float()))
@@ -459,13 +559,21 @@ class Enc_Transformer(nn.Module):
     def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer encoder for arbitrary sequential data
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
-        :param ff_size: feature dimension
-        :param num_layers: number of transformer layers
-        :param num_heads: number of transformer attention heads
-        :param dropout: dropout
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param ff_size: feature dimension of the Transformer
+        :type ff_size: int
+        :param num_layers: number of Transformer layers
+        :type num_layers: int
+        :param num_heads: number of Transformer attention heads
+        :type num_heads: int
+        :param dropout: dropout ofr the Transformer
+        :type dropout: float32
         :param activation: activation function
+        :type activation: str
         """
         super(Enc_Transformer, self).__init__()
         self.net_type = "Transformer"
@@ -493,6 +601,14 @@ class Enc_Transformer(nn.Module):
         self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
 
     def forward(self, batch):
+        """
+        Forward pass
+
+        :param batch: list of a data batch and boolean masks for the sequences
+        :type batch: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         if isinstance(batch[0], list):
             x = torch.stack(batch[0]).float()
         else:
@@ -520,8 +636,11 @@ class Enc_TxtTransformer(Enc_Transformer):
     def __init__(self, latent_dim, data_dim=1):
         """
         Transformer encoder configured for character-level text reconstructions
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim)
         self.net_type = "TxtTransformer"
@@ -537,6 +656,14 @@ class Enc_TxtTransformer(Enc_Transformer):
         self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.input_feats*2, self.latent_dim))
 
     def forward(self, batch):
+        """
+        Forward pass
+
+        :param batch: list of a data batch and boolean masks for the sequences
+        :type batch: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         if isinstance(batch[0], list):
             x = torch.stack(batch[0]).float()
         else:

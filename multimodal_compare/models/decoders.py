@@ -4,18 +4,19 @@ import torch.nn.functional as F
 from numpy import prod
 from models.nn_modules import PositionalEncoding, DeconvNet
 from utils import Constants
-import chainer, math
-import chainer.links as L
-from chainer.initializers import Normal
+import math
 from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock,\
     SamePadConvTranspose3d, DataGeneratorText
 
 class Dec_CNN(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
-        CNN decoder for RGB images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        CNN decoder for RGB images of size 64x64x3
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Dec_CNN, self).__init__()
         latent_dim = latent_dim
@@ -45,6 +46,14 @@ class Dec_CNN(nn.Module):
         self.convT3 = torch.nn.DataParallel(nn.ConvTranspose2d(hid_channels, self.n_chan, kernel_size, **cnn_kwargs))
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         if len(z.shape) == 2:
             batch_size = z.size(0)
         else:
@@ -68,9 +77,12 @@ class Dec_CNN(nn.Module):
 class Dec_SVHN(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
-        Image decoder for the SVHN dataset
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [32,32,3] for 32x32x3 images)
+        Image decoder for the SVHN dataset or images 32x32x3
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Dec_SVHN, self).__init__()
         latent_dim = latent_dim
@@ -85,6 +97,14 @@ class Dec_SVHN(nn.Module):
 
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         z = z.squeeze(0)
         z = self.linear(z)
         z = z.view(-1, z.size(-1), 1, 1)
@@ -102,8 +122,17 @@ def extra_hidden_layer(hidden_dim):
     return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
 
 class Dec_MNISTMoE(nn.Module):
-    """Decoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae"""
     def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
+        """
+        Decoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param num_hidden_layers: how many hidden layers to add
+        :type num_hidden_layers: int
+        """
         super(Dec_MNISTMoE, self).__init__()
         modules = []
         self.data_dim = data_dim
@@ -116,6 +145,14 @@ class Dec_MNISTMoE(nn.Module):
         self.fc3 = nn.Linear(hidden_dim, data_d)
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         p = self.fc3(self.dec(z))
         d = torch.sigmoid(p.view(*z.size()[:-1], *[1,28,28]))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
@@ -125,9 +162,12 @@ class Dec_MNISTMoE(nn.Module):
 class Dec_MNIST(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
-        Image decoder for the MNIST BW images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [28,28,1] for 28x28 bw images)
+        Image decoder for the MNIST images
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Dec_MNIST, self).__init__()
         latent_dim = latent_dim
@@ -143,6 +183,14 @@ class Dec_MNIST(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         x_hat = self.dec(z)
         x_hat = self.fc3(x_hat)
         x_hat = self.sigmoid(x_hat)
@@ -152,7 +200,19 @@ class Dec_MNIST(nn.Module):
 
 
 class Dec_MNIST_DMVAE(nn.Module):
-    def __init__(self, latent_dim, data_dim, num_pixels=784, num_hidden=256, zPrivate_dim=1):
+    def __init__(self, latent_dim, data_dim, num_hidden=256, zPrivate_dim=1):
+        """
+        Decoder for the MNIST dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param num_hidden: size of the output features
+        :type num_hidden: int
+        :param zPrivate_dim: dimensionality of the private latent space
+        :type zPrivate_dim: int
+        """
         super(Dec_MNIST_DMVAE, self).__init__()
         self.net_type = "FNN"
         self.digit_temp = 0.66
@@ -164,10 +224,18 @@ class Dec_MNIST_DMVAE(nn.Module):
             nn.Linear(zPrivate_dim + latent_dim, num_hidden),
             nn.ReLU())
         self.dec_image = nn.Sequential(
-            nn.Linear(num_hidden, num_pixels),
+            nn.Linear(num_hidden, np.prod(data_dim)),
             nn.Sigmoid())
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         hiddens = self.dec_hidden(z)
         x = self.dec_image(hiddens)
         return x, torch.tensor(0.75).to(x.device)
@@ -175,6 +243,16 @@ class Dec_MNIST_DMVAE(nn.Module):
 
 class Dec_SVHN_DMVAE(nn.Module):
     def __init__(self, latent_dim, data_dim, zPrivate_dim=4):
+        """
+        Decoder for the SVHN dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param zPrivate_dim: dimensionality of the private latent space
+        :type zPrivate_dim: int
+        """
         super(Dec_SVHN_DMVAE, self).__init__()
         self.net_type = "CNN"
         self.digit_temp = 0.66
@@ -193,6 +271,14 @@ class Dec_SVHN_DMVAE(nn.Module):
             nn.Sigmoid())
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         hiddens = self.dec_hidden(z)
         hiddens = hiddens.view(-1, 256, 2, 2)
         x = self.dec_image(hiddens)
@@ -200,9 +286,15 @@ class Dec_SVHN_DMVAE(nn.Module):
 
 
 class Dec_SVHNMoE(nn.Module):
-    """Decoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae"""
-
     def __init__(self, latent_dim, data_dim):
+        """
+        Decoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        """
         super(Dec_SVHNMoE, self).__init__()
         fBase = 32
         imgChans = 3
@@ -223,18 +315,30 @@ class Dec_SVHNMoE(nn.Module):
         )
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         z = z.unsqueeze(-1).unsqueeze(-1)  # fit deconv layers
         out = self.dec(z.view(-1, *z.size()[-3:]))
         out = out.view(*z.size()[:-3], *out.size()[1:])
         # consider also predicting the length scale
         return out, torch.tensor(0.75).to(z.device)  # mean, length scale
 
+
 class Dec_FNN(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         """
         Fully connected layer decoder for any type of data
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Dec_FNN, self).__init__()
         self.net_type = "FNN"
@@ -246,6 +350,14 @@ class Dec_FNN(nn.Module):
         self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, np.prod(data_dim)))
 
     def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         p = torch.relu(self.lin1(z))
         p = torch.relu(self.lin2(p))
         p = torch.relu(self.lin3(p))
@@ -257,8 +369,11 @@ class Dec_Audio(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         """
         Decoder for audio data
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [4000,1])
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Dec_Audio, self).__init__()
         self.net_type = "AudioConv"
@@ -270,7 +385,13 @@ class Dec_Audio(nn.Module):
         self.output_layer = nn.Sequential(nn.Linear(128*3, np.prod(data_dim)))
 
     def forward(self, z):
-        """Args: z: input tensor of shape: (B, T, C)
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
         """
         out = torch.relu(self.lin1(z))
         output = self.TCN(out.float().reshape(-1, *self.reshape))
@@ -278,17 +399,26 @@ class Dec_Audio(nn.Module):
         output = self.output_layer(x)
         return output.reshape(-1, *self.data_dim), torch.tensor(0.75).to(z.device)
 
+
 class Dec_TransformerIMG(nn.Module):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=4, dropout=0.1, activation="gelu"):
         """
         Decoder for a sequence of images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         :param ff_size: feature dimension of the Transformer
+        :type ff_size: int
         :param num_layers: number of Transformer layers
+        :type num_layers: int
         :param num_heads: number of Transformer attention heads
+        :type num_heads: int
         :param dropout: dropout ofr the Transformer
+        :type dropout: float32
         :param activation: activation function
+        :type activation: str
         """
         super(Dec_TransformerIMG, self).__init__()
         self.net_type = "Transformer"
@@ -323,6 +453,14 @@ class Dec_TransformerIMG(nn.Module):
                                                 nn.ConvTranspose2d(hid_channels, 3,  kernel_size, **cnn_kwargs),
                                                 torch.nn.Sigmoid()))
     def forward(self, batch):
+        """
+        Forward pass
+
+        :param z: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
+        :type z: list, torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         if isinstance(batch, list):
             z, mask = batch
         else:
@@ -343,70 +481,27 @@ class Dec_TransformerIMG(nn.Module):
         return output.to(z.device), torch.tensor(0.75).to(z.device)
 
 
-class Decoder_Conv2(nn.Module):
-    def __init__(self, latent_dim, data_dim=1, density=1, initial_size=64, channel=3):
-        """
-        2D Convolutional network for images
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
-        """
-        super(Decoder_Conv2, self).__init__()
-        self.g1 = L.Linear(latent_dim, initial_size * initial_size * 128 * density, initialW=Normal(0.02))
-        self.norm1 = L.BatchNormalization(initial_size * initial_size * 128 * density)
-        self.g2 = L.Deconvolution2D(128 * density, 64 * density, 4, stride=2, pad=1,
-                             initialW=Normal(0.02))
-        self.norm2 = L.BatchNormalization(64 * density)
-        self.g3 = L.Deconvolution2D(64 * density, 32 * density, 4, stride=2, pad=1,
-                             initialW=Normal(0.02))
-        self.norm3 = L.BatchNormalization(32 * density)
-        self.g4 = L.Deconvolution2D(32 * density, 16 * density, 4, stride=2, pad=1,
-                             initialW=Normal(0.02))
-        self.norm4 = L.BatchNormalization(16 * density)
-        self.g5 = L.Deconvolution2D(16 * density, channel, 4, stride=2, pad=1,
-                             initialW=Normal(0.02))
-        self.g2_= L.Deconvolution2D(64 * density, 64 * density, 3, stride=1, pad=1,
-                              initialW=Normal(0.02))
-        self.norm2_= L.BatchNormalization(64 * density)
-        self.g3_= L.Deconvolution2D(32 * density, 32 * density, 3, stride=1, pad=1,
-                              initialW=Normal(0.02))
-        self.norm3_= L.BatchNormalization(32 * density),
-        self.g4_= L.Deconvolution2D(16 * density, 16 * density, 3, stride=1, pad=1,
-                              initialW=Normal(0.02))
-        self.norm4_= L.BatchNormalization(16 * density)
-        self.g5_ = L.Deconvolution2D(channel, channel, 3, stride=1, pad=1, initialW=Normal(0.02))
-        self.density = density
-        self.latent_size = latent_dim
-        self.initial_size = initial_size
-
-    def forward(self, z, train=True):
-        with chainer.using_config('train', train):
-            h1 = F.reshape(F.relu(self.norm1(self.g1(z), test=not train)),
-                           (z.data.shape[0], 128 * self.density, self.initial_size, self.initial_size))
-            h2 = F.relu(self.norm2(self.g2(h1)))
-            h2_ = F.relu(self.norm2_(self.g2_(h2)))
-            h3 = F.relu(self.norm3(self.g3(h2_)))
-            h3_ = F.relu(self.norm3_(self.g3_(h3)))
-            h4 = F.relu(self.norm4(self.g4(h3_)))
-            h4_ = F.relu(self.norm4_(self.g4_(h4)))
-            return F.tanh(self.g5(h4_)), torch.tensor(0.75).to(z.device)
-
-
 class Dec_VideoGPT(nn.Module):
-    def __init__(self, latent_dim, data_dim=1, n_res_layers=4, upsample=(1,4,4)):
+    def __init__(self, latent_dim, data_dim=1, n_res_layers=4):
         """
         Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images)
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images)
+        :type data_dim: list
         :param n_res_layers: number of ResNet layers
+        :type n_res_layers: int
         """
         super(Dec_VideoGPT, self).__init__()
         self.net_type = "3DCNN"
+        self.upsample = (1, 4, 4)
         self.res_stack = nn.Sequential(
             *[AttentionResidualBlock(latent_dim)
               for _ in range(n_res_layers)],
             nn.BatchNorm3d(latent_dim),
             nn.ReLU())
-        n_times_upsample = np.array([int(math.log2(d)) for d in upsample])
+        n_times_upsample = np.array([int(math.log2(d)) for d in self.upsample])
         max_us = n_times_upsample.max()
         self.convts = nn.ModuleList()
         for i in range(max_us):
@@ -418,6 +513,14 @@ class Dec_VideoGPT(nn.Module):
         self.upsample = torch.nn.DataParallel(nn.Linear(latent_dim, latent_dim*16*16*3))
 
     def forward(self, x):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         x_upsampled = self.upsample(x)
         h = self.res_stack(x_upsampled.view(-1, x.shape[2], 3, 16, 16))
         for i, convt in enumerate(self.convts):
@@ -428,17 +531,26 @@ class Dec_VideoGPT(nn.Module):
         h = torch.sigmoid(h)
         return h, torch.tensor(0.75).to(x.device)
 
+
 class Dec_Transformer(nn.Module):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer decoder for arbitrary sequential data
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
-        :param ff_size: feature dimension
-        :param num_layers: number of transformer layers
-        :param num_heads: number of transformer attention heads
-        :param dropout: dropout
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param ff_size: feature dimension of the Transformer
+        :type ff_size: int
+        :param num_layers: number of Transformer layers
+        :type num_layers: int
+        :param num_heads: number of Transformer attention heads
+        :type num_heads: int
+        :param dropout: dropout ofr the Transformer
+        :type dropout: float32
         :param activation: activation function
+        :type activation: str
         """
         super(Dec_Transformer, self).__init__()
         self.net_type = "Transformer"
@@ -467,6 +579,14 @@ class Dec_Transformer(nn.Module):
         self.finallayer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.input_feats))
 
     def forward(self, batch):
+        """
+        Forward pass
+
+        :param z: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
+        :type z: list, torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         z, mask = batch[0], batch[1]
         z = z.reshape(-1, self.latent_dim).unsqueeze(0)
         latent_dim = z.shape[-1]
@@ -487,12 +607,16 @@ class Dec_Transformer(nn.Module):
         output = output.permute(1, 0, 2, 3)
         return output.to(z.device), torch.tensor(0.75).to(z.device)
 
+
 class Dec_TxtTransformer(Dec_Transformer):
     def __init__(self, latent_dim, data_dim=1):
         """
         Transformer decoder configured for character-level text reconstructions
-        :param latent_dim: int, latent vector dimensionality
-        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
         """
         super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4,)
         self.net_type = "Transformer"
@@ -506,6 +630,14 @@ class Dec_TxtTransformer(Dec_Transformer):
                                         output_padding=0)
 
     def forward(self, batch):
+        """
+        Forward pass
+
+        :param z: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
+        :type z: list, torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
         z, mask = batch[0], batch[1]
         z = z.reshape(-1, self.latent_dim).unsqueeze(0)
         latent_dim = z.shape[-1]

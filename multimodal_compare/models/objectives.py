@@ -19,12 +19,12 @@ def compute_microbatch_split(x, K):
 def reshape_for_loss(output, target, ltype, mod_type, K=1):
     if mod_type is not None and "transformer" in mod_type.lower():
         target = torch.stack(target[0]).float() if isinstance(target[0], list) else target[0]
-        target = target.repeat(K, 1, 1, 1).reshape(*output.loc.shape)
         if ltype != "lprob":
             output.loc = output.loc[:,:target.shape[1]]
             output.scale = output.scale[:, :target.shape[1]]
         if "txt" in mod_type.lower() and ltype != "lprob":
             ltype = "category"
+        target = target.repeat(K, 1, 1, 1).reshape(*output.loc.shape)
     else:
         target = torch.stack(target).float() if isinstance(target, list) else target
         target = target.repeat(K, 1, 1, 1).reshape(*output.loc.shape)
