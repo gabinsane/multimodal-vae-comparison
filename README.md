@@ -193,13 +193,14 @@ In brackets we show standard deviations over the 5 seeds.
     <td style="text-align:center "><b>Pos.</b></td>
     <td style="text-align:center"><b>Model</b></td>
     <td style="text-align:center"><b>Obj.</b></td>
-    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
-    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
-    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
-    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Txt&rarr;Img) [%]</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Img&rarr;Txt) [%]</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy [%]</b></td>
+    <td style="text-align:center"><b>Weights</b></td>
+   <td style="text-align:center"><b>Config</b></td>
   </tr>
   <tr>
-    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
        <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">97 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">16 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">25 (1)</td><td style="text-align:center ">7 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
@@ -210,19 +211,19 @@ In brackets we show standard deviations over the 5 seeds.
 
 
 ### Level 2
-
 <table>
   <tr> 
     <td style="text-align:center "><b>Pos.</b></td>
     <td style="text-align:center"><b>Model</b></td>
     <td style="text-align:center"><b>Obj.</b></td>
-    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
-    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
-    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
-    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Txt&rarr;Img) [%]</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Img&rarr;Txt) [%]</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy [%]</b></td>
+    <td style="text-align:center"><b>Weights</b></td>
+   <td style="text-align:center"><b>Config</b></td>
   </tr>
   <tr>
-    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
        <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">70 (0)</td><td style="text-align:center ">84 (0)</td><td style="text-align:center ">7 (0)</td><td style="text-align:center ">27 (2)</td><td style="text-align:center ">41 (3)</td><td style="text-align:center ">6 (1)</td><td style="text-align:center ">49 (0)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
@@ -239,13 +240,14 @@ In brackets we show standard deviations over the 5 seeds.
     <td style="text-align:center "><b>Pos.</b></td>
     <td style="text-align:center"><b>Model</b></td>
     <td style="text-align:center"><b>Obj.</b></td>
-    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
-    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
-    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
-    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Txt&rarr;Img) [%]</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Img&rarr;Txt) [%]</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy [%]</b></td>
+    <td style="text-align:center"><b>Weights</b></td>
+   <td style="text-align:center"><b>Config</b></td>
   </tr>
   <tr>
-    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
        <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">49 (2)</td><td style="text-align:center ">72 (1)</td><td style="text-align:center ">0 (1)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">27 (0)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">31 (1)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
@@ -256,19 +258,19 @@ In brackets we show standard deviations over the 5 seeds.
 
 
 ### Level 4
-
 <table>
   <tr> 
     <td style="text-align:center "><b>Pos.</b></td>
     <td style="text-align:center"><b>Model</b></td>
     <td style="text-align:center"><b>Obj.</b></td>
-    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
-    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
-    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
-    <td style="text-align:center"><b>Weights</b></td>   <td style="text-align:center"><b>Config</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Txt&rarr;Img) [%]</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Img&rarr;Txt) [%]</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy [%]</b></td>
+    <td style="text-align:center"><b>Weights</b></td>
+   <td style="text-align:center"><b>Config</b></td>
   </tr>
   <tr>
-    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
        <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">1 (1)</td><td style="text-align:center ">38 (5)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">24 (1)</td><td style="text-align:center ">26 (2)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
@@ -285,14 +287,14 @@ In brackets we show standard deviations over the 5 seeds.
     <td style="text-align:center "><b>Pos.</b></td>
     <td style="text-align:center"><b>Model</b></td>
     <td style="text-align:center"><b>Obj.</b></td>
-    <td  colspan="2" style="text-align:right"><b>Accuracy (Text&rarr;Image)</b></td>
-    <td style="text-align:center" colspan="3"><b>Accuracy (Image&rarr;Text)</b></td>
-    <td style="text-align:center" colspan="2"><b>Joint Accuracy</b></td>
+    <td  colspan="2" style="text-align:right"><b>Accuracy (Txt&rarr;Img) [%]</b></td>
+    <td style="text-align:center" colspan="3"><b>Accuracy (Img&rarr;Txt) [%]</b></td>
+    <td style="text-align:center" colspan="2"><b>Joint Accuracy [%]</b></td>
     <td style="text-align:center"><b>Weights</b></td>
    <td style="text-align:center"><b>Config</b></td>
   </tr>
   <tr>
-    <td> </td><td> </td><td> </td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td><b>Letters [%]</b></td><td><b>Strict [%]</b></td><td><b>Feats [%]</b></td><td> </td> 
+    <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
        <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center">1 (0)</td><td style="text-align:center ">35 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">8 (0)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">2 (0)</td><td style="text-align:center ">Link</td><td style="text-align:center ">Link</td>
