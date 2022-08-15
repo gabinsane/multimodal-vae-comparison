@@ -1,35 +1,71 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>Multimodal VAE Base Class &mdash; multimodal-vae-comparison 1.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Multimodal VAE models" href="mmvae_models.html" />
     <link rel="prev" title="VAE class" href="vae.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -37,13 +73,24 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
+<p class="caption"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">Trainer class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
@@ -56,254 +103,328 @@
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>Multimodal VAE Base Class</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="../_sources/code/mmvae_base.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="module-multimodal_compare.models.mmvae_base">
-<span id="multimodal-vae-base-class"></span><span id="mmvae-base"></span><h1>Multimodal VAE Base Class<a class="headerlink" href="#module-multimodal_compare.models.mmvae_base" title="Permalink to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_base.</span></span><span class="sig-name descname"><span class="pre">MMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prior_dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.analyse">
-<span class="sig-name descname"><span class="pre">analyse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.analyse" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+            
+  <div class="section" id="module-multimodal_compare.models.mmvae_base">
+<span id="multimodal-vae-base-class"></span><span id="mmvae-base"></span><h1>Multimodal VAE Base Class<a class="headerlink" href="#module-multimodal_compare.models.mmvae_base" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.mmvae_base.</code><code class="sig-name descname">MMVAE</code><span class="sig-paren">(</span><em class="sig-param">prior_dist</em>, <em class="sig-param">encoders</em>, <em class="sig-param">decoders</em>, <em class="sig-param">data_paths</em>, <em class="sig-param">feature_dims</em>, <em class="sig-param">mod_types</em>, <em class="sig-param">n_latents</em>, <em class="sig-param">test_split</em>, <em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.analyse">
+<code class="sig-name descname">analyse</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.analyse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the KL distances and T-SNE</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> – </p></li>
-<li><p><strong>runPath</strong> – </p></li>
-<li><p><strong>epoch</strong> – </p></li>
-<li><p><strong>labels</strong> – </p></li>
+<li><p><strong>data</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – test data</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – current epoch (to name images)</p></li>
+<li><p><strong>runPath</strong> (<em>str</em>) – path where to save images</p></li>
+<li><p><strong>labels</strong> (<em>list</em>) – labels for the data for labelled T-SNE (optional) - list of strings</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.analyse_data">
-<span class="sig-name descname"><span class="pre">analyse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.analyse_data" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.analyse_data">
+<code class="sig-name descname">analyse_data</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">K</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">labels</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.analyse_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encodes data and plots T-SNE.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> – </p></li>
-<li><p><strong>K</strong> – </p></li>
-<li><p><strong>runPath</strong> – </p></li>
-<li><p><strong>epoch</strong> – </p></li>
-<li><p><strong>labels</strong> – </p></li>
+<li><p><strong>data</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – test data</p></li>
+<li><p><strong>K</strong> (<em>int</em>) – make K samples from the posterior distribution</p></li>
+<li><p><strong>runPath</strong> (<em>str</em>) – path where to save images</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – current epoch (to name images)</p></li>
+<li><p><strong>labels</strong> (<em>list</em>) – labels for the data for labelled T-SNE (optional) - list of strings</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>returns K latent samples for each input</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.generate">
-<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.generate" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.generate">
+<code class="sig-name descname">generate</code><span class="sig-paren">(</span><em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">N=64</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates traversals, currently only implemented for images</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>runPath</strong> – </p></li>
-<li><p><strong>epoch</strong> – </p></li>
-<li><p><strong>N</strong> – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.generate_from_latents">
-<span class="sig-name descname"><span class="pre">generate_from_latents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latents</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.generate_from_latents" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>latents</strong> – </p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.generate_samples">
-<span class="sig-name descname"><span class="pre">generate_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.generate_samples" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>N</strong> – </p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.load_dataset">
-<span class="sig-name descname"><span class="pre">load_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.load_dataset" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>batch_size</strong> – </p></li>
-<li><p><strong>device</strong> – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.process_reconstructions">
-<span class="sig-name descname"><span class="pre">process_reconstructions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons_mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.process_reconstructions" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>recons_mat</strong> – </p></li>
-<li><p><strong>data</strong> – </p></li>
-<li><p><strong>epoch</strong> – </p></li>
-<li><p><strong>runPath</strong> – </p></li>
-<li><p><strong>N</strong> – </p></li>
+<li><p><strong>runPath</strong> (<em>str</em>) – path to model directory where to save output</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – current epoch (to name image)</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – number of traversal samples</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.pz_params">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.pz_params" title="Permalink to this definition"></a></dt>
-<dd><p>return:
-:rtype:</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.reconstruct">
-<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.reconstruct" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.generate_from_latents">
+<code class="sig-name descname">generate_from_latents</code><span class="sig-paren">(</span><em class="sig-param">latents</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.generate_from_latents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstruct outputs from latent vectors</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> – </p>
+<dd class="field-odd"><p><strong>latents</strong> (<em>torch.tensor</em>) – sampled latent vectors</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>output reconstructions</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.reparameterize">
-<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.reparameterize" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.generate_samples">
+<code class="sig-name descname">generate_samples</code><span class="sig-paren">(</span><em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates N samples from the latent space for all modalities</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>N</strong> (<em>int</em>) – number of samples</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of N reconstructions for each modality</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.load_dataset">
+<code class="sig-name descname">load_dataset</code><span class="sig-paren">(</span><em class="sig-param">batch_size</em>, <em class="sig-param">device='cuda'</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.load_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the training and testing dataset</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mu</strong> – </p></li>
-<li><p><strong>logvar</strong> – </p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – batch size</p></li>
+<li><p><strong>device</strong> (<em>str</em>) – device to put data on</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>train and test datasets</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>tuple(torch.DataLoader, torch.DataLoader)</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.seq_collate_fn">
-<span class="sig-name descname"><span class="pre">seq_collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.seq_collate_fn" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.process_reconstructions">
+<code class="sig-name descname">process_reconstructions</code><span class="sig-paren">(</span><em class="sig-param">recons_mat</em>, <em class="sig-param">data</em>, <em class="sig-param">epoch</em>, <em class="sig-param">runPath</em>, <em class="sig-param">N=8</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.process_reconstructions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes the reconstructions based on data type and saves output. &#64;TODO refactor</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>batch</strong> – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recons_mat</strong> (<em>list</em>) – reconstruction matrix</p></li>
+<li><p><strong>data</strong> (<em>list</em>) – original ground truth data</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – current epoch (to name images)</p></li>
+<li><p><strong>runPath</strong> (<em>str</em>) – path where to save images</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – how many samples to save</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.pz_params">
+<em class="property">property </em><code class="sig-name descname">pz_params</code><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.pz_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns parameters of the prior distribution
+:rtype: tuple(nn.Parameter, nn.Parameter)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>return</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.reconstruct">
+<code class="sig-name descname">reconstruct</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstructs the input data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>list</em>) – list of input modalities</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>reconstructions</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.MMVAE.set_likelihood_scaling">
-<span class="sig-name descname"><span class="pre">set_likelihood_scaling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.set_likelihood_scaling" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.reparameterize">
+<code class="sig-name descname">reparameterize</code><span class="sig-paren">(</span><em class="sig-param">mu</em>, <em class="sig-param">logvar</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.reparameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>General reparametrization trick during training</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>feature_dims</strong> – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>torch.tensor</em>) – vector of means</p></li>
+<li><p><strong>logvar</strong> (<em>torch.tensor</em>) – vector of log variances</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>reparametrized samples</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.seq_collate_fn">
+<code class="sig-name descname">seq_collate_fn</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.seq_collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Custom collate function for sequential data (handles masks and padding of various length data)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em>) – batch from torch.DataLoader, a list of the n modalities</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data prepared for training, batches and masks for sequences</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_base.MMVAE.set_likelihood_scaling">
+<code class="sig-name descname">set_likelihood_scaling</code><span class="sig-paren">(</span><em class="sig-param">feature_dims</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.MMVAE.set_likelihood_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates appropriate likelihood scaling based on different data dimensionality of the N modalities</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>feature_dims</strong> (<em>list</em>) – list of all feature dimensionalities as stated in config</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="vae.html" class="btn btn-neutral float-left" title="VAE class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="mmvae_models.html" class="btn btn-neutral float-right" title="Multimodal VAE models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="vae.html" class="btn btn-neutral float-left" title="VAE class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, Gabriela Sejnova.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

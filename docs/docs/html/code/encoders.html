@@ -1,35 +1,71 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>Encoders &mdash; multimodal-vae-comparison 1.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Decoders" href="decoders.html" />
     <link rel="prev" title="Multimodal VAE models" href="mmvae_models.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -37,13 +73,24 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
+<p class="caption"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">Trainer class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
@@ -56,326 +103,408 @@
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>Encoders</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="../_sources/code/encoders.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="encoders">
-<span id="id1"></span><h1>Encoders<a class="headerlink" href="#encoders" title="Permalink to this heading"></a></h1>
-<span class="target" id="module-multimodal_compare.models.encoders"></span><dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Audio">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_Audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Audio.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Args:
-inputs: input tensor of shape: (B, T, C)</p>
+            
+  <div class="section" id="encoders">
+<span id="id1"></span><h1>Encoders<a class="headerlink" href="#encoders" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-multimodal_compare.models.encoders"></span><dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_Audio">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_Audio</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_Audio.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_CNN">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_CNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_CNN.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_CNN">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_CNN</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_CNN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Conv2">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_Conv2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Normal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Conv2" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Conv2.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Conv2.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_FNN">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_FNN</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_FNN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_FNN">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_FNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_FNN.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_MNIST">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_MNIST</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_MNIST.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_MNIST</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_MNISTMoE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_MNISTMoE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">num_hidden_layers=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_MNISTMoE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNISTMoE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_MNISTMoE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE" title="Permalink to this definition"></a></dt>
-<dd><p>Encoder for MNIST image data.as originally implemented in <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNISTMoE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_MNIST_DMVAE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_MNIST_DMVAE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">num_hidden=256</em>, <em class="sig-param">zPrivate_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST_DMVAE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_MNIST_DMVAE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST_DMVAE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST_DMVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_MNIST_DMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_pixels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">784</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zPrivate_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST_DMVAE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST_DMVAE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST_DMVAE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_SVHN">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_SVHN</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_SVHN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_SVHN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_SVHNMoE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_SVHNMoE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_SVHNMoE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHNMoE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_SVHNMoE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE" title="Permalink to this definition"></a></dt>
-<dd><p>Encoder for SVHN image data.as originally implemented in <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHNMoE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_SVHN_DMVAE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_SVHN_DMVAE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">zPrivate_dim=4</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN_DMVAE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_SVHN_DMVAE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN_DMVAE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of private and shared tensors of means, list of private and shared tensors of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(list, list)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN_DMVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_SVHN_DMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zPrivate_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN_DMVAE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN_DMVAE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN_DMVAE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Transformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_Transformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gelu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer" title="Permalink to this definition"></a></dt>
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_Transformer">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_Transformer</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">ff_size=1024</em>, <em class="sig-param">num_layers=8</em>, <em class="sig-param">num_heads=2</em>, <em class="sig-param">dropout=0.1</em>, <em class="sig-param">activation='gelu'</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transformer VAE as implemented in <a class="reference external" href="https://github.com/Mathux/ACTOR">https://github.com/Mathux/ACTOR</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Transformer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
+<dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_Transformer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list of a data batch and boolean masks for the sequences</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_TransformerIMG">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_TransformerIMG</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em>, <em class="sig-param">ff_size=1024</em>, <em class="sig-param">num_layers=8</em>, <em class="sig-param">num_heads=4</em>, <em class="sig-param">dropout=0.1</em>, <em class="sig-param">activation='gelu'</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_TransformerIMG.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list of a data batch and boolean masks for the sequences</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_TxtTransformer">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_TxtTransformer</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_TxtTransformer.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list of a data batch and boolean masks for the sequences</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="multimodal_compare.models.encoders.Enc_VideoGPT">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.encoders.</code><code class="sig-name descname">Enc_VideoGPT</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em>, <em class="sig-param">n_res_layers=4</em>, <em class="sig-param">downsample=(2</em>, <em class="sig-param">4</em>, <em class="sig-param">4)</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.encoders.Enc_VideoGPT.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_TransformerIMG">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_TransformerIMG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gelu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG" title="Permalink to this definition"></a></dt>
-<dd><p>Transformer VAE as implemented in <a class="reference external" href="https://github.com/Mathux/ACTOR">https://github.com/Mathux/ACTOR</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_TransformerIMG.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_TxtTransformer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_TxtTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_TxtTransformer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_VideoGPT">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_VideoGPT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_res_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(2,</span> <span class="pre">4,</span> <span class="pre">4)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_VideoGPT.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-</section>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="mmvae_models.html" class="btn btn-neutral float-left" title="Multimodal VAE models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="decoders.html" class="btn btn-neutral float-right" title="Decoders" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mmvae_models.html" class="btn btn-neutral float-left" title="Multimodal VAE models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, Gabriela Sejnova.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

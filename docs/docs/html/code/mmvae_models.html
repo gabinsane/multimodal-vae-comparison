@@ -1,35 +1,71 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>Multimodal VAE models &mdash; multimodal-vae-comparison 1.0 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-    <script src="../_static/js/theme.js"></script>
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Encoders" href="encoders.html" />
     <link rel="prev" title="Multimodal VAE Base Class" href="mmvae_base.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -37,13 +73,24 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
+<p class="caption"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">Trainer class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
@@ -56,146 +103,279 @@
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>Multimodal VAE models</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="../_sources/code/mmvae_models.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="module-multimodal_compare.models.mmvae_models">
-<span id="multimodal-vae-models"></span><span id="mmvae-models"></span><h1>Multimodal VAE models<a class="headerlink" href="#module-multimodal_compare.models.mmvae_models" title="Permalink to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">DMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE" title="Permalink to this definition"></a></dt>
-<dd><p>Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations <a class="reference external" href="https://github.com/seqam-lab/DMVAE">https://github.com/seqam-lab/DMVAE</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE.apply_poe">
-<span class="sig-name descname"><span class="pre">apply_poe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qz_xs_shared</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.apply_poe" title="Permalink to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>induce zS = encAB(xA,xB) via POE, that is,</dt><dd><dl class="simple">
-<dt>q(zI,zT,zS|xI,xT) := qI(zI|xI) * qT(zT|xT) * q(zS|xI,xT)</dt><dd><p>where q(zS|xI,xT) propto p(zS) * qI(zS|xI) * qT(zS|xT)</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">MOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE" title="Permalink to this definition"></a></dt>
-<dd><p>Multimodal Variaional Autoencoder with Mixture of Experts <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.reconstruct">
-<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.reconstruct" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+            
+  <div class="section" id="module-multimodal_compare.models.mmvae_models">
+<span id="multimodal-vae-models"></span><span id="mmvae-models"></span><h1>Multimodal VAE models<a class="headerlink" href="#module-multimodal_compare.models.mmvae_models" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="multimodal_compare.models.mmvae_models.DMVAE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.mmvae_models.</code><code class="sig-name descname">DMVAE</code><span class="sig-paren">(</span><em class="sig-param">encoders</em>, <em class="sig-param">decoders</em>, <em class="sig-param">data_paths</em>, <em class="sig-param">feature_dims</em>, <em class="sig-param">mod_types</em>, <em class="sig-param">n_latents</em>, <em class="sig-param">test_split</em>, <em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.DMVAE.apply_poe">
+<code class="sig-name descname">apply_poe</code><span class="sig-paren">(</span><em class="sig-param">qz_xs_shared</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.apply_poe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies the product of experts to the shared posteriors</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> – </p>
+<dd class="field-odd"><p><strong>qz_xs_shared</strong> (<em>list</em>) – list of posteriors for all modalities</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>joint means and standard deviations</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">MoPOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE" title="Permalink to this definition"></a></dt>
-<dd><p>Multimodal Variaional Autoencoder with Generalized Multimodal Elbo <a class="reference external" href="https://github.com/thomassutter/MoPoE">https://github.com/thomassutter/MoPoE</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.reparameterize">
-<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.reparameterize" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.DMVAE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">K=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass that takes input data and outputs a list of private and shared posteriors, reconstructions and latent samples</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mu</strong> – </p></li>
-<li><p><strong>logvar</strong> – </p></li>
+<li><p><strong>inputs</strong> (<em>list</em>) – input data, a list of modalities where missing modalities are replaced with None</p></li>
+<li><p><strong>K</strong> (<em>int</em>) – sample K samples from the posterior</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>a list of posterior distributions, a list of reconstructions and latent samples</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>tuple(list, list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.DMVAE.logsumexp">
+<code class="sig-name descname">logsumexp</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">dim=None</em>, <em class="sig-param">keepdim=False</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.logsumexp" title="Permalink to this definition">¶</a></dt>
+<dd><p>A smooth maximum function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.tensor</em>) – input data</p></li>
+<li><p><strong>dim</strong> (<em>int</em>) – dimension</p></li>
+<li><p><strong>keepdim</strong> (<em>bool</em>) – whether to keep shape or squeeze</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">POE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoders</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE" title="Permalink to this definition"></a></dt>
-<dd><p>Multimodal Variaional Autoencoder with Product of Experts <a class="reference external" href="https://github.com/mhw32/multimodal-vae-public">https://github.com/mhw32/multimodal-vae-public</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Although the recipe for forward pass needs to be defined within
-this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
-instead of this since the former takes care of running the
-registered hooks while the latter silently ignores them.</p>
-</div>
+<dl class="class">
+<dt id="multimodal_compare.models.mmvae_models.MOE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.mmvae_models.</code><code class="sig-name descname">MOE</code><span class="sig-paren">(</span><em class="sig-param">encoders</em>, <em class="sig-param">decoders</em>, <em class="sig-param">data_paths</em>, <em class="sig-param">feature_dims</em>, <em class="sig-param">mod_types</em>, <em class="sig-param">n_latents</em>, <em class="sig-param">test_split</em>, <em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.MOE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">K=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list</em>) – input data, a list of modalities where missing modalities are replaced with None</p></li>
+<li><p><strong>K</strong> (<em>int</em>) – sample K samples from the posterior</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of posterior distributions, a list of reconstructions and latent samples</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(list, list, list)</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.prior_expert">
-<span class="sig-name descname"><span class="pre">prior_expert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cuda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.prior_expert" title="Permalink to this definition"></a></dt>
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.MOE.get_missing_modalities">
+<code class="sig-name descname">get_missing_modalities</code><span class="sig-paren">(</span><em class="sig-param">mods</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.get_missing_modalities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get indices of modalities that are missing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mods</strong> (<em>list</em>) – list of modalities</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of indices of missing modalities</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.MOE.reconstruct">
+<code class="sig-name descname">reconstruct</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">N=8</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstruct data for individual experts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>list</em>) – list of input modalities</p></li>
+<li><p><strong>runPath</strong> (<em>str</em>) – path to save data to</p></li>
+<li><p><strong>epoch</strong> (<em>str</em>) – current epoch to name the data</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – how many samples to reconstruct</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="multimodal_compare.models.mmvae_models.MoPOE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.mmvae_models.</code><code class="sig-name descname">MoPOE</code><span class="sig-paren">(</span><em class="sig-param">encoders</em>, <em class="sig-param">decoders</em>, <em class="sig-param">data_paths</em>, <em class="sig-param">feature_dims</em>, <em class="sig-param">mod_types</em>, <em class="sig-param">n_latents</em>, <em class="sig-param">test_split</em>, <em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.MoPOE.infer">
+<code class="sig-name descname">infer</code><span class="sig-paren">(</span><em class="sig-param">inputs</em>, <em class="sig-param">num_samples=None</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.infer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inference module, calculates the joint posterior</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>inputs</strong> (<em>list</em>) – list of input modalities, missing mods are replaced with None</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>joint posterior and individual posteriors</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor, list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.MoPOE.reparameterize">
+<code class="sig-name descname">reparameterize</code><span class="sig-paren">(</span><em class="sig-param">mu</em>, <em class="sig-param">logvar</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.reparameterize" title="Permalink to this definition">¶</a></dt>
+<dd><p>General reparametrization trick during training</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>torch.tensor</em>) – vector of means</p></li>
+<li><p><strong>logvar</strong> (<em>torch.tensor</em>) – vector of log variances</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>reparametrized samples</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="multimodal_compare.models.mmvae_models.POE">
+<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.mmvae_models.</code><code class="sig-name descname">POE</code><span class="sig-paren">(</span><em class="sig-param">encoders</em>, <em class="sig-param">decoders</em>, <em class="sig-param">data_paths</em>, <em class="sig-param">feature_dims</em>, <em class="sig-param">mod_types</em>, <em class="sig-param">n_latents</em>, <em class="sig-param">test_split</em>, <em class="sig-param">batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.POE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">inputs</em>, <em class="sig-param">K=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>list</em>) – input data, a list of modalities where missing modalities are replaced with None</p></li>
+<li><p><strong>K</strong> (<em>int</em>) – sample K samples from the posterior</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of posterior distributions, a list of reconstructions and latent samples</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(list, list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.POE.infer">
+<code class="sig-name descname">infer</code><span class="sig-paren">(</span><em class="sig-param">inputs</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.infer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inference module, calculates the joint posterior</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>inputs</strong> (<em>list</em>) – list of input modalities, missing mods are replaced with None</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>joint posterior and individual posteriors</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor, list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.POE.prior_expert">
+<code class="sig-name descname">prior_expert</code><span class="sig-paren">(</span><em class="sig-param">size</em>, <em class="sig-param">use_cuda=False</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.prior_expert" title="Permalink to this definition">¶</a></dt>
 <dd><p>Universal prior expert. Here we use a spherical
 Gaussian: N(0, 1).</p>
 <dl class="simple">
@@ -206,55 +386,93 @@ Gaussian: N(0, 1).</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.reconstruct">
-<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runPath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.reconstruct" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.POE.product_of_experts">
+<code class="sig-name descname">product_of_experts</code><span class="sig-paren">(</span><em class="sig-param">mu</em>, <em class="sig-param">logvar</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.product_of_experts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculated the product of experts for input data</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>list</em>) – list of means</p></li>
+<li><p><strong>logvar</strong> (<em>list</em>) – list of logvars</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>joint posterior</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="multimodal_compare.models.mmvae_models.POE.reconstruct">
+<code class="sig-name descname">reconstruct</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">N=64</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.reconstruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reconstructs the input data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>list</em>) – list of input modalities</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>reconstructions</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="mmvae_base.html" class="btn btn-neutral float-left" title="Multimodal VAE Base Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="encoders.html" class="btn btn-neutral float-right" title="Encoders" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mmvae_base.html" class="btn btn-neutral float-left" title="Multimodal VAE Base Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, Gabriela Sejnova.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

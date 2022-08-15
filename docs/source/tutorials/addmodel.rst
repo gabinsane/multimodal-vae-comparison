@@ -233,8 +233,14 @@ You can see that we specified "dmvae" as our multimodal mixing model and selecte
 decoder networks. After configuring the experiment, we can run the training:
 
 
-``
-cd multimodal-compare
+.. code-block:: python
 
-python main.py --cfg ./configs/config.yml
-``
+   cd multimodal-compare
+   python main.py --cfg ./configs/config.yml
+
+
+After training, you can calculate the GeBiD acciracy metrics:
+
+.. code-block:: python
+
+   python eval/eval_gebid.py --m /path/to/model/directory --level 4  # specify the level on which the model was trained
