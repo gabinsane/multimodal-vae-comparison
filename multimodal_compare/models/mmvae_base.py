@@ -16,6 +16,28 @@ from .vae import VAE
 
 class MMVAE(nn.Module):
     def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+        """
+        Base class for multimodal VAEs. It handles methods common for all such as sample generation and data visualization
+
+        :param prior_dist: default prior distribution
+        :type prior_dist: torch.dist
+        :param encoders: list of encoder names (strings) as listed in config
+        :type encoders: list
+        :param decoders: list of decoder names (strings) as listed in config
+        :type decoders: list
+        :param data_paths: list of data paths for all modalities
+        :type data_paths: list
+        :param feature_dims: list of modality-specific feature dimensions as listed in config
+        :type feature_dims: list
+        :param mod_types: list of modality types (strings) from config
+        :type mod_types: list
+        :param n_latents: list of latent dimensionalities from config
+        :type n_latents: list
+        :param test_split: fraction of the data to be used for validation
+        :type test_split: float
+        :param batch_size: batch size
+        :type batch_size: int
+        """
         super(MMVAE, self).__init__()
         self.device = None
         self.pz = prior_dist
@@ -34,19 +56,48 @@ class MMVAE(nn.Module):
 
     @property
     def pz_params(self):
+        """
+        :return: returns parameters of the prior distribution
+        :rtype: tuple(nn.Parameter, nn.Parameter)
+        """
         return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
 
     def set_likelihood_scaling(self, feature_dims):
+        """
+        Calculates appropriate likelihood scaling based on different data dimensionality of the N modalities
+
+        :param feature_dims: list of all feature dimensionalities as stated in config
+        :type feature_dims: list
+        """
         max_dimensionality = max([np.prod(x) for x in feature_dims])
         for x in range(len(self.vaes)):
             self.vaes[x].llik_scaling = max_dimensionality / np.prod(feature_dims[x])
 
     def reparameterize(self, mu, logvar):
+        """
+        General reparametrization trick during training
+
+        :param mu: vector of means
+        :type mu: torch.tensor
+        :param logvar: vector of log variances
+        :type logvar: torch.tensor
+        :return: reparametrized samples
+        :rtype: torch.tensor
+        """
+
         std = logvar.mul(0.5).exp_()
         eps = Variable(std.data.new(std.size()).normal_())
         return eps.mul(std).add_(mu)
 
     def generate_from_latents(self, latents):
+        """
+        Reconstruct outputs from latent vectors
+
+        :param latents: sampled latent vectors
+        :type latents: torch.tensor
+        :return: output reconstructions
+        :rtype: list
+        """
         px_zs = []
         for d, vae in enumerate(self.vaes):
                 if "transformer" in self.vaes[d].dec_name.lower():
@@ -56,6 +107,14 @@ class MMVAE(nn.Module):
         return px_zs
 
     def seq_collate_fn(self, batch):
+        """
+        Custom collate function for sequential data (handles masks and padding of various length data)
+
+        :param batch: batch from torch.DataLoader, a list of the n modalities
+        :type batch: list
+        :return: data prepared for training, batches and masks for sequences
+        :rtype: tuple(list, list)
+        """
         new_batch, masks = [], []
         for i, e in enumerate(self.encoders):
             m = [x[i] for x in batch]
@@ -68,6 +127,16 @@ class MMVAE(nn.Module):
         return new_batch, masks
 
     def load_dataset(self, batch_size, device='cuda'):
+        """
+        Loads the training and testing dataset
+
+        :param batch_size: batch size
+        :type batch_size: int
+        :param device: device to put data on
+        :type device: str
+        :return: train and test datasets
+        :rtype: tuple(torch.DataLoader, torch.DataLoader)
+        """
         self.device = device
         trains, tests = [], []
         for x in range(len(self.vaes)):
@@ -83,6 +152,14 @@ class MMVAE(nn.Module):
         return train, test
 
     def generate_samples(self, N):
+        """
+        Generates N samples from the latent space for all modalities
+
+        :param N: number of samples
+        :type N: int
+        :return: list of N reconstructions for each modality
+        :rtype: list
+        """
         self.eval()
         with torch.no_grad():
             data = []
@@ -96,7 +173,18 @@ class MMVAE(nn.Module):
                 data.append(px_z.mean)
         return data  # list of generations---one for each modality
 
+
     def generate(self, runPath, epoch, N=64):
+        """
+        Generates traversals, currently only implemented for images
+
+        :param runPath: path to model directory where to save output
+        :type runPath: str
+        :param epoch: current epoch (to name image)
+        :type epoch: int
+        :param N: number of traversal samples
+        :type N: int
+        """
         l_s = int(math.sqrt(N))
         for i, samples in enumerate(self.generate_samples(N)):
             if "image" in self.vaes[i].mod_type:
@@ -112,7 +200,16 @@ class MMVAE(nn.Module):
                 r_l = np.vstack(rows)
                 cv2.imwrite('{}/visuals/traversals_epoch_{}_m{}.png'.format(runPath, epoch, i), r_l * 255)
 
+
     def reconstruct(self, data):
+        """
+        Reconstructs the input data
+
+        :param data: list of input modalities
+        :type data: list
+        :return: reconstructions
+        :rtype: list
+        """
         self.eval()
         with torch.no_grad():
             if self.modelName != "mopoe":
@@ -124,6 +221,20 @@ class MMVAE(nn.Module):
         return recons
 
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
+        """
+        Processes the reconstructions based on data type and saves output. @TODO refactor
+
+        :param recons_mat: reconstruction matrix
+        :type recons_mat: list
+        :param data: original ground truth data
+        :type data: list
+        :param epoch: current epoch (to name images)
+        :type epoch: int
+        :param runPath: path where to save images
+        :type runPath: str
+        :param N: how many samples to save
+        :type N: int
+        """
         for r, recons_list in enumerate(recons_mat):
             for o, recon in enumerate(recons_list):
                 if self.vaes[o].enc.net_type in ["CNN", "FNN"]:
@@ -184,11 +295,39 @@ class MMVAE(nn.Module):
                                  np.asarray(recon[i].cpu()).astype(np.int16), 16000)
 
 
-    def analyse(self, data, runPath, epoch, labels):
+    def analyse(self, data, runPath, epoch, labels=None):
+        """
+        Plots the KL distances and T-SNE
+
+        :param data: test data
+        :type data: list, torch.tensor
+        :param epoch: current epoch (to name images)
+        :type epoch: int
+        :param runPath: path where to save images
+        :type runPath: str
+        :param labels: labels for the data for labelled T-SNE (optional) - list of strings
+        :type labels: list
+        """
         zsl, kls_df = self.analyse_data(data, K=1, runPath=runPath, epoch=epoch, labels=labels)
         plot_kls_df(kls_df, '{}/visuals/kl_distance_{}.png'.format(runPath, epoch))
 
     def analyse_data(self, data, K, runPath, epoch, labels):
+        """
+        Encodes data and plots T-SNE.
+
+        :param data: test data
+        :type data: list, torch.tensor
+        :param K: make K samples from the posterior distribution
+        :type K: int
+        :param runPath: path where to save images
+        :type runPath: str
+        :param epoch: current epoch (to name images)
+        :type epoch: int
+        :param labels: labels for the data for labelled T-SNE (optional) - list of strings
+        :type labels: list
+        :return: returns K latent samples for each input
+        :rtype: list
+        """
         self.eval()
         with torch.no_grad():
             qz_xs, _, zss = self.forward(data, K=K)

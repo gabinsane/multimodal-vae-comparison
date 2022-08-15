@@ -15,6 +15,9 @@ import math
 
 
 class VaeDataset():
+    """
+
+    """
     def __init__(self, pth, data_dim, network_type, network_name, mod_type):
         """
         Class for dataset loading and adjustments for training
@@ -151,6 +154,32 @@ class VaeDataset():
 class VAE(nn.Module):
     def __init__(self, enc, dec, data_path, feature_dim, mod_type, n_latents, test_split, batch_size,
                  prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
+        """
+        The general unimodal VAE module, can be used separately or in a multimodal VAE
+
+        :param enc: encoder name
+        :type enc: str
+        :param dec: decoder name
+        :type dec: str
+        :param data_path: path to training data
+        :type data_path: str
+        :param feature_dim: data dimensionality as stated in config
+        :type feature_dim: list
+        :param mod_type: modality type (image/text)
+        :type mod_type: str
+        :param n_latents: latent space dimensionality
+        :type n_latents: int
+        :param test_split: fraction of data to be used for testing
+        :type test_split: float
+        :param batch_size: batch size
+        :type batch_size: int
+        :param prior_dist: prior distribution
+        :type prior_dist: torch.dist
+        :param likelihood_dist: likelihood distribution
+        :type likelihood_dist: torch.dist
+        :param post_dist: posterior distribution
+        :type post_dist: torch.dist
+        """
         super(VAE, self).__init__()
         self.device = None
         self.pz = prior_dist
@@ -173,6 +202,16 @@ class VAE(nn.Module):
         self.modelName = 'vae_{}'.format(os.path.basename(data_path))
 
     def get_nework_classes(self, enc, dec):
+       """
+        Instantiates the encoder and decoder networks
+
+       :param enc: encoder name
+       :type enc: str
+       :param dec: decoder name
+       :type dec: str
+       :return: returns encoder and decoder class
+       :rtype: tuple(object, object)
+       """
        assert hasattr(encoders, "Enc_{}".format(enc)), "Did not find encoder {}".format(enc)
        enc_obj = getattr(encoders, "Enc_{}".format(enc))(self.n_latents, self.data_dim)
        assert hasattr(decoders, "Dec_{}".format(dec)), "Did not find decoder {}".format(enc)
@@ -181,15 +220,33 @@ class VAE(nn.Module):
 
     @property
     def pz_params(self):
+        """
+        :return: returns likelihood parameters
+        :rtype: list(torch.tensor, torch.tensor)
+        """
         return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
 
     @property
     def qz_x_params(self):
+        """
+        :return: returns posterior distribution parameters
+        :rtype: list(torch.tensor, torch.tensor)
+        """
         if self._qz_x_params is None:
             raise NameError("qz_x params not initalised yet!")
         return self._qz_x_params
 
     def load_dataset(self, batch_size,device="cuda"):
+        """
+        Loads data and creates DataLoaders
+
+        :param batch_size: batch size
+        :type batch_size: int
+        :param device: device to put data on
+        :type device: str
+        :return: train and test split
+        :rtype: tuple(torch.DataLoader, torch.DataLoader)
+        """
         kwargs = {'num_workers': 1, 'pin_memory': True} if device == "cuda" else {}
         dataset_kwargs = {"data_dim":self.data_dim, "network_name":self.enc_name,
                           "network_type":self.enc.net_type, "mod_type":self.mod_type}
@@ -203,6 +260,16 @@ class VAE(nn.Module):
         return train, test
 
     def forward(self, x, K=1):
+        """
+        Forward pass
+
+        :param x: input modality
+        :type x: torch.tensor
+        :param K: sample K samples from the posterior
+        :type K: int
+        :return: the posterior distribution, the reconstruction and latent samples
+        :rtype:tuple(torch.dist, torch.dist, torch.tensor)
+        """
         self._qz_x_params = self.enc(x)
         qz_x = self.qz_x(*self._qz_x_params)
         zs = qz_x.rsample(torch.Size([K]))
@@ -214,6 +281,7 @@ class VAE(nn.Module):
     def seq_collate_fn(self, batch):
         """
         Collate function for sequential data
+
         :param batch: list with sequential data
         :return: batch, masks
         """
@@ -222,6 +290,14 @@ class VAE(nn.Module):
         return new_batch, masks
 
     def generate(self, runPath, epoch):
+        """
+        Generate traversals, currently only works for images
+
+        :param runPath: path to save data to
+        :type runPath: str
+        :param epoch: current epoch to name data
+        :type epoch: int
+        """
         N, K = 36, 1
         l_s = int(math.sqrt(N))
         samples = self.generate_samples(N, K).cpu().squeeze()
@@ -237,6 +313,18 @@ class VAE(nn.Module):
             cv2.imwrite('{}/visuals/traversals_{:03d}.png'.format(runPath, epoch), r_l*255)
 
     def reconstruct(self, data, runPath, epoch, N=32):
+        """
+        Reconstruct data
+
+        :param data: input modality
+        :type data: torch.tensor
+        :param runPath: path to save data to
+        :type runPath: str
+        :param epoch: current epoch to name data
+        :type epoch: int
+        :param N: How many samples to reconstruct
+        :type N: int
+        """
         recons_mat = self.reconstruct_data(data[:N]).squeeze().cpu()
         if self.mod_type == "image":
             o_l, r_l = [], []
@@ -270,10 +358,30 @@ class VAE(nn.Module):
                          np.asarray(recons_mat[i].cpu()).astype(np.int16), 16000)
 
     def analyse(self, data, runPath, epoch, labels=None):
+        """
+        Plots KL divergences and T-SNE
+
+        :param data: input data
+        :type data: torch.tensor
+        :param runPath: path to save data to
+        :type runPath: str
+        :param epoch: current epoch to name data
+        :type epoch: int
+        :param labels: labels for labelled T-SNE (optional)
+        :type labels: list
+        """
         zsl, kls_df = self.analyse_data(data, K=1, runPath=runPath, epoch=epoch, labels=labels)
         plot_kls_df(kls_df, '{}/visuals/kl_distance_{:03d}.png'.format(runPath, epoch))
 
-    def generate_samples(self, N, K):
+    def generate_samples(self, N):
+        """
+        Generates samples from the latent space
+
+        :param N: How many samples to make
+        :type N: int
+        :return: output reconstructions
+        :rtype: torch.tensor
+        """
         self.eval()
         with torch.no_grad():
             pz = self.pz(*self.pz_params)
@@ -286,6 +394,14 @@ class VAE(nn.Module):
         return data
 
     def reconstruct_data(self, data):
+        """
+        Reconstructs data
+
+        :param data: modality on the input
+        :type data: torch.tensor
+        :return: reconstructed data
+        :rtype: torch.tensor
+        """
         self.eval()
         if self.enc_name not in ["Transformer", "TxtTransformer"]:
             with torch.no_grad():
@@ -302,6 +418,22 @@ class VAE(nn.Module):
         return recon
 
     def analyse_data(self, data, K, runPath, epoch, labels):
+        """
+        Makes latent samples and T-SNE
+
+        :param data: test data
+        :type data: list, torch.tensor
+        :param K: make K samples from the posterior distribution
+        :type K: int
+        :param runPath: path where to save images
+        :type runPath: str
+        :param epoch: current epoch (to name images)
+        :type epoch: int
+        :param labels: labels for the data for labelled T-SNE (optional) - list of strings
+        :type labels: list
+        :return: returns K latent samples for each input
+        :rtype: list
+        """
         self.eval()
         with torch.no_grad():
             qz_x, _, zs = self.forward(data, K=K)

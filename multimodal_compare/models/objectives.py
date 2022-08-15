@@ -7,7 +7,15 @@ from numpy import prod
 
 
 def compute_microbatch_split(x, K):
-    """ Checks if batch needs to be broken down further to fit in memory. """
+    """
+    Checks if batch needs to be broken down further to fit in memory.
+    :param x: input data
+    :type x: torch.tensor
+    :param K: K samples will be made from each distribution
+    :type K: int
+    :return: microbatch split
+    :rtype: torch.tensor
+    """
     B = x[0].size(0) if is_multidata(x) else x.size(0)
     S = sum([1.0 / (K * prod(_x.size()[1:])) for _x in x]) if is_multidata(x) \
         else 1.0 / (K * prod(x.size()[1:]))
@@ -17,6 +25,23 @@ def compute_microbatch_split(x, K):
 
 
 def reshape_for_loss(output, target, ltype, mod_type, K=1):
+    """
+    Reshapes output and target to calculate reconstruction loss
+
+    :param output: output likelihood
+    :type output: torch.dist
+    :param target: target likelihood
+    :type target: torch.dist
+    :param ltype: reconstruction loss
+    :type ltype: str
+    :param mod_type: modality type (image/text)
+    :type mod_type: str
+    :param K: K samples from posterior distribution
+    :type K: int
+    :return: reshaped data
+    :rtype: tuple(torch.tensor, torch.tensor, str)
+    """
+
     if mod_type is not None and "transformer" in mod_type.lower():
         target = torch.stack(target[0]).float() if isinstance(target[0], list) else target[0]
         if ltype != "lprob":
@@ -32,6 +57,22 @@ def reshape_for_loss(output, target, ltype, mod_type, K=1):
 
 
 def loss_fn(output, target, ltype, mod_type=None, K=1):
+    """
+    Calculate reconstruction loss
+
+    :param output: Output data, torch.dist or list
+    :type output:  torch.tensor
+    :param target: Target data
+    :type target: torch.tensor
+    :param ltype: loss type
+    :type ltype: str
+    :param mod_type: modality type (image/text)
+    :type mod_type: str
+    :param K: K samples from posterior distribution
+    :type K: int
+    :return: computed loss
+    :rtype: torch.tensor
+    """
     output, target, ltype = reshape_for_loss(output, target, ltype, mod_type, K)
     bs = target.shape[0]
     if ltype == "bce":
@@ -53,6 +94,16 @@ def loss_fn(output, target, ltype, mod_type=None, K=1):
 
 
 def normalize(target, data=None):
+    """
+    Normalize data between 0 and 1
+
+    :param target: target data
+    :type target: torch.tensor
+    :param data: output data (optional)
+    :type data: torch.tensor
+    :return: normalized data
+    :rtype: list
+    """
     t_size= target.size()
     maxv, minv = torch.max(target.reshape(-1)), torch.min(target.view(-1))
     output = [torch.div(torch.add(target.reshape(-1), torch.abs(minv)), (maxv-minv)).reshape(t_size)]
@@ -64,7 +115,16 @@ def normalize(target, data=None):
 
 
 def calc_klds(latent_dists, model):
-    """Calculated th KL-divergence between two distributions"""
+    """
+    Calculated th KL-divergence between the distribution and posterior dist.
+
+    :param latent_dists: list of the two distributions
+    :type latent_dists: list
+    :param model: model object
+    :type model: object
+    :return: list of klds
+    :rtype: list
+    """
     klds = []
     for d in latent_dists:
         klds.append(kl_divergence(d, model.pz(*model.pz_params)))
@@ -72,7 +132,18 @@ def calc_klds(latent_dists, model):
 
 
 def elbo(model, x, ltype="lprob"):
-    """Computes E_{p(x)}[ELBO] """
+    """
+    Computes unimodal ELBO E_{p(x)}[ELBO]
+
+    :param model: model object
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
     qz_x, px_z, _ = model(x)
     lpx_z = loss_fn(px_z, x, ltype=ltype, mod_type=model.dec_name)
     kld = kl_divergence(qz_x, model.pz(*model.pz_params))
@@ -80,7 +151,17 @@ def elbo(model, x, ltype="lprob"):
 
 
 def multimodal_elbo_moe(model, x, ltype="lprob"):
-    """Computes ELBO for MoE VAE as in https://github.com/iffsid/mmvae"""
+    """Computes ELBO for MoE VAE as in https://github.com/iffsid/mmvae
+
+    :param model: model object
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
     qz_xs, px_zs, zss = model(x)
     lpx_zs, klds = [], []
     for r, qz_x in enumerate(qz_xs):
@@ -102,7 +183,17 @@ def multimodal_elbo_moe(model, x, ltype="lprob"):
 
 
 def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
-    """Computes GENERALIZED MULTIMODAL ELBO https://arxiv.org/pdf/2105.02470.pdf """
+    """Computes GENERALIZED MULTIMODAL ELBO https://arxiv.org/pdf/2105.02470.pdf
+
+    :param model: model object
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
     qz_xs, px_zs, zss, single_latents = model(x)
     lpx_zs, klds = [], []
     uni_mus, uni_logvars = list(single_latents[0][:-1].squeeze(1)), list(single_latents[1][:-1].squeeze(1))
@@ -121,7 +212,18 @@ def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
 
 
 def multimodal_elbo_poe(model, x,  ltype="lprob"):
-    """Subsampled ELBO with the POE approach as used in https://github.com/mhw32/multimodal-vae-public"""
+    """Subsampled ELBO with the POE approach as used in https://github.com/mhw32/multimodal-vae-public
+
+    :param model: model object
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
+
     lpx_zs, klds, elbos = [[] for _ in range(len(x))], [], []
     for m in range(len(x) + 1):
         mods = [None for _ in range(len(x))]
@@ -134,7 +236,7 @@ def multimodal_elbo_poe(model, x,  ltype="lprob"):
         klds.append(kld.sum(-1))
         loc_lpx_z = []
         for d in range(len(px_zs)):
-            lpx_z = loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling
+            lpx_z = (loss_fn(px_zs[d], x[d], ltype=ltype, mod_type=model.vaes[d].dec_name) * model.vaes[d].llik_scaling).sum(-1)
             loc_lpx_z.append(lpx_z)
             if d == m:
                 lpx_zs[m].append(lpx_z)
@@ -144,8 +246,21 @@ def multimodal_elbo_poe(model, x,  ltype="lprob"):
     return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 def iwae(model, x,  ltype="lprob", beta=1, K=20):
-    """Computes an importance-weighted ELBO estimate for log p_\theta(x)
-    Iterates over the batch as necessary. Source: https://github.com/iffsid/mmvae
+    """
+    Computes an importance-weighted ELBO estimate for log p_\theta(x) Source: https://github.com/iffsid/mmvae
+
+    :param model: VAE class
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :param beta: beta parameter
+    :type beta: int
+    :param K: number of samples from posterior
+    :type K: int
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
     """
     qz_x, px_z, zs = model(x, K)
     lpz = model.pz(*model.pz_params).log_prob(zs).sum(-1)
@@ -156,7 +271,19 @@ def iwae(model, x,  ltype="lprob", beta=1, K=20):
 
 
 def multimodal_iwae_moe(model, x, K=1, ltype="lprob"):
-    """IWAE estimate for log p_\theta(x) for multi-modal vae -- fully vectorised  Source: https://github.com/iffsid/mmvae"""
+    """IWAE estimate for log p_\theta(x) for multi-modal vae -- fully vectorised  Source: https://github.com/iffsid/mmvae
+
+    :param model: multimodal VAE class
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :param K: number of samples from posterior
+    :type K: int
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
     qz_xs, px_zs, zss = model(x, K)
     lws = []
     for r, qz_x in enumerate(qz_xs):
@@ -172,10 +299,22 @@ def multimodal_iwae_moe(model, x, K=1, ltype="lprob"):
 
 
 def dreg(model, x, K, ltype="lprob"):
-    """DREG estimate for log p_\theta(x) -- fully vectorised. Source: https://github.com/iffsid/mmvae"""
+    """DREG estimate for log p_\theta(x) -- fully vectorised. Source: https://github.com/iffsid/mmvae
+
+    :param model: VAE class
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :param K: number of samples from posterior
+    :type K: int
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
     _, px_z, zs = model(x, K)
     lpz = model.pz(*model.pz_params).log_prob(zs).sum(-1)
-    lpx_z = px_z.log_prob(x).view(*px_z.batch_shape[:2], -1) * model.llik_scaling
+    lpx_z = loss_fn(px_z, x, ltype=ltype, mod_type=model.dec_name, K=K).view(*px_z.batch_shape[:1], -1) * model.llik_scaling
     qz_x = model.qz_x(*[p.detach() for p in model.qz_x_params])  # stop-grad for \phi
     lqz_x = qz_x.log_prob(zs).sum(-1)
     lw = lpz + lpx_z.sum(-1) - lqz_x
@@ -183,9 +322,20 @@ def dreg(model, x, K, ltype="lprob"):
 
 
 def _m_dreg_looser(model, x, ltype, K=1):
-    """DERG estimate for log p_\theta(x) for multi-modal vae -- fully vectorised
-    This version is the looser bound---with the average over modalities outside the log
+    """DERG estimate for log p_\theta(x) for multi-modal vae - fully vectorised
+    This version is the looser bound with the average over modalities outside the log
     Source: https://github.com/iffsid/mmvae
+
+    :param model: multimodal VAE class
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :param K: number of samples from posterior
+    :type K: int
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
     """
     qz_xs, px_zs, zss = model(x, K)
     qz_xs_ = [vae.qz_x(*[p.detach() for p in vae.qz_x_params]) for vae in model.vaes]
@@ -208,6 +358,17 @@ def multimodal_dreg_looser_moe(model, x, K=30, ltype="lprob"):
     """Computes dreg estimate for log p_\theta(x) for multi-modal vae
     This version is the looser bound---with the average over modalities outside the log
     Source: https://github.com/iffsid/mmvae
+
+    :param model: multimodal VAE class
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :param K: number of samples from posterior
+    :type K: int
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
     """
     lw, zss = _m_dreg_looser(model, x, ltype, K)
     with torch.no_grad():
@@ -218,7 +379,20 @@ def multimodal_dreg_looser_moe(model, x, K=30, ltype="lprob"):
 
 
 def multimodal_elbo_dmvae(model, x, K=1, ltype="lprob"):
-    "Objective for the DMVAE model. Source: https://github.com/seqam-lab/DMVAE"
+    """
+    Objective for the DMVAE model. Source: https://github.com/seqam-lab/
+    
+    :param model: VAE class
+    :type model: object
+    :param x: input batch
+    :type x: torch.tensor
+    :param ltype: reconstruction loss term
+    :type ltype: str
+    :param K: number of samples from posterior
+    :type K: int
+    :return: loss, kl divergence, reconstruction loss
+    :rtype: tuple(torch.tensor, torch.tensor, list)
+    """
     qz_xs, px_zs, zss = model(x)
     recons = []
     kls = []
