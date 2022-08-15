@@ -113,11 +113,19 @@ spectrum of parameters that can be adjusted, run:
 
 To automatically run the whole set of experiments located in one folder, launch:
 
-```./iterate_configs.sh "./configs/my_experiment/*" ```
+```./iterate_configs.sh "./configs/my_experiment/" ```
 
-We provide sets of configs for the experiments reported in the paper. These are located in _./configs/batch_size_exp_
-and  _./configs/latent_dim_exp_
+We provide sets of configs for the experiments reported in the paper. These are located in _./configs/reproduce_paper/batch_size_experiment_
+and  _./configs/reproduce_paper/latent_dim_experiment_. You can run any subset of these using the same bash script. E.g., to reproduce all reported experiments,
+run:
 
+```./iterate_configs.sh "./configs/reproduce_paper/" ```
+(This is 550 experiments)
+
+Or, to reproduce for example only the latent dimensionality experiments for GeBiD level 5 and the MMVAE model, run:
+
+```./iterate_configs.sh "./configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mmvae"```
+(This is 40 experiments)
 
 ## Evaluation
 
@@ -138,7 +146,7 @@ for Level 1, run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-./iterate_configs.sh "./configs/gebid_benchmark/level_1/*"
+./iterate_configs.sh "./configs/gebid_benchmark/level_1/"
 ```
  
  All experiments will be run with 5 seeds, the results here are reported as a mean over those seeds.
