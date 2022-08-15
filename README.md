@@ -134,6 +134,11 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # downlo
 unzip cub.zip -d ./data/
 python main.py --cfg configs/config_cub.yml
 ```
+
+
+[How to train on your own dataset](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/adddataset.html)
+
+
 ## Evaluation
 
 After training, you will find various visualizations of the training progress in the _./visuals_ folder of your experiment.
@@ -163,6 +168,10 @@ use only the part of the class name following after the underscore (e.g. CNN for
 The objectives and reconstruction loss terms are defined in objectives.py. By default, when you use more than one modality,
 the model will use the objective named "multimodal_" together with the objective and model defined in the config (e.g., for elbo objective and poe model, the objective _multimodal_elbo_poe_ will be used.).
 If you wish to add new objectives, keep the naming consistent with these rules so that it can be easily configured. 
+
+
+[Step-by-step tutorial on how to add a new model](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/addmodel.html)
+
 
 
 ## License
