@@ -1,0 +1,32 @@
+batch_size: 32
+epochs: 600
+exp_name: gebidlevel5_mmvae_38
+labels: null
+loss: lprob
+lr: 1e-4
+mixing: moe
+modality_1:
+  decoder: CNN
+  encoder: CNN
+  feature_dim:
+  - 64
+  - 64
+  - 3
+  mod_type: image
+  path: ./data/level5/image
+modality_2:
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  feature_dim:
+  - 52
+  - 27
+  - 1
+  mod_type: text
+  path: ./data/level5/attrs.pkl
+n_latents: 128
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 4
+test_split: 0.1
+viz_freq: 20
