@@ -141,12 +141,12 @@ python eval/eval_gebid.py --m /path/to/model/directory --level 4  # specify the 
 ## GeBiD leaderboard
 
 Here we show a leaderboard of the state-of-the-art models evaluated on our GeBiD benchmark dataset. The experiments can be 
-reproduced by running the configs specified in _./configs/gebid_benchmark_. For example, to reproduce the leaderboard results
-for Level 1, run:
+reproduced by running the configs specified in the Config column (those are linked to a corresponding subfoder in ./configs/reproduce_paper which contains the 5 seeds). For example, to reproduce the leaderboard results
+for GeBiD Level 1 and the MVAE model, run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-./iterate_configs.sh "./configs/gebid_benchmark/level_1/"
+./iterate_configs.sh "./configs/reproduce_paper/latent_dim_experiment/gebidlevel1/mvae/64/bce/"
 ```
  
  All experiments will be run with 5 seeds, the results here are reported as a mean over those seeds.
