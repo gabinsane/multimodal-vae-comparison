@@ -35,13 +35,14 @@ evaluation of the generated samples. For more info, see below.
 
 This code was tested with:
 
-- Python version 3.6.8
-- PyTorch version 1.10.1
-- CUDA version 10.2
+- Python version 3.8.13
+- PyTorch version 1.12.1
+- CUDA version 11.6
 
 We recommend to install the conda enviroment as follows:
 
 ```
+conda install mamba -n base -c conda-forge
 mamba env create -f environment.yml
 conda activate multivae                 
 ```
