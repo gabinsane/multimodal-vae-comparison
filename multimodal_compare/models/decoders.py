@@ -1,12 +1,16 @@
-import torch, numpy as np
+import math
+
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from numpy import prod
-from models.nn_modules import PositionalEncoding, DeconvNet
+
+from models.nn_modules import DeconvNet
+from models.nn_modules import PositionalEncoding, AttentionResidualBlock, \
+    SamePadConvTranspose3d
 from utils import Constants
-import math
-from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock,\
-    SamePadConvTranspose3d, DataGeneratorText
+
 
 class Dec_CNN(nn.Module):
     def __init__(self, latent_dim, data_dim):
@@ -74,6 +78,7 @@ class Dec_CNN(nn.Module):
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d.squeeze().reshape(-1, *self.datadim), torch.tensor(0.75).to(z.device)
 
+
 class Dec_SVHN(nn.Module):
     def __init__(self, latent_dim, data_dim):
         """
@@ -95,7 +100,6 @@ class Dec_SVHN(nn.Module):
         self.conv4 = nn.ConvTranspose2d(32, 3, kernel_size=4, stride=2, padding=1, dilation=1)
         self.relu = nn.ReLU()
 
-
     def forward(self, z):
         """
         Forward pass
@@ -115,11 +119,13 @@ class Dec_SVHN(nn.Module):
         x_hat = self.relu(x_hat)
         x_hat = self.conv3(x_hat)
         x_hat = self.relu(x_hat)
-        d = torch.sigmoid(self.conv4(x_hat)).permute(0,2,3,1)
+        d = torch.sigmoid(self.conv4(x_hat)).permute(0, 2, 3, 1)
         return d.squeeze(), torch.tensor(0.75).to(z.device)
+
 
 def extra_hidden_layer(hidden_dim):
     return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
+
 
 class Dec_MNISTMoE(nn.Module):
     def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
@@ -154,7 +160,7 @@ class Dec_MNISTMoE(nn.Module):
         :rtype: tuple(torch.tensor, torch.tensor)
         """
         p = self.fc3(self.dec(z))
-        d = torch.sigmoid(p.view(*z.size()[:-1], *[1,28,28]))  # reshape data
+        d = torch.sigmoid(p.view(*z.size()[:-1], *[1, 28, 28]))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
@@ -176,7 +182,8 @@ class Dec_MNIST(nn.Module):
         self.hidden_dim = 400
         modules = []
         modules.append(nn.Sequential(nn.Linear(latent_dim, self.hidden_dim), nn.ReLU(True)))
-        modules.extend([nn.Sequential(nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(True)) for _ in range(2 - 1)])
+        modules.extend(
+            [nn.Sequential(nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(True)) for _ in range(2 - 1)])
         self.dec = nn.Sequential(*modules)
         self.fc3 = nn.Linear(self.hidden_dim, 784)
         self.relu = nn.ReLU()
@@ -195,7 +202,7 @@ class Dec_MNIST(nn.Module):
         x_hat = self.fc3(x_hat)
         x_hat = self.sigmoid(x_hat)
         d = x_hat.view(*z.size()[:-1], *self.datadim).squeeze(0)
-        d = d.permute(0,3,1,2) if len(d.shape) == 4 else d.permute(0,1,4,2,3)
+        d = d.permute(0, 3, 1, 2) if len(d.shape) == 4 else d.permute(0, 1, 4, 2, 3)
         return d.squeeze(0), torch.tensor(0.75).to(z.device)
 
 
@@ -365,6 +372,7 @@ class Dec_FNN(nn.Module):
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
+
 class Dec_Audio(nn.Module):
     def __init__(self, latent_dim, data_dim=1):
         """
@@ -381,8 +389,8 @@ class Dec_Audio(nn.Module):
         self.reshape = (64, 3)
         self.data_dim = data_dim
         self.lin1 = torch.nn.DataParallel(nn.Linear(latent_dim, np.product(self.reshape)))
-        self.TCN = DeconvNet(self.reshape[0], [64,96,96,128,128], dropout=0)
-        self.output_layer = nn.Sequential(nn.Linear(128*3, np.prod(data_dim)))
+        self.TCN = DeconvNet(self.reshape[0], [64, 96, 96, 128, 128], dropout=0)
+        self.output_layer = nn.Sequential(nn.Linear(128 * 3, np.prod(data_dim)))
 
     def forward(self, z):
         """
@@ -395,7 +403,7 @@ class Dec_Audio(nn.Module):
         """
         out = torch.relu(self.lin1(z))
         output = self.TCN(out.float().reshape(-1, *self.reshape))
-        x = output.reshape(-1, 128*3)
+        x = output.reshape(-1, 128 * 3)
         output = self.output_layer(x)
         return output.reshape(-1, *self.data_dim), torch.tensor(0.75).to(z.device)
 
@@ -432,32 +440,34 @@ class Dec_TransformerIMG(nn.Module):
         # iteration over image sequence
         self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.latent_dim, self.dropout))
         seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.latent_dim,
-                                                          nhead=self.num_heads,
-                                                          dim_feedforward=self.ff_size,
-                                                          dropout=self.dropout,
-                                                          activation=activation))
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=activation))
         self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
-                                                     num_layers=self.num_layers))
+                                                                           num_layers=self.num_layers))
         # deconvolution to images
         hid_channels = 64
         kernel_size = 4
         cnn_kwargs = dict(stride=2, padding=1)
         self.reshape = (hid_channels, kernel_size, kernel_size)
         self.lin = torch.nn.DataParallel(nn.Linear(self.latent_dim, np.product(self.reshape)))
-        self.deconvolve = torch.nn.DataParallel(torch.nn.Sequential(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU(),
-                                                nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU(),
-                                                nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU(),
-                                                nn.ConvTranspose2d(hid_channels, 3,  kernel_size, **cnn_kwargs),
-                                                torch.nn.Sigmoid()))
+        self.deconvolve = torch.nn.DataParallel(
+            torch.nn.Sequential(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU(),
+                                nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU(),
+                                nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU(),
+                                nn.ConvTranspose2d(hid_channels, 3, kernel_size, **cnn_kwargs),
+                                torch.nn.Sigmoid()))
+
     def forward(self, batch):
         """
         Forward pass
 
-        :param z: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
-        :type z: list, torch.tensor
+        :param batch: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
+        :type batch: list, torch.tensor
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
@@ -468,7 +478,8 @@ class Dec_TransformerIMG(nn.Module):
             mask = None
         latent_dim = z.shape[-1]
         bs = z.shape[1]
-        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
+        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(
+            z.device)
         timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
@@ -477,7 +488,7 @@ class Dec_TransformerIMG(nn.Module):
         for i in range(output.shape[0]):
             im = self.lin(output[i])
             images.append(self.deconvolve(im.view(-1, *self.reshape)))
-        output = torch.stack(images).permute(1,0,3,4,2)
+        output = torch.stack(images).permute(1, 0, 3, 4, 2)
         return output.to(z.device), torch.tensor(0.75).to(z.device)
 
 
@@ -486,12 +497,9 @@ class Dec_VideoGPT(nn.Module):
         """
         Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
 
-        :param latent_dim: latent vector dimensionality
-        :type latent_dim: int
-        :param data_dim: dimensions of the data (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images)
-        :type data_dim: list
-        :param n_res_layers: number of ResNet layers
-        :type n_res_layers: int
+        :param latent_dim: latent vector dimensionality :type latent_dim: int :param data_dim: dimensions of the data
+        (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images) :type data_dim: list :param
+        n_res_layers: number of ResNet layers :type n_res_layers: int
         """
         super(Dec_VideoGPT, self).__init__()
         self.net_type = "3DCNN"
@@ -510,14 +518,14 @@ class Dec_VideoGPT(nn.Module):
             convt = SamePadConvTranspose3d(latent_dim, out_channels, 4, stride=us)
             self.convts.append(convt)
             n_times_upsample -= 1
-        self.upsample = torch.nn.DataParallel(nn.Linear(latent_dim, latent_dim*16*16*3))
+        self.upsample = torch.nn.DataParallel(nn.Linear(latent_dim, latent_dim * 16 * 16 * 3))
 
     def forward(self, x):
         """
         Forward pass
 
-        :param z: sampled latent vectors z
-        :type z: torch.tensor
+        :param x: sampled latent vectors z
+        :type x: torch.tensor
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
@@ -570,20 +578,20 @@ class Dec_Transformer(nn.Module):
         self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.latent_dim, self.dropout))
 
         seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.latent_dim,
-                                                          nhead=self.num_heads,
-                                                          dim_feedforward=self.ff_size,
-                                                          dropout=self.dropout,
-                                                          activation=activation))
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=activation))
         self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
-                                                     num_layers=self.num_layers))
+                                                                           num_layers=self.num_layers))
         self.finallayer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.input_feats))
 
     def forward(self, batch):
         """
         Forward pass
 
-        :param z: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
-        :type z: list, torch.tensor
+        :param batch: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
+        :type batch: list, torch.tensor
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
@@ -593,7 +601,7 @@ class Dec_Transformer(nn.Module):
         bs = z.shape[1]
         if mask is not None:
             if bs > mask.shape[0]:
-                mask = mask.repeat(int(bs/mask.shape[0]), 1)
+                mask = mask.repeat(int(bs / mask.shape[0]), 1)
             mask = mask.to(z.device)
         else:
             mask = torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
@@ -601,7 +609,7 @@ class Dec_Transformer(nn.Module):
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
                                       tgt_key_padding_mask=~mask)
-        output = self.finallayer(output).reshape(mask.shape[1], bs, self.njoints,  self.nfeats)
+        output = self.finallayer(output).reshape(mask.shape[1], bs, self.njoints, self.nfeats)
         # zero for padded area
         output[~mask.T] = 0
         output = output.permute(1, 0, 2, 3)
@@ -618,7 +626,7 @@ class Dec_TxtTransformer(Dec_Transformer):
         :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4,)
+        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4, )
         self.net_type = "Transformer"
         self.softmax = nn.Softmax(dim=2)
         self.sigmoid = nn.Sigmoid()
@@ -633,8 +641,8 @@ class Dec_TxtTransformer(Dec_Transformer):
         """
         Forward pass
 
-        :param z: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
-        :type z: list, torch.tensor
+        :param batch: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
+        :type batch: list, torch.tensor
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
@@ -644,7 +652,7 @@ class Dec_TxtTransformer(Dec_Transformer):
         bs = z.shape[1]
         if mask is not None:
             if bs > mask.shape[0]:
-                mask = mask.repeat(int(bs/mask.shape[0]), 1)
+                mask = mask.repeat(int(bs / mask.shape[0]), 1)
             mask = mask.to(z.device)
         else:
             mask = torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
@@ -652,7 +660,8 @@ class Dec_TxtTransformer(Dec_Transformer):
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
                                       tgt_key_padding_mask=~mask)
-        output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints,  self.nfeats)).squeeze(-1)
+        output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints, self.nfeats)).squeeze(
+            -1)
         # zero for padded area
-        output = output.permute(1,0,2) * mask.unsqueeze(dim=-1).repeat(1,1,self.njoints).float()
+        output = output.permute(1, 0, 2) * mask.unsqueeze(dim=-1).repeat(1, 1, self.njoints).float()
         return output.to(z.device), torch.tensor(0.75).to(z.device)

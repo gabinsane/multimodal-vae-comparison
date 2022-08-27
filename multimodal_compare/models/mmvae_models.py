@@ -30,7 +30,8 @@ class MOE(MMVAE):
         :type batch_size: int
         """
         self.modelName = 'moe'
-        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size)
+        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents,
+                                  test_split, batch_size)
 
     def get_missing_modalities(self, mods):
         """
@@ -74,7 +75,7 @@ class MOE(MMVAE):
             for d, vae in enumerate(self.vaes):
                 if e != d:  # fill-in off-diagonal
                     if "transformer" in self.vaes[d].dec_name.lower():
-                        px_zs[e][d] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None] ))
+                        px_zs[e][d] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None]))
                     else:
                         px_zs[e][d] = vae.px_z(*vae.dec(zs))
         return qz_xs, px_zs, zss
@@ -119,7 +120,8 @@ class POE(MMVAE):
         :type batch_size: int
         """
         self.modelName = 'poe'
-        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size)
+        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents,
+                                  test_split, batch_size)
         self.n_latents = n_latents
 
     def forward(self, inputs, K=1):
@@ -142,14 +144,15 @@ class POE(MMVAE):
             z = qz_x.rsample(torch.Size([1]))
         for ind, vae in enumerate(self.vaes):
             if "transformer" in vae.dec_name.lower():
-               z_dec = [z, inputs[ind][1]] if inputs[ind] is not None else [z, None]
-            else: z_dec = z
+                z_dec = [z, inputs[ind][1]] if inputs[ind] is not None else [z, None]
+            else:
+                z_dec = z
             recons.append(vae.px_z(*vae.dec(z_dec)))
         if self.modelName == "mopoe":
             return qz_x, recons, [z], single_params
         return qz_x, recons, [z]
 
-    def infer(self,inputs):
+    def infer(self, inputs):
         """
         Inference module, calculates the joint posterior
 
@@ -159,12 +162,13 @@ class POE(MMVAE):
         :rtype: tuple(torch.tensor, torch.tensor, list, list)
         """
         id = 0 if inputs[0] is not None else 1
-        batch_size = len(inputs[id]) if len(inputs[id]) is not 2 else len(inputs[id][0])
+        batch_size = len(inputs[id]) if len(inputs[id]) != 2 else len(inputs[id][0])
         # initialize the universal prior expert
         mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
         for ix, modality in enumerate(inputs):
             if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
+                mod_mu, mod_logvar = self.vaes[ix].enc(
+                    modality.to("cuda") if not isinstance(modality, list) else modality)
                 mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
                 logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
         mu_before, logvar_before = mu, logvar
@@ -172,7 +176,7 @@ class POE(MMVAE):
         mu, logvar = self.product_of_experts(mu, logvar)
         return mu, logvar, [mu_before[1:], logvar_before[1:]]
 
-    def product_of_experts(self, mu, logvar):
+    def product_of_experts(mu, logvar):
         """
         Calculated the product of experts for input data
 
@@ -216,8 +220,9 @@ class POE(MMVAE):
             recons_mat.append(rec)
         self.process_reconstructions(recons_mat, data, epoch, runPath)
 
+
 class MoPOE(POE):
-    def __init__(self, encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size):
+    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
         """
         Multimodal Variaional Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE
 
@@ -239,7 +244,8 @@ class MoPOE(POE):
         :type batch_size: int
         """
         self.modelName = 'mopoe'
-        super(MoPOE, self).__init__(encoders, decoders, data_paths,  feature_dims, mod_types, n_latents, test_split, batch_size)
+        super(MoPOE, self).__init__(encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split,
+                                    batch_size)
         self.n_latents = n_latents
         self.modelName = "mopoe"
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
@@ -248,7 +254,8 @@ class MoPOE(POE):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
         for ix, modality in enumerate(inputs):
             if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
+                mod_mu, mod_logvar = self.vaes[ix].enc(
+                    modality.to("cuda") if not isinstance(modality, list) else modality)
                 mu[ix] = mod_mu.unsqueeze(0)
                 logvar[ix] = mod_logvar.unsqueeze(0)
         mus, logvars = torch.Tensor().cuda(), torch.Tensor().cuda()
@@ -276,7 +283,6 @@ class MoPOE(POE):
         std = logvar.mul(0.5).exp_()
         eps = Variable(std.data.new(std.size()).normal_())
         return eps.mul(std).add_(mu)
-
 
     def reweight_weights(self, w):
         return w / w.sum()
@@ -338,10 +344,10 @@ class DMVAE(MMVAE):
         :type batch_size: int
         """
         self.modelName = 'dmvae'
-        super(DMVAE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size)
+        super(DMVAE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents,
+                                    test_split, batch_size)
         self.n_latents = n_latents
         self.qz_x = dist.Normal
-
 
     def forward(self, x, K=1):
         """
@@ -354,7 +360,7 @@ class DMVAE(MMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        qz_xs_shared, px_zs= [], [[None for _ in range(len(self.vaes)+1)] for _ in range(len(self.vaes))]
+        qz_xs_shared, px_zs = [], [[None for _ in range(len(self.vaes) + 1)] for _ in range(len(self.vaes))]
         qz_xs_private = [None for _ in range(len(self.vaes))]
         # initialise cross-modal matrix
         for m, vae in enumerate(self.vaes):
@@ -368,16 +374,15 @@ class DMVAE(MMVAE):
         zss = []
         for d, vae in enumerate(self.vaes):
             for e, dist in enumerate(all_shared):
-                    zs_shared = dist.rsample(torch.Size([K]))
-                    zs_private = qz_xs_private[d].rsample(torch.Size([K]))
-                    zs = torch.cat([zs_private, zs_shared], -1)[0]
-                    zss.append(zs)
-                    if "transformer" in vae.dec_name.lower():
-                        px_zs[d][e] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None]))
-                    else:
-                        px_zs[d][e] = vae.px_z(*vae.dec(zs))
+                zs_shared = dist.rsample(torch.Size([K]))
+                zs_private = qz_xs_private[d].rsample(torch.Size([K]))
+                zs = torch.cat([zs_private, zs_shared], -1)[0]
+                zss.append(zs)
+                if "transformer" in vae.dec_name.lower():
+                    px_zs[d][e] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None]))
+                else:
+                    px_zs[d][e] = vae.px_z(*vae.dec(zs))
         return qz_xs_private + all_shared, px_zs, zss
-
 
     def apply_poe(self, qz_xs_shared):
         """
@@ -398,7 +403,6 @@ class DMVAE(MMVAE):
             muS += dist.loc / (dist.scale ** 2 + Constants.eps)
         muS = muS * (stdS ** 2)
         return muS, stdS
-
 
     def logsumexp(self, x, dim=None, keepdim=False):
         """

@@ -1,6 +1,8 @@
-import torch, numpy as np
+import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class SamePadConvTranspose3d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, bias=True):
@@ -12,7 +14,7 @@ class SamePadConvTranspose3d(nn.Module):
 
         total_pad = tuple([k - s for k, s in zip(kernel_size, stride)])
         pad_input = []
-        for p in total_pad[::-1]: # reverse since F.pad starts from last dim
+        for p in total_pad[::-1]:  # reverse since F.pad starts from last dim
             pad_input.append((p // 2 + p % 2, p // 2))
         pad_input = sum(pad_input, tuple())
         self.pad_input = pad_input
@@ -35,22 +37,21 @@ def make_res_block_encoder_feature_compressor(channels_in, channels_out, a_val=2
                                              padding=0,
                                              dilation=1),
                                    nn.BatchNorm1d(channels_out))
-    layers = []
-    layers.append(ResidualBlock1dConv(channels_in, channels_out, kernelsize=1, stride=1, padding=0, dilation=1,
-                                      downsample=downsample, a=a_val, b=b_val))
+    layers = [ResidualBlock1dConv(channels_in, channels_out, kernelsize=1, stride=1, padding=0, dilation=1,
+                                  downsample=downsample, a=a_val, b=b_val)]
     return nn.Sequential(*layers)
 
 
 def make_layers_resnet_encoder_feature_compressor(start_channels, end_channels, a=2, b=0.3, l=1):
     layers = []
-    num_compr_layers = int((1/float(l))*np.floor(np.log(start_channels / float(end_channels))))
+    num_compr_layers = int((1 / float(l)) * np.floor(np.log(start_channels / float(end_channels))))
     for k in range(0, num_compr_layers):
-        in_channels = np.round(start_channels/float(2 ** (l*k))).astype(int)
-        out_channels = np.round(start_channels/float(2 ** (l*(k+1)))).astype(int)
+        in_channels = np.round(start_channels / float(2 ** (l * k))).astype(int)
+        out_channels = np.round(start_channels / float(2 ** (l * (k + 1)))).astype(int)
         resblock = make_res_block_encoder_feature_compressor(in_channels, out_channels, a_val=a, b_val=b)
         layers.append(resblock)
 
-    out_channels = np.round(start_channels/float(2 ** (l*num_compr_layers))).astype(int)
+    out_channels = np.round(start_channels / float(2 ** (l * num_compr_layers))).astype(int)
     if out_channels > end_channels:
         resblock = make_res_block_encoder_feature_compressor(out_channels, end_channels, a_val=a, b_val=b)
         layers.append(resblock)
@@ -63,17 +64,23 @@ class ResidualFeatureCompressor(nn.Module):
         self.a = a
         self.b = b
         self.compression_power = compression_power
-        self.style_mu = make_res_block_encoder_feature_compressor(in_channels, out_channels_style, a_val=self.a, b_val=self.b)
-        self.style_logvar = make_res_block_encoder_feature_compressor(in_channels, out_channels_style, a_val=self.a, b_val=self.b)
-        self.content_mu = make_res_block_encoder_feature_compressor(in_channels, out_channels_content, a_val=self.a, b_val=self.b)
-        self.content_logvar = make_res_block_encoder_feature_compressor(in_channels, out_channels_content, a_val=self.a, b_val=self.b)
+        self.style_mu = make_res_block_encoder_feature_compressor(in_channels, out_channels_style, a_val=self.a,
+                                                                  b_val=self.b)
+        self.style_logvar = make_res_block_encoder_feature_compressor(in_channels, out_channels_style, a_val=self.a,
+                                                                      b_val=self.b)
+        self.content_mu = make_res_block_encoder_feature_compressor(in_channels, out_channels_content, a_val=self.a,
+                                                                    b_val=self.b)
+        self.content_logvar = make_res_block_encoder_feature_compressor(in_channels, out_channels_content, a_val=self.a,
+                                                                        b_val=self.b)
 
     def forward(self, feats):
         mu_style, logvar_style = self.style_mu(feats), self.style_logvar(feats)
         mu_content, logvar_content = self.content_mu(feats), self.content_logvar(feats)
         return mu_style, logvar_style, mu_content, logvar_content
 
-def make_res_block_encoder_feature_extractor(in_channels, out_channels, kernelsize, stride, padding, dilation, a_val=2.0, b_val=0.3):
+
+def make_res_block_encoder_feature_extractor(in_channels, out_channels, kernelsize, stride, padding, dilation,
+                                             a_val=2.0, b_val=0.3):
     downsample = None
     if (stride != 1) or (in_channels != out_channels) or dilation != 1:
         downsample = nn.Sequential(nn.Conv1d(in_channels, out_channels,
@@ -83,8 +90,11 @@ def make_res_block_encoder_feature_extractor(in_channels, out_channels, kernelsi
                                              dilation=dilation),
                                    nn.BatchNorm1d(out_channels))
     layers = []
-    layers.append(ResidualBlock1dConv(in_channels, out_channels, kernelsize, stride, padding, dilation, downsample, a=a_val, b=b_val))
+    layers.append(
+        ResidualBlock1dConv(in_channels, out_channels, kernelsize, stride, padding, dilation, downsample, a=a_val,
+                            b=b_val))
     return nn.Sequential(*layers)
+
 
 class LinearFeatureCompressor(nn.Module):
     def __init__(self, in_channels, out_channels_style, out_channels_content):
@@ -100,6 +110,7 @@ class LinearFeatureCompressor(nn.Module):
         mu_content, logvar_content = self.content_mu(feats), self.content_logvar(feats)
         return mu_style, logvar_style, mu_content, logvar_content
 
+
 class ResidualBlock1dConv(nn.Module):
     def __init__(self, channels_in, channels_out, kernelsize, stride, padding, dilation, downsample, a=2, b=0.3):
         super(ResidualBlock1dConv, self).__init__()
@@ -108,7 +119,8 @@ class ResidualBlock1dConv(nn.Module):
         self.dropout1 = nn.Dropout(p=0.5, inplace=False)
         self.relu = nn.ReLU(inplace=True)
         self.bn2 = nn.BatchNorm1d(channels_in)
-        self.conv2 = nn.Conv1d(channels_in, channels_out, kernel_size=kernelsize, stride=stride, padding=padding, dilation=dilation)
+        self.conv2 = nn.Conv1d(channels_in, channels_out, kernel_size=kernelsize, stride=stride, padding=padding,
+                               dilation=dilation)
         self.dropout2 = nn.Dropout(p=0.5, inplace=False)
         self.downsample = downsample
         self.a = a
@@ -126,18 +138,21 @@ class ResidualBlock1dConv(nn.Module):
         out = self.dropout2(out)
         if self.downsample:
             residual = self.downsample(x)
-        out = self.a*residual + self.b*out
+        out = self.a * residual + self.b * out
         return out
 
+
 class ResidualBlock1dTransposeConv(nn.Module):
-    def __init__(self, channels_in, channels_out, kernelsize, stride, padding, dilation, o_padding, upsample, a=2, b=0.3):
+    def __init__(self, channels_in, channels_out, kernelsize, stride, padding, dilation, o_padding, upsample, a=2,
+                 b=0.3):
         super(ResidualBlock1dTransposeConv, self).__init__()
         self.bn1 = nn.BatchNorm1d(channels_in)
         self.conv1 = nn.ConvTranspose1d(channels_in, channels_in, kernel_size=1, stride=1, padding=0)
         self.dropout1 = nn.Dropout(p=0.5, inplace=False)
         self.relu = nn.ReLU(inplace=True)
         self.bn2 = nn.BatchNorm1d(channels_in)
-        self.conv2 = nn.ConvTranspose1d(channels_in, channels_out, kernel_size=kernelsize, stride=stride, padding=padding, dilation=dilation, output_padding=o_padding)
+        self.conv2 = nn.ConvTranspose1d(channels_in, channels_out, kernel_size=kernelsize, stride=stride,
+                                        padding=padding, dilation=dilation, output_padding=o_padding)
         self.dropout2 = nn.Dropout(p=0.5, inplace=False)
         self.upsample = upsample
         self.a = a
@@ -155,11 +170,12 @@ class ResidualBlock1dTransposeConv(nn.Module):
         out = self.dropout2(out)
         if self.upsample:
             residual = self.upsample(x)
-        out = self.a*residual + self.b*out
+        out = self.a * residual + self.b * out
         return out
 
 
-def res_block_decoder(in_channels, out_channels, kernelsize, stride, padding, o_padding, dilation, a_val=2.0, b_val=0.3):
+def res_block_decoder(in_channels, out_channels, kernelsize, stride, padding, o_padding, dilation, a_val=2.0,
+                      b_val=0.3):
     upsample = None
 
     if (kernelsize != 1 or stride != 1) or (in_channels != out_channels) or dilation != 1:
@@ -169,9 +185,11 @@ def res_block_decoder(in_channels, out_channels, kernelsize, stride, padding, o_
                                                     padding=padding,
                                                     dilation=dilation,
                                                     output_padding=o_padding),
-                                   nn.BatchNorm1d(out_channels))
+                                 nn.BatchNorm1d(out_channels))
     layers = []
-    layers.append(ResidualBlock1dTransposeConv(in_channels, out_channels, kernelsize, stride, padding, dilation, o_padding, upsample=upsample, a=a_val, b=b_val))
+    layers.append(
+        ResidualBlock1dTransposeConv(in_channels, out_channels, kernelsize, stride, padding, dilation, o_padding,
+                                     upsample=upsample, a=a_val, b=b_val))
     return nn.Sequential(*layers)
 
 
@@ -182,18 +200,18 @@ class DataGeneratorText(nn.Module):
         self.DIM_text = DIM_text
         self.a = a
         self.b = b
-        self.resblock_1 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+        self.resblock_1 = res_block_decoder(5 * self.DIM_text, 5 * self.DIM_text,
                                             kernelsize=4, stride=1, padding=0, dilation=1, o_padding=0)
-        self.resblock_2 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+        self.resblock_2 = res_block_decoder(5 * self.DIM_text, 5 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_3 = res_block_decoder(5*self.DIM_text, 4*self.DIM_text,
+        self.resblock_3 = res_block_decoder(5 * self.DIM_text, 4 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_4 = res_block_decoder(4*self.DIM_text, 3*self.DIM_text,
+        self.resblock_4 = res_block_decoder(4 * self.DIM_text, 3 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_5 = res_block_decoder(3*self.DIM_text, 2*self.DIM_text,
+        self.resblock_5 = res_block_decoder(3 * self.DIM_text, 2 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_6 = res_block_decoder(2*self.DIM_text, self.DIM_text,
-                                                 kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_6 = res_block_decoder(2 * self.DIM_text, self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
         self.conv2 = nn.ConvTranspose1d(self.DIM_text, self.datadim[1],
                                         kernel_size=4,
                                         stride=2,
@@ -214,7 +232,6 @@ class DataGeneratorText(nn.Module):
         return d
 
 
-
 class FeatureExtractorText(nn.Module):
     def __init__(self, datadim, a, b, dim_text=128):
         super(FeatureExtractorText, self).__init__()
@@ -224,21 +241,21 @@ class FeatureExtractorText(nn.Module):
         self.DIM_text = dim_text
         self.conv1 = nn.Conv1d(self.txtdim[1], self.DIM_text,
                                kernel_size=4, stride=2, padding=1, dilation=1)
-        self.resblock_1 = make_res_block_encoder_feature_extractor(self.DIM_text, 2*self.DIM_text,
+        self.resblock_1 = make_res_block_encoder_feature_extractor(self.DIM_text, 2 * self.DIM_text,
                                                                    kernelsize=4, stride=2, padding=1, dilation=1)
-        self.resblock_2 = make_res_block_encoder_feature_extractor(2*self.DIM_text, 3*self.DIM_text,
+        self.resblock_2 = make_res_block_encoder_feature_extractor(2 * self.DIM_text, 3 * self.DIM_text,
                                                                    kernelsize=4, stride=2, padding=1, dilation=1)
-        self.resblock_3 = make_res_block_encoder_feature_extractor(3*self.DIM_text, 4*self.DIM_text,
+        self.resblock_3 = make_res_block_encoder_feature_extractor(3 * self.DIM_text, 4 * self.DIM_text,
                                                                    kernelsize=4, stride=2, padding=1, dilation=1)
-        self.resblock_4 = make_res_block_encoder_feature_extractor(4*self.DIM_text, 5*self.DIM_text,
+        self.resblock_4 = make_res_block_encoder_feature_extractor(4 * self.DIM_text, 5 * self.DIM_text,
                                                                    kernelsize=4, stride=2, padding=1, dilation=1)
-        self.resblock_5 = make_res_block_encoder_feature_extractor(5*self.DIM_text, 5*self.DIM_text,
+        self.resblock_5 = make_res_block_encoder_feature_extractor(5 * self.DIM_text, 5 * self.DIM_text,
                                                                    kernelsize=4, stride=2, padding=1, dilation=1)
-        self.resblock_6 = make_res_block_encoder_feature_extractor(5*self.DIM_text, 5*self.DIM_text,
+        self.resblock_6 = make_res_block_encoder_feature_extractor(5 * self.DIM_text, 5 * self.DIM_text,
                                                                    kernelsize=4, stride=2, padding=0, dilation=1)
 
     def forward(self, x):
-        x = x.transpose(-2,-1)
+        x = x.transpose(-2, -1)
         out = self.conv1(x)
         out = self.resblock_1(out)
         out = self.resblock_2(out)
@@ -271,6 +288,7 @@ class PositionalEncoding(nn.Module):
             x = x.permute(1, 0, 2, 3) + self.pe[:x.shape[0], :]
         return self.dropout(x)
 
+
 # Does not support dilation
 class SamePadConv3d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, bias=True):
@@ -283,7 +301,7 @@ class SamePadConv3d(nn.Module):
         # assumes that the input shape is divisible by stride
         total_pad = tuple([k - s for k, s in zip(kernel_size, stride)])
         pad_input = []
-        for p in total_pad[::-1]: # reverse since F.pad starts from last dim
+        for p in total_pad[::-1]:  # reverse since F.pad starts from last dim
             pad_input.append((p // 2 + p % 2, p // 2))
         pad_input = sum(pad_input, tuple())
         self.pad_input = pad_input
@@ -293,29 +311,6 @@ class SamePadConv3d(nn.Module):
 
     def forward(self, x):
         return self.conv(F.pad(x, self.pad_input))
-
-
-class SamePadConvTranspose3d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, bias=True):
-        super().__init__()
-        if isinstance(kernel_size, int):
-            kernel_size = (kernel_size,) * 3
-        if isinstance(stride, int):
-            stride = (stride,) * 3
-
-        total_pad = tuple([k - s for k, s in zip(kernel_size, stride)])
-        pad_input = []
-        for p in total_pad[::-1]: # reverse since F.pad starts from last dim
-            pad_input.append((p // 2 + p % 2, p // 2))
-        pad_input = sum(pad_input, tuple())
-        self.pad_input = pad_input
-
-        self.convt = nn.ConvTranspose3d(in_channels, out_channels, kernel_size,
-                                        stride=stride, bias=bias,
-                                        padding=tuple([k - 1 for k in kernel_size]))
-
-    def forward(self, x):
-        return self.convt(F.pad(x, self.pad_input))
 
 
 class DeconvNet(nn.Module):
@@ -381,16 +376,16 @@ class MultiHeadAttention(nn.Module):
         self.d_v = dim_kv // n_head
         self.n_head = n_head
 
-        self.w_qs = nn.Linear(dim_q, n_head * self.d_k, bias=False) # q
+        self.w_qs = nn.Linear(dim_q, n_head * self.d_k, bias=False)  # q
         self.w_qs.weight.data.normal_(std=1.0 / np.sqrt(dim_q))
 
-        self.w_ks = nn.Linear(dim_kv, n_head * self.d_k, bias=False) # k
+        self.w_ks = nn.Linear(dim_kv, n_head * self.d_k, bias=False)  # k
         self.w_ks.weight.data.normal_(std=1.0 / np.sqrt(dim_kv))
 
-        self.w_vs = nn.Linear(dim_kv, n_head * self.d_v, bias=False) # v
+        self.w_vs = nn.Linear(dim_kv, n_head * self.d_v, bias=False)  # v
         self.w_vs.weight.data.normal_(std=1.0 / np.sqrt(dim_kv))
 
-        self.fc = nn.Linear(n_head * self.d_v, dim_q, bias=True) # c
+        self.fc = nn.Linear(n_head * self.d_v, dim_q, bias=True)  # c
         self.fc.weight.data.normal_(std=1.0 / np.sqrt(dim_q * n_layer))
 
         if attn_type == 'full':
@@ -431,12 +426,12 @@ class MultiHeadAttention(nn.Module):
                     k_shape = (q.shape[0], n_head, *self.shape, self.d_k)
                     v_shape = (q.shape[0], n_head, *self.shape, self.d_v)
                     self.cache = dict(k=torch.zeros(k_shape, dtype=k.dtype, device=q.device),
-                                    v=torch.zeros(v_shape, dtype=v.dtype, device=q.device))
+                                      v=torch.zeros(v_shape, dtype=v.dtype, device=q.device))
                 else:
                     # cache only once in the non-causal case
                     self.cache = dict(k=k.clone(), v=v.clone())
             if self.causal:
-                idx = (slice(None, None), slice(None, None), *[slice(i, i+ 1) for i in decode_idx])
+                idx = (slice(None, None), slice(None, None), *[slice(i, i + 1) for i in decode_idx])
                 self.cache['k'][idx] = k
                 self.cache['v'][idx] = v
             k, v = self.cache['k'], self.cache['v']
@@ -445,7 +440,7 @@ class MultiHeadAttention(nn.Module):
 
         # (b, *d_shape, n_head, d) -> (b, *d_shape, n_head * d)
         a = shift_dim(a, 1, -2).flatten(start_dim=-2)
-        a = self.fc(a) # (b x seq_len x embd_dim)
+        a = self.fc(a)  # (b x seq_len x embd_dim)
 
         return a
 
@@ -483,7 +478,7 @@ class SparseAttention(nn.Module):
     block_layout = dict()
 
     def __init__(self, shape, n_head, causal, num_local_blocks=4, block=32,
-                 attn_dropout=0.): # does not use attn_dropout
+                 attn_dropout=0.):  # does not use attn_dropout
         super().__init__()
         self.causal = causal
         self.shape = shape
@@ -501,7 +496,8 @@ class SparseAttention(nn.Module):
         try:
             from deepspeed.ops.sparse_attention import MatMul, Softmax
         except:
-            raise Exception('Error importing deepspeed. Please install using `DS_BUILD_SPARSE_ATTN=1 pip install deepspeed`')
+            raise Exception(
+                'Error importing deepspeed. Please install using `DS_BUILD_SPARSE_ATTN=1 pip install deepspeed`')
         if self.shape not in SparseAttention.ops:
             sparsity_layout = self.sparsity_config.make_layout()
             sparse_dot_sdd_nt = MatMul(sparsity_layout,
@@ -559,6 +555,7 @@ class SparseAttention(nn.Module):
 
         return view_range(out, 2, 3, old_shape)
 
+
 def shift_dim(x, src_dim=-1, dest_dim=-1, make_contiguous=True):
     n_dims = len(x.shape)
     if src_dim < 0:
@@ -584,6 +581,7 @@ def shift_dim(x, src_dim=-1, dest_dim=-1, make_contiguous=True):
         x = x.contiguous()
     return x
 
+
 # reshapes tensor start from dim i (inclusive)
 # to dim j (exclusive) to the desired shape
 # e.g. if x.shape = (b, thw, c) then
@@ -607,11 +605,13 @@ def view_range(x, i, j, shape):
     target_shape = x_shape[:i] + shape + x_shape[j:]
     return x.view(target_shape)
 
+
 class StridedSparsityConfig(object):
     """
     Strided Sparse configuration specified in https://arxiv.org/abs/1904.10509 that
     generalizes to arbitrary dimensions
     """
+
     def __init__(self, shape, n_head, causal, block, num_local_blocks):
         self.n_head = n_head
         self.shape = shape
@@ -681,7 +681,7 @@ class StridedSparsityConfig(object):
                     elem = block_layout[h, i, j].item()
                     if elem == 1:
                         assert i >= j
-                        if i == j: # need to mask within block on diagonals
+                        if i == j:  # need to mask within block on diagonals
                             attn_mask[counter] = torch.tril(attn_mask[counter])
                         counter += 1
         assert counter == num_dense_blocks
@@ -690,7 +690,7 @@ class StridedSparsityConfig(object):
 
     def get_non_block_layout_row(self, block_layout, row):
         block_row = row // self.block
-        block_row = block_layout[:, [block_row]] # n_head x 1 x n_blocks
+        block_row = block_layout[:, [block_row]]  # n_head x 1 x n_blocks
         block_row = block_row.repeat_interleave(self.block, dim=-1)
         block_row[:, :, row + 1:] = 0.
         return block_row
@@ -730,41 +730,26 @@ class StridedSparsityConfig(object):
             flat_idx %= self._block_shape_cum[i]
         return tuple(idx)
 
-def res_block_decoder(in_channels, out_channels, kernelsize, stride, padding, o_padding, dilation, a_val=2.0, b_val=0.3):
-    upsample = None
-
-    if (kernelsize != 1 or stride != 1) or (in_channels != out_channels) or dilation != 1:
-        upsample = nn.Sequential(nn.ConvTranspose1d(in_channels, out_channels,
-                                                    kernel_size=kernelsize,
-                                                    stride=stride,
-                                                    padding=padding,
-                                                    dilation=dilation,
-                                                    output_padding=o_padding),
-                                   nn.BatchNorm1d(out_channels))
-    layers = []
-    layers.append(ResidualBlock1dTransposeConv(in_channels, out_channels, kernelsize, stride, padding, dilation, o_padding, upsample=upsample, a=a_val, b=b_val))
-    return nn.Sequential(*layers)
-
 
 class DataGeneratorText(nn.Module):
-    def __init__(self, data_dim, a, b, dim_text = 128):
+    def __init__(self, data_dim, a, b, dim_text=128):
         super(DataGeneratorText, self).__init__()
         self.data_dim = data_dim
         self.DIM_text = dim_text
         self.a = a
         self.b = b
-        self.resblock_1 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+        self.resblock_1 = res_block_decoder(5 * self.DIM_text, 5 * self.DIM_text,
                                             kernelsize=4, stride=1, padding=0, dilation=1, o_padding=0)
-        self.resblock_2 = res_block_decoder(5*self.DIM_text, 5*self.DIM_text,
+        self.resblock_2 = res_block_decoder(5 * self.DIM_text, 5 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_3 = res_block_decoder(5*self.DIM_text, 4*self.DIM_text,
+        self.resblock_3 = res_block_decoder(5 * self.DIM_text, 4 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_4 = res_block_decoder(4*self.DIM_text, 3*self.DIM_text,
+        self.resblock_4 = res_block_decoder(4 * self.DIM_text, 3 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_5 = res_block_decoder(3*self.DIM_text, 2*self.DIM_text,
+        self.resblock_5 = res_block_decoder(3 * self.DIM_text, 2 * self.DIM_text,
                                             kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
-        self.resblock_6 = res_block_decoder(2*self.DIM_text, self.DIM_text,
-                                                 kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
+        self.resblock_6 = res_block_decoder(2 * self.DIM_text, self.DIM_text,
+                                            kernelsize=4, stride=2, padding=1, dilation=1, o_padding=0)
         self.conv2 = nn.ConvTranspose1d(self.DIM_text, self.data_dim[1],
                                         kernel_size=4,
                                         stride=2,
@@ -784,6 +769,7 @@ class DataGeneratorText(nn.Module):
         d = self.softmax(d)
         return d
 
+
 def scaled_dot_product_attention(q, k, v, mask=None, attn_dropout=0., training=True):
     # Performs scaled dot-product attention over the second to last dimension dn
     # (b, n_head, d1, ..., dn, d)
@@ -792,11 +778,10 @@ def scaled_dot_product_attention(q, k, v, mask=None, attn_dropout=0., training=T
     if mask is not None:
         attn = attn.masked_fill(mask == 0, float('-inf'))
     attn_float = F.softmax(attn, dim=-1)
-    attn = attn_float.type_as(attn) # b x n_head x d1 x ... x dn x d
+    attn = attn_float.type_as(attn)  # b x n_head x d1 x ... x dn x d
     attn = F.dropout(attn, p=attn_dropout, training=training)
-    a = torch.matmul(attn, v) # b x n_head x d1 x ... x dn x d
+    a = torch.matmul(attn, v)  # b x n_head x d1 x ... x dn x d
     return a
-
 
 
 class AxialAttention(nn.Module):
@@ -805,7 +790,7 @@ class AxialAttention(nn.Module):
         if axial_dim < 0:
             axial_dim = 2 + n_dim + 1 + axial_dim
         else:
-            axial_dim += 2 # account for batch, head, dim
+            axial_dim += 2  # account for batch, head, dim
         self.axial_dim = axial_dim
 
     def forward(self, q, k, v, decode_step, decode_idx):
@@ -840,6 +825,7 @@ class AxialBlock(nn.Module):
         x = shift_dim(x, -1, 1)
         return x
 
+
 class AttentionResidualBlock(nn.Module):
     def __init__(self, n_hiddens):
         super().__init__()
@@ -857,6 +843,7 @@ class AttentionResidualBlock(nn.Module):
 
     def forward(self, x):
         return x + self.block(x)
+
 
 class ResidualBlock(nn.Module):
     def __init__(
@@ -891,6 +878,7 @@ class ResidualBlock(nn.Module):
         out = self.net(x)
         res = x if self.downsample is None else self.downsample(x)
         return self.af(out + res)
+
 
 class ResidualBlockDeconv(nn.Module):
     def __init__(

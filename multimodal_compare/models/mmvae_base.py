@@ -1,4 +1,5 @@
 # Base MMVAE class definition, common for PoE, MoE, MoPoE
+import abc
 from itertools import combinations
 import torch, os
 import torch.nn as nn
@@ -14,8 +15,106 @@ import cv2, math
 from .vae import VAE
 
 
+class BaseMMVAE(object):
+
+    @classmethod
+    def shorthand(cls):
+        """
+        Returns a shorthand that is used to import inheriting classes automatically
+        Returns: str
+
+        """
+        return 'basemmvae'
+
+    @abc.abstractmethod
+    def forward(self, inputs, K=1):
+        """
+        Forward pass that takes input data and outputs a list of private and shared posteriors, reconstructions and latent samples
+
+        :param inputs: input data, a list of modalities where missing modalities are replaced with None
+        :type inputs: list
+        :param K: sample K samples from the posterior
+        :type K: int
+        :return: a list of posterior distributions, a list of reconstructions and latent samples
+        :rtype: tuple(list, list, list)
+        """
+        pass
+
+    @abc.abstractmethod
+    def infer(self, inputs):
+        """
+        Inference module, calculates the joint posterior
+
+        :param inputs: list of input modalities, missing mods are replaced with None
+        :type inputs: list
+        :return: joint posterior and individual posteriors
+        :rtype: tuple(torch.tensor, torch.tensor, list, list)
+        """
+        pass
+
+    @abc.abstractmethod
+    def reconstruct(self, data):
+        """
+        Reconstructs the input data
+
+        :param data: list of input modalities
+        :type data: list
+        :return: reconstructions
+        :rtype: list
+        """
+        pass
+
+
+class TorchMMVAE(BaseMMVAE, nn.Module):
+    """
+    Base class for all PyTorch based MMVAE implementations.
+    """
+
+    def infer(self, inputs):
+        """
+        Inference module, calculates the joint posterior
+
+        :param inputs: list of input modalities, missing mods are replaced with None
+        :type inputs: list
+        :return: joint posterior and individual posteriors
+        :rtype: tuple(torch.tensor, torch.tensor, list, list)
+        """
+        id = 0 if inputs[0] is not None else 1
+        batch_size = len(inputs[id]) if len(inputs[id]) != 2 else len(inputs[id][0])
+        # initialize the universal prior expert
+        mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
+        for ix, modality in enumerate(inputs):
+            if modality is not None:
+                mod_mu, mod_logvar = self.vaes[ix].enc(
+                    modality.to("cuda") if not isinstance(modality, list) else modality)
+                mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
+                logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
+        mu_before, logvar_before = mu, logvar
+        # product of experts to combine gaussians
+        mu, logvar = self.product_of_experts(mu, logvar)
+        return mu, logvar, [mu_before[1:], logvar_before[1:]]
+
+    def reconstruct(self, data):
+        """
+        Reconstructs the input data
+
+        :param data: list of input modalities
+        :type data: list
+        :return: reconstructions
+        :rtype: list
+        """
+        self.eval()
+        with torch.no_grad():
+            res = self.forward(data)
+            px_zs = res[1]
+            recons = [[get_mean(px_z) for px_z in r] for r in px_zs] if any(isinstance(i, list) for i in px_zs) \
+                else [get_mean(px_z) for px_z in px_zs]
+        return recons
+
+
 class MMVAE(nn.Module):
-    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+    def __init__(self, prior_dist, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split,
+                 batch_size):
         """
         Base class for multimodal VAEs. It handles methods common for all such as sample generation and data visualization
 
@@ -100,10 +199,10 @@ class MMVAE(nn.Module):
         """
         px_zs = []
         for d, vae in enumerate(self.vaes):
-                if "transformer" in self.vaes[d].dec_name.lower():
-                    px_zs.append(vae.px_z(*vae.dec([latents, None])))
-                else:
-                    px_zs.append(vae.px_z(*vae.dec(latents)))
+            if "transformer" in self.vaes[d].dec_name.lower():
+                px_zs.append(vae.px_z(*vae.dec([latents, None])))
+            else:
+                px_zs.append(vae.px_z(*vae.dec(latents)))
         return px_zs
 
     def seq_collate_fn(self, batch):
@@ -164,7 +263,7 @@ class MMVAE(nn.Module):
         with torch.no_grad():
             data = []
             pz = self.pz(*self.pz_params)
-            latents = pz.rsample(torch.Size([N])).transpose(1,0)
+            latents = pz.rsample(torch.Size([N])).transpose(1, 0)
             for d, vae in enumerate(self.vaes):
                 if "transformer" in vae.dec_name.lower():
                     px_z = vae.px_z(*vae.dec([latents, None]))
@@ -172,7 +271,6 @@ class MMVAE(nn.Module):
                     px_z = vae.px_z(*vae.dec(latents))
                 data.append(px_z.mean)
         return data  # list of generations---one for each modality
-
 
     def generate(self, runPath, epoch, N=64):
         """
@@ -196,10 +294,9 @@ class MMVAE(nn.Module):
                     r_l = np.asarray(recon) if r_l == [] else np.concatenate((r_l, np.asarray(recon)))
                 rows = []
                 for s in range(l_s):
-                    rows.append(np.hstack(r_l[(s*l_s):(s*l_s)+l_s]))
+                    rows.append(np.hstack(r_l[(s * l_s):(s * l_s) + l_s]))
                 r_l = np.vstack(rows)
                 cv2.imwrite('{}/visuals/traversals_epoch_{}_m{}.png'.format(runPath, epoch, i), r_l * 255)
-
 
     def reconstruct(self, data):
         """
@@ -217,7 +314,7 @@ class MMVAE(nn.Module):
             else:
                 _, px_zs, _, _ = self.forward(data)
             recons = [[get_mean(px_z) for px_z in r] for r in px_zs] if any(isinstance(i, list) for i in px_zs) \
-                     else [get_mean(px_z) for px_z in px_zs]
+                else [get_mean(px_z) for px_z in px_zs]
         return recons
 
     def process_reconstructions(self, recons_mat, data, epoch, runPath, N=8):
@@ -241,14 +338,14 @@ class MMVAE(nn.Module):
                     _data = torch.stack(data[o]).cpu() if isinstance(data[0], list) else data[o].cpu()
                     recon = recon.squeeze(0).cpu()
                     if "cub_" in self.vaes[o].pth:
-                        _data = _data.permute(0,3,2,1)
+                        _data = _data.permute(0, 3, 2, 1)
                     elif self.vaes[o].enc_name in ["MNIST", "SVHN", "MNISTMoE", "SVHNMoE"]:
                         if self.vaes[o].enc_name == "MNIST":
-                            _data = _data.permute(0,2,3,1).cpu()
-                            recon = recon.unsqueeze(-1).cpu().reshape(-1, 28,28,1)
+                            _data = _data.permute(0, 2, 3, 1).cpu()
+                            recon = recon.unsqueeze(-1).cpu().reshape(-1, 28, 28, 1)
                         elif self.vaes[o].enc_name == "MNISTMoE":
-                            _data = _data.permute(0,2,3,1).cpu()
-                            recon = recon.permute(0,2,3,1).cpu()
+                            _data = _data.permute(0, 2, 3, 1).cpu()
+                            recon = recon.permute(0, 2, 3, 1).cpu()
                         elif self.vaes[o].enc_name == "SVHNMoE":
                             recon = recon.reshape(-1, 32, 32, 3)
                             _data = _data.reshape(-1, 32, 32, 3)
@@ -258,13 +355,16 @@ class MMVAE(nn.Module):
                         _data = _data.reshape(len(_data), *self.vaes[o].data_dim)
                     o_l, r_l = [], []
                     for x in range(recon.shape[0]):
-                        org = cv2.copyMakeBorder(np.asarray(_data[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[211,211,211])
-                        rec = cv2.copyMakeBorder(np.asarray(recon[x]),top=1, bottom=1, left=1, right=1,     borderType=cv2.BORDER_CONSTANT, value=[211,211,211])
+                        org = cv2.copyMakeBorder(np.asarray(_data[x]), top=1, bottom=1, left=1, right=1,
+                                                 borderType=cv2.BORDER_CONSTANT, value=[211, 211, 211])
+                        rec = cv2.copyMakeBorder(np.asarray(recon[x]), top=1, bottom=1, left=1, right=1,
+                                                 borderType=cv2.BORDER_CONSTANT, value=[211, 211, 211])
                         o_l = org if o_l == [] else np.hstack((o_l, org))
                         r_l = rec if r_l == [] else np.hstack((r_l, rec))
-                    w2 =cv2.cvtColor(np.vstack((o_l*255, r_l*255)).astype('uint8'), cv2.COLOR_BGR2RGB)
-                    w2 = cv2.copyMakeBorder(w2,top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT, value=[211,211,211])
-                    cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
+                    w2 = cv2.cvtColor(np.vstack((o_l * 255, r_l * 255)).astype('uint8'), cv2.COLOR_BGR2RGB)
+                    w2 = cv2.copyMakeBorder(w2, top=1, bottom=1, left=1, right=1, borderType=cv2.BORDER_CONSTANT,
+                                            value=[211, 211, 211])
+                    cv2.imwrite(os.path.join(runPath, "visuals/", 'recon_epoch{}_m{}xm{}.png'.format(epoch, r, o)), w2)
                 elif self.vaes[o].enc_name.lower() == "transformerimg":
                     _data = torch.stack(data[o][0]).cpu()[:N]
                     o_l, r_l = [], []
@@ -275,7 +375,7 @@ class MMVAE(nn.Module):
                             (o_l, np.asarray(np.hstack(d))), axis=1)
                         r_l = np.asarray(np.hstack(recon)) if r_l == [] else np.concatenate(
                             (r_l, np.asarray(np.hstack(recon))), axis=1)
-                    cv2.imwrite(os.path.join(runPath,"visuals/",'recon_epoch{}_minp{}.png'.format(epoch, r)),
+                    cv2.imwrite(os.path.join(runPath, "visuals/", 'recon_epoch{}_minp{}.png'.format(epoch, r)),
                                 np.vstack((o_l, r_l)) * 255)
                 elif self.vaes[o].enc_name.lower() in ["txttransformer", "textonehot"]:
                     recon_decoded, orig_decoded = output_onehot2text(recon, data[o][0])
@@ -289,11 +389,12 @@ class MMVAE(nn.Module):
                 elif self.vaes[o].enc_name.lower() == "audio":
                     _data = torch.stack(data[o]).cpu()[:N]
                     for i in range(3):
-                        numpy_to_wav(os.path.join(runPath,"visuals/",'orig_epoch{}_minp{}_s{}.wav'.format(epoch, r, i)),
-                                 np.asarray(_data[i].cpu()).astype(np.int16), 16000)
-                        numpy_to_wav(os.path.join(runPath,"visuals/",'recon_epoch{}_minp{}_s{}.wav'.format(epoch, r, i)),
-                                 np.asarray(recon[i].cpu()).astype(np.int16), 16000)
-
+                        numpy_to_wav(
+                            os.path.join(runPath, "visuals/", 'orig_epoch{}_minp{}_s{}.wav'.format(epoch, r, i)),
+                            np.asarray(_data[i].cpu()).astype(np.int16), 16000)
+                        numpy_to_wav(
+                            os.path.join(runPath, "visuals/", 'recon_epoch{}_minp{}_s{}.wav'.format(epoch, r, i)),
+                            np.asarray(recon[i].cpu()).astype(np.int16), 16000)
 
     def analyse(self, data, runPath, epoch, labels=None):
         """
@@ -333,7 +434,7 @@ class MMVAE(nn.Module):
             qz_xs, _, zss = self.forward(data, K=K)
             pz = self.pz(*self.pz_params)
             zss_sampled = [pz.sample(torch.Size([K, len(data[0])])).view(-1, pz.batch_shape[-1]),
-                   *[zs.view(-1, zs.size(-1)) for zs in zss]]
+                           *[zs.view(-1, zs.size(-1)) for zs in zss]]
             zsl = [torch.zeros(zs.size(0)).fill_(i) for i, zs in enumerate(zss_sampled)]
             if isinstance(qz_xs, list):
                 kls_df = tensors_to_df(
@@ -347,7 +448,7 @@ class MMVAE(nn.Module):
                     ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
             else:
                 kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
-                    keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
+                                       keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
         K = 1 if self.modelName == "poe" else K
         t_sne([x.cpu() for x in zss_sampled[1:]], runPath, epoch, K, labels)
         return torch.cat(zsl, 0).cpu().numpy(), kls_df

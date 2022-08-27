@@ -10,7 +10,7 @@ from datetime import timedelta
 from eval.infer import plot_loss, eval_reconstruct, eval_sample
 import models
 from models import objectives
-from utils import Logger, save_model, unpack_data, pad_seq_data, transpose_dataloader
+from utils import Logger, save_model, unpack_data, pad_seq_data, transpose_dataloader, get_torch_mean
 
 
 def parse_args():
@@ -48,7 +48,7 @@ def parse_args():
     return config
 
 
-class Trainer():
+class Trainer(object):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
 
@@ -57,6 +57,7 @@ class Trainer():
     :param device: cuda/cpu
     :type device: object
     """
+
     def __init__(self, cfg, device):
         self.config = cfg
         self.mods = None
@@ -118,7 +119,8 @@ class Trainer():
                   [m["feature_dim"] for m in self.mods], [m["mod_type"] for m in self.mods]]
         if len(self.mods) == 1:
             params = [x[0] for x in params]
-        self.model = m(*params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(self.device)
+        self.model = m(*params, self.config["n_latents"], self.config["test_split"], self.config["batch_size"]).to(
+            self.device)
 
         if self.config["pre_trained"]:
             print('Loading model {} from {}'.format(model.modelName, self.config["pre_trained"]))
@@ -199,7 +201,7 @@ class Trainer():
             save_model(self.model, self.mPath + '/model.rar')
         plot_loss(self.mPath)
         eval_sample(self.mPath)
-        eval_reconstruct(self.mPath)
+        # eval_reconstruct(self.mPath, self.prepare_testset()[0])
         t1 = timer()
         print("Training finished. Elapsed time: {}".format(timedelta(seconds=t1 - t0)))
 
@@ -226,11 +228,11 @@ class Trainer():
             self.optimizer.step()
             print("Training iteration {}/{}, loss: {}".format(it, int(
                 len(self.train_loader.dataset) / self.config["batch_size"]), float(loss) / self.config["batch_size"]))
-        progress_d = {"Epoch": epoch, "Train Loss": self.get_loss_mean(loss_m), "Train KLD": self.get_loss_mean(kld_m)}
+        progress_d = {"Epoch": epoch, "Train Loss": get_torch_mean(loss_m), "Train KLD": get_torch_mean(kld_m)}
         for i, x in enumerate(partial_losses):
-            progress_d["Train Mod_{}".format(i)] = self.get_loss_mean(x)
+            progress_d["Train Mod_{}".format(i)] = get_torch_mean(x)
         self.lossmeter.update_train(progress_d)
-        print('=====> Epoch: {:03d} Train loss: {:.4f}'.format(epoch, self.get_loss_mean(loss_m)))
+        print('=====> Epoch: {:03d} Train loss: {:.4f}'.format(epoch, get_torch_mean(loss_m)))
 
     def test(self, epoch):
         """
@@ -256,11 +258,11 @@ class Trainer():
                     self.model.generate(self.mPath, epoch)
         if epoch % self.config["viz_freq"] == 0:
             self.visualize_latents(epoch)
-        progress_d = {"Epoch": epoch, "Test Loss": self.get_loss_mean(loss_m), "Test KLD": self.get_loss_mean(kld_m)}
+        progress_d = {"Epoch": epoch, "Test Loss": get_torch_mean(loss_m), "Test KLD": get_torch_mean(kld_m)}
         for i, x in enumerate(partial_losses):
-            progress_d["Test Mod_{}".format(i)] = self.get_loss_mean(x)
+            progress_d["Test Mod_{}".format(i)] = get_torch_mean(x)
         self.lossmeter.update(progress_d)
-        print('====>             Test loss: {:.4f}'.format(self.get_loss_mean(loss_m)))
+        print('====>             Test loss: {:.4f}'.format(get_torch_mean(loss_m)))
 
     def visualize_latents(self, epoch):
         """
@@ -275,17 +277,6 @@ class Trainer():
             self.model.analyse(testset, self.mPath, epoch, self.labels[lrange:lrange + testset_len])
         else:
             self.model.analyse(testset, self.mPath, epoch, labels=None)
-
-    def get_torch_mean(self, loss):
-        """
-        Get the mean of the list of torch tensors
-
-        :param loss: list of loss tensors
-        :type loss: list
-        :return: mean of the losses
-        :rtype: torch.float32
-        """
-        return round(float(torch.mean(torch.tensor(loss).detach().cpu())), 3)
 
 
 if __name__ == '__main__':

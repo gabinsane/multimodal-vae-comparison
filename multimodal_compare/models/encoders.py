@@ -1,10 +1,13 @@
-import torch, numpy as np
-import torch.nn as nn
-from numpy import prod
-import torch.nn.functional as F
-from utils import Constants
 import math
-from models.nn_modules import PositionalEncoding, ConvNet, ResidualBlock, SamePadConv3d, AttentionResidualBlock, FeatureExtractorText, LinearFeatureCompressor
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from numpy import prod
+
+from models.nn_modules import PositionalEncoding, ConvNet, SamePadConv3d, AttentionResidualBlock
+from utils import Constants
 
 
 # Classes
@@ -63,7 +66,7 @@ class Enc_CNN(nn.Module):
         x = self.silu(self.conv_64(x))
 
         # Fully connected layers with ReLu activations
-        x = x.view((batch_size, -1 ))
+        x = x.view((batch_size, -1))
         x = self.silu(self.lin1(x))
         x = (self.lin2(x))
 
@@ -73,6 +76,7 @@ class Enc_CNN(nn.Module):
         logvar = self.logvar_layer(x)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
+
 
 class Enc_MNIST(nn.Module):
     def __init__(self, latent_dim, data_dim):
@@ -87,8 +91,7 @@ class Enc_MNIST(nn.Module):
         super(Enc_MNIST, self).__init__()
         self.net_type = "CNN"
         self.hidden_dim = 400
-        modules = []
-        modules.append(nn.Sequential(nn.Linear(784, self.hidden_dim), nn.ReLU(True)))
+        modules = [nn.Sequential(nn.Linear(784, self.hidden_dim), nn.ReLU(True))]
         modules.extend([nn.Sequential(nn.Linear(self.hidden_dim, self.hidden_dim), nn.ReLU(True))
                         for _ in range(2 - 1)])
         self.enc = nn.Sequential(*modules)
@@ -112,6 +115,7 @@ class Enc_MNIST(nn.Module):
         logvar = self.hidden_logvar(h)
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
+
 
 def extra_hidden_layer(hidden_dim):
     return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
@@ -152,6 +156,7 @@ class Enc_MNISTMoE(nn.Module):
         e = self.enc(x.view(*x.size()[:-3], -1).float())  # flatten data
         lv = self.fc22(e)
         return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
+
 
 class Enc_SVHNMoE(nn.Module):
     def __init__(self, latent_dim, data_dim):
@@ -275,7 +280,7 @@ class Enc_MNIST_DMVAE(nn.Module):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        hiddens = self.enc_hidden(x.reshape(1,x.shape[0], -1).float())
+        hiddens = self.enc_hidden(x.reshape(1, x.shape[0], -1).float())
         stats = self.fc(hiddens)
         muPrivate = stats[:, :, :self.zPrivate_dim]
         logvarPrivate = stats[:, :, self.zPrivate_dim:(2 * self.zPrivate_dim)]
@@ -338,11 +343,11 @@ class Enc_SVHN_DMVAE(nn.Module):
         muPrivate = stats[:, :, :self.zPrivate_dim]
         logvarPrivate = stats[:, :, self.zPrivate_dim:(2 * self.zPrivate_dim)]
         stdPrivate = torch.sqrt(torch.exp(logvarPrivate) + Constants.eps)
-
         muShared = stats[:, :, (2 * self.zPrivate_dim):(2 * self.zPrivate_dim + self.zShared_dim)]
         logvarShared = stats[:, :, (2 * self.zPrivate_dim + self.zShared_dim):]
         stdShared = torch.sqrt(torch.exp(logvarShared) + Constants.eps)
         return [muPrivate, muShared], [stdPrivate, stdShared]
+
 
 # Classes
 class Enc_FNN(nn.Module):
@@ -396,8 +401,8 @@ class Enc_Audio(nn.Module):
         self.net_type = "AudioConv"
         self.latent_dim = latent_dim
         self.TCN = ConvNet(data_dim[0], [128, 128, 96, 96, 64], dropout=0)
-        self.mu_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
-        self.logvar_layer = nn.Sequential(nn.Linear(64*data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
+        self.mu_layer = nn.Sequential(nn.Linear(64 * data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
+        self.logvar_layer = nn.Sequential(nn.Linear(64 * data_dim[-1], 32), nn.ReLU(), nn.Linear(32, self.latent_dim))
 
     def forward(self, x):
         """
@@ -409,12 +414,13 @@ class Enc_Audio(nn.Module):
         :rtype: tuple(torch.tensor, torch.tensor)
         """
         inputs = torch.stack(x).cuda() if isinstance(x, list) else x
-        output = self.TCN(inputs.float()).permute(0,2,1)
+        output = self.TCN(inputs.float()).permute(0, 2, 1)
         x = output.reshape(inputs.shape[0], -1)
         mu = self.mu_layer(x)
         logvar = self.logvar_layer(x)
-        #logvar = F.softmax(logvar, dim=-1) + Constants.eta
+        # logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
+
 
 class Enc_TransformerIMG(nn.Module):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
@@ -445,32 +451,34 @@ class Enc_TransformerIMG(nn.Module):
         self.num_heads = num_heads
         self.dropout = dropout
         self.activation = activation
-        #self.conv_pretrained = visnn.models.resnet152(pretrained=True, progress=True)
+        # self.conv_pretrained = visnn.models.resnet152(pretrained=True, progress=True)
         hid_channels = 32
         kernel_size = 4
         n_chan = 3
         self.reshape = (hid_channels, kernel_size, kernel_size)
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
-        self.convolve = torch.nn.DataParallel(torch.nn.Sequential(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU(),
-                                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU(),
-                                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU(),
-                                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                                torch.nn.SiLU()))
+        self.convolve = torch.nn.DataParallel(
+            torch.nn.Sequential(nn.Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU(),
+                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU(),
+                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU(),
+                                nn.Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.nn.SiLU()))
         self.downsample = torch.nn.DataParallel(nn.Linear(np.product(self.reshape), self.latent_dim))
-        #Transformer layers
+        # Transformer layers
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.latent_dim,
-                                                          nhead=self.num_heads,
-                                                          dim_feedforward=self.ff_size,
-                                                          dropout=self.dropout,
-                                                          activation=self.activation))
-        self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=self.activation))
+        self.seqTransEncoder = torch.nn.DataParallel(
+            nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
         self.mu_layer = torch.nn.DataParallel(nn.Linear(self.datadim[0] * self.latent_dim, self.latent_dim))
-        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.datadim[0] *  self.latent_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.datadim[0] * self.latent_dim, self.latent_dim))
 
     def forward(self, batch):
         """
@@ -489,8 +497,9 @@ class Enc_TransformerIMG(nn.Module):
         bs, nframes = x.shape[0], x.shape[1]
         imgs_feats = []
         for i in range(x.shape[1]):
-            #imgs_feats.append(self.downsample(self.conv_pretrained(x[:, i, :].permute(0, 3, 2, 1).float())))
-            imgs_feats.append(self.downsample(self.convolve(x[:, i, :].permute(0,3,2,1).float()).view(-1, np.prod(self.reshape))))
+            # imgs_feats.append(self.downsample(self.conv_pretrained(x[:, i, :].permute(0, 3, 2, 1).float())))
+            imgs_feats.append(
+                self.downsample(self.convolve(x[:, i, :].permute(0, 3, 2, 1).float()).view(-1, np.prod(self.reshape))))
         x = torch.stack(imgs_feats)
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = self.sequence_pos_encoder(x)
@@ -503,7 +512,7 @@ class Enc_TransformerIMG(nn.Module):
 
 
 class Enc_VideoGPT(nn.Module):
-    def __init__(self,  latent_dim, data_dim=1, n_res_layers=4, downsample=(2,4,4)):
+    def __init__(self, latent_dim, data_dim=1, n_res_layers=4, downsample=(2, 4, 4)):
         """
         Encoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
 
@@ -531,8 +540,8 @@ class Enc_VideoGPT(nn.Module):
               for _ in range(n_res_layers)],
             nn.BatchNorm3d(latent_dim),
             nn.ReLU())
-        self.mu_layer = torch.nn.DataParallel(nn.Linear(latent_dim*16*16, latent_dim))
-        self.logvar_layer = torch.nn.DataParallel(nn.Linear(latent_dim*16*16, latent_dim))
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(latent_dim * 16 * 16, latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(latent_dim * 16 * 16, latent_dim))
 
     def forward(self, x):
         """
@@ -543,7 +552,7 @@ class Enc_VideoGPT(nn.Module):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        h = x.permute(0,4,1,2,3)
+        h = x.permute(0, 4, 1, 2, 3)
         for conv in self.convs:
             h = F.relu(conv(h.float()))
         h = self.conv_last(h)
@@ -556,6 +565,7 @@ class Enc_VideoGPT(nn.Module):
 
 class Enc_Transformer(nn.Module):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
+
     def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer encoder for arbitrary sequential data
@@ -594,11 +604,12 @@ class Enc_Transformer(nn.Module):
         self.skelEmbedding = torch.nn.DataParallel(nn.Linear(self.input_feats, self.latent_dim))
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.latent_dim,
-                                                          nhead=self.num_heads,
-                                                          dim_feedforward=self.ff_size,
-                                                          dropout=self.dropout,
-                                                          activation=self.activation))
-        self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=self.activation))
+        self.seqTransEncoder = torch.nn.DataParallel(
+            nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
 
     def forward(self, batch):
         """
@@ -644,16 +655,17 @@ class Enc_TxtTransformer(Enc_Transformer):
         """
         super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim)
         self.net_type = "TxtTransformer"
-        self.embedding = nn.Embedding(self.input_feats,2)
+        self.embedding = nn.Embedding(self.input_feats, 2)
         self.sequence_pos_encoder = PositionalEncoding(2, self.dropout)
-        seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.input_feats*2,
-                                                          nhead=self.num_heads,
-                                                          dim_feedforward=self.ff_size,
-                                                          dropout=self.dropout,
-                                                          activation=self.activation))
-        self.seqTransEncoder = torch.nn.DataParallel(nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
-        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.input_feats*2, self.latent_dim))
-        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.input_feats*2, self.latent_dim))
+        seqTransEncoderLayer = torch.nn.DataParallel(nn.TransformerEncoderLayer(d_model=self.input_feats * 2,
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=self.activation))
+        self.seqTransEncoder = torch.nn.DataParallel(
+            nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.input_feats * 2, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.input_feats * 2, self.latent_dim))
 
     def forward(self, batch):
         """

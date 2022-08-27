@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+
 def pad_seq_data(data, masks):
     for i, _ in enumerate(data):
         if masks[i] is not None:
@@ -14,6 +15,7 @@ def pad_seq_data(data, masks):
         else:
             data[i] = [o[0].clone().detach() for o in data[i][0]]
     return data
+
 
 def load_images(path, dim):
     def generate(images):
@@ -45,6 +47,7 @@ def lengths_to_mask(lengths):
     mask = torch.arange(max_len, device=lengths.device).expand(len(lengths), max_len) < lengths.unsqueeze(1)
     return mask
 
+
 class Constants(object):
     eta = 1e-6
     eps = 1e-9
@@ -52,6 +55,7 @@ class Constants(object):
     log2pi = math.log(2 * math.pi)
     logceilc = 88  # largest cuda v s.t. exp(v) < inf
     logfloorc = -104  # smallest cuda v s.t. exp(v) > 0
+
 
 class Logger(object):
     """Saves training progress into csv"""
@@ -79,6 +83,7 @@ class Logger(object):
             writer.writerow({**self.dic, **val_d})
         self.dic = {}
 
+
 # Functions
 def save_vars(vs, filepath):
     """
@@ -104,12 +109,14 @@ def save_model(model, filepath):
 def is_multidata(dataB):
     return isinstance(dataB, list) or isinstance(dataB, tuple)
 
+
 def transpose_dataloader(data, device):
     mods = [[] for _ in range(len(data[0]))]
     for num, o in enumerate(data):
         for ix, mod in enumerate(o):
             mods[ix].append(mod[0])
     return [torch.stack(m).to(device) for m in mods]
+
 
 def unpack_data(dataB, device='cuda'):
     # dataB :: (Tensor, Idx) | [(Tensor, Idx)]
@@ -140,6 +147,18 @@ def get_mean(d, K=100):
     return mean
 
 
+def get_torch_mean(loss):
+    """
+    Get the mean of the list of torch tensors
+
+    :param loss: list of loss tensors
+    :type loss: list
+    :return: mean of the losses
+    :rtype: torch.float32
+    """
+    return round(float(torch.mean(torch.tensor(loss).detach().cpu())), 3)
+
+
 def log_mean_exp(value, dim=0, keepdim=False):
     return torch.logsumexp(value, dim, keepdim=keepdim) - math.log(value.size(dim))
 
@@ -152,7 +171,9 @@ def kl_divergence(d1, d2, K=100):
         samples = d1.rsample(torch.Size([K]))
         return (d1.log_prob(samples) - d2.log_prob(samples)).mean(0)
 
+
 alphabet = ' abcdefghijklmnopqrstuvwxyz'
+
 
 def char2Index(alphabet, character):
     return alphabet.find(character)
@@ -185,6 +206,7 @@ def tensor_to_text(gen_t):
         decoded_samples.append(decoded)
     return decoded_samples
 
+
 def output_onehot2text(recon=None, original=None):
     recon_decoded, orig_decoded = None, None
     if recon is not None:
@@ -198,6 +220,7 @@ def output_onehot2text(recon=None, original=None):
         orig_decoded = tensor_to_text(torch.stack(original).squeeze().int())
         orig_decoded = ["".join(x) for x in orig_decoded]
     return recon_decoded, orig_decoded
+
 
 def combinatorial(lst):
     index, pairs = 1, []
@@ -229,6 +252,7 @@ def partial_sum(v, keep_dims=[]):
         size = result.size()[:len(keep_dims)] + (-1,)
         return result.contiguous().view(size).sum(-1)
 
+
 def batch_sum(v, sample_dims=None, batch_dims=None):
     if sample_dims is None:
         sample_dims = ()
@@ -246,45 +270,47 @@ def batch_sum(v, sample_dims=None, batch_dims=None):
     else:
         return v_sum
 
-def log_batch_marginal(dists,zs, sample_dim=None, batch_dim=None,bias=1.0):
-        """Computes log batch marginal probabilities. Returns the log marginal joint
+
+def log_batch_marginal(dists, zs, sample_dim=None, batch_dim=None, bias=1.0):
+    """Computes log batch marginal probabilities. Returns the log marginal joint
         probability, the log product of marginals for individual variables, and the
         log product over both variables and individual dimensions."""
-        log_pw_joints = 0.0
-        log_marginals = 0.0
-        log_prod_marginals = 0.0
-        for value, dist in zip(zs, dists):
-                # log pairwise probabilities of size (B, B, *, **)
-                log_pw = dist.log_prob(value).transpose(1, batch_dim + 1)
-                if sample_dim is None:
-                    keep_dims = (0, 1)
-                else:
-                    keep_dims = (0, 1, sample_dim + 2)
-                # log pairwise joint probabilities (B, B) or (B, B, S)
-                log_pw_joint = partial_sum(log_pw, keep_dims) # log(prod(qzi)) = logqz
-                log_pw_joints = log_pw_joints + log_pw_joint
+    log_pw_joints = 0.0
+    log_marginals = 0.0
+    log_prod_marginals = 0.0
+    for value, dist in zip(zs, dists):
+        # log pairwise probabilities of size (B, B, *, **)
+        log_pw = dist.log_prob(value).transpose(1, batch_dim + 1)
+        if sample_dim is None:
+            keep_dims = (0, 1)
+        else:
+            keep_dims = (0, 1, sample_dim + 2)
+        # log pairwise joint probabilities (B, B) or (B, B, S)
+        log_pw_joint = partial_sum(log_pw, keep_dims)  # log(prod(qzi)) = logqz
+        log_pw_joints = log_pw_joints + log_pw_joint
 
-                # log average over pairs (B) or (S, B)
-                # zi에 대해 sum 이미 되어버린 log_pw_joint(100, 100,1)을가지고 100을 sum out 시켜 marginal구함
-                log_marginal = log_mean_exp(log_pw_joint, 1).transpose(0, batch_dim) #128,128,1 -128,1-> 1,128
+        # log average over pairs (B) or (S, B)
+        # zi에 대해 sum 이미 되어버린 log_pw_joint(100, 100,1)을가지고 100을 sum out 시켜 marginal구함
+        log_marginal = log_mean_exp(log_pw_joint, 1).transpose(0, batch_dim)  # 128,128,1 -128,1-> 1,128
 
-                # log product over marginals (B) or (S, B): #128,128,1 -- 128,1 -->
-                # zi가 남아있는 log_pw(100, 100, 1, 10)에대해, 100을 sum out 시켜 marginal zi(100,1,10)를 만든후 zi들을 곱해버림(partial sum wrt dim=2)
-                log_prod_marginal = batch_sum(log_mean_exp(log_pw, 1),
-                                              sample_dim + 1, 0)
+        # log product over marginals (B) or (S, B): #128,128,1 -- 128,1 -->
+        # zi가 남아있는 log_pw(100, 100, 1, 10)에대해, 100을 sum out 시켜 marginal zi(100,1,10)를 만든후 zi들을 곱해버림(partial sum wrt dim=2)
+        log_prod_marginal = batch_sum(log_mean_exp(log_pw, 1),
+                                      sample_dim + 1, 0)
 
-                log_marginals = log_marginals + log_marginal
-                log_prod_marginals = log_prod_marginals + log_prod_marginal
-        # perform bias correction for log pairwise joint
-        bias_mat = torch.zeros_like(log_pw_joints)
-        log_pw_joints = log_pw_joints + bias_mat
-        log_pw_joints = log_mean_exp(log_pw_joints, 1).transpose(0, batch_dim)
-        return log_pw_joints, log_marginals, log_prod_marginals
+        log_marginals = log_marginals + log_marginal
+        log_prod_marginals = log_prod_marginals + log_prod_marginal
+    # perform bias correction for log pairwise joint
+    bias_mat = torch.zeros_like(log_pw_joints)
+    log_pw_joints = log_pw_joints + bias_mat
+    log_pw_joints = log_mean_exp(log_pw_joints, 1).transpose(0, batch_dim)
+    return log_pw_joints, log_marginals, log_prod_marginals
 
-def log_joint(dists,zs):
-        """Returns the log joint probability"""
-        log_prob = 0.0
-        for i, d in enumerate(dists):
-                log_p = d.log_prob(zs[i])
-                log_prob = log_prob + log_p
-        return log_prob
+
+def log_joint(dists, zs):
+    """Returns the log joint probability"""
+    log_prob = 0.0
+    for i, d in enumerate(dists):
+        log_p = d.log_prob(zs[i])
+        log_prob = log_prob + log_p
+    return log_prob

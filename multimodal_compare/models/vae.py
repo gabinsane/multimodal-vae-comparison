@@ -1,20 +1,24 @@
 # Base VAE class definition
+import math
+import os
+import pickle
+
+import cv2
 import numpy as np
-import torch, cv2
-import torch.nn as nn
+import torch
 import torch.distributions as dist
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader
+
+from data_proc.process_audio import numpy_to_wav
 from models import encoders, decoders
 from utils import get_mean, kl_divergence, load_images, lengths_to_mask
 from utils import one_hot_encode, output_onehot2text
 from visualization import t_sne, tensors_to_df, plot_kls_df
-from torch.utils.data import DataLoader
-import pickle, os
-from data_proc.process_audio import numpy_to_wav
-import torch.nn.functional as F
-import math
 
 
-class VaeDataset():
+class VaeDataset(object):
     """
 
     """
