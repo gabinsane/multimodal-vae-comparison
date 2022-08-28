@@ -3,43 +3,23 @@ import math
 import numpy as np
 import torch
 from torch.nn import Conv2d, BatchNorm3d, Sequential, TransformerEncoderLayer, Embedding, ReLU, TransformerEncoder, \
-    ModuleList, Module, Linear, Dropout
+    ModuleList, Module, Linear, Dropout, SiLU
 import torch.nn.functional as F
 from numpy import prod
 
 from models.NetworkTypes import NetworkTypes
 from models.nn_modules import PositionalEncoding, ConvNet, SamePadConv3d, AttentionResidualBlock
 from utils import Constants
-from modality_types import ModalityTypes
-from models.decoders import VaeDecoder
-
-class DencoderFactory(object):
-    @classmethod
-    def get_nework_classes(cls, enc_name, dec_name, n_latents, data_dim:tuple):
-        """
-        Instantiates the encoder and decoder networks
-
-       :param enc: encoder name
-       :type enc: str
-       :param dec: decoder name
-       :type dec: str
-       :return: returns encoder and decoder class
-       :rtype: tuple(object, object)
-       """
-        assert hasattr(encoders, "Enc_{}".format(enc_name)), "Did not find encoder {}".format(enc_name)
-        enc_obj = getattr(encoders, "Enc_{}".format(enc_name))(n_latents, data_dim)
-        assert hasattr(decoders, "Dec_{}".format(dec_name)), "Did not find decoder {}".format(dec_name)
-        dec_obj = getattr(decoders, "Dec_{}".format(dec_name))(n_latents, data_dim)
-        return enc_obj, dec_obj
+from models.modality_types import ModalityTypes
 
 
 class VaeEncoder(Module):
     def __init__(self, latent_dim, data_dim, modality_type:ModalityTypes, net_type:NetworkTypes):
-        super(VaeEncoder).__init__()
+        super().__init__()
         self.latent_dim = latent_dim
         self.data_dim = data_dim
-        self.modality_type = modality_type
         self.net_type = net_type
+        self.modality_type = modality_type
 
     def forward(self, x):
         """
@@ -54,7 +34,7 @@ class VaeEncoder(Module):
 
 
 # Classes
-class Enc_CNN(Module):
+class Enc_CNN(VaeEncoder):
     def __init__(self, latent_dim, data_dim):
         """
         CNN encoder for RGB images of size 64x64x3
@@ -64,14 +44,12 @@ class Enc_CNN(Module):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_CNN, self).__init__(latent_dim, data_dim)
-        # super(super(self.__class__).__class__).__init__()
-        self.net_type = "CNN"
+        super(Enc_CNN, self).__init__(latent_dim, data_dim, modality_type=ModalityTypes.IMAGE, net_type=NetworkTypes.CNN)
         hid_channels = 32
         kernel_size = 4
         hidden_dim = 256
         self.latent_dim = latent_dim
-        self.silu = torch.nn.SiLU()
+        self.silu = SiLU()
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         n_chan = 3
@@ -122,7 +100,7 @@ class Enc_CNN(Module):
         return mu, logvar
 
 
-class Enc_MNIST(Module):
+class Enc_MNIST(VaeEncoder):
     def __init__(self, latent_dim, data_dim):
         """
         Image encoder for the MNIST images
@@ -165,7 +143,7 @@ def extra_hidden_layer(hidden_dim):
     return Sequential(Linear(hidden_dim, hidden_dim), ReLU(True))
 
 
-class Enc_MNISTMoE(Module):
+class Enc_MNISTMoE(VaeEncoder):
     def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
         """
         Encoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -202,7 +180,7 @@ class Enc_MNISTMoE(Module):
         return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
 
 
-class Enc_SVHNMoE(Module):
+class Enc_SVHNMoE(VaeEncoder):
     def __init__(self, latent_dim, data_dim):
         """
         Encoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -246,7 +224,7 @@ class Enc_SVHNMoE(Module):
         return self.c1(e).squeeze(), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
 
 
-class Enc_SVHN(Module):
+class Enc_SVHN(VaeEncoder):
     def __init__(self, latent_dim, data_dim):
         """
         Image encoder for the SVHN dataset or images 32x32x3
@@ -290,7 +268,7 @@ class Enc_SVHN(Module):
         return mu, logvar
 
 
-class Enc_MNIST_DMVAE(Module):
+class Enc_MNIST_DMVAE(VaeEncoder):
     def __init__(self, latent_dim, data_dim, num_hidden=256, zPrivate_dim=1):
         """
         Encoder for the MNIST dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
@@ -335,7 +313,7 @@ class Enc_MNIST_DMVAE(Module):
         return [muPrivate, muShared], [stdPrivate, stdShared]
 
 
-class Enc_SVHN_DMVAE(Module):
+class Enc_SVHN_DMVAE(VaeEncoder):
     def __init__(self, latent_dim, data_dim, zPrivate_dim=4):
         """
         Encoder for the SVHN dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
@@ -394,7 +372,7 @@ class Enc_SVHN_DMVAE(Module):
 
 
 # Classes
-class Enc_FNN(Module):
+class Enc_FNN(VaeEncoder):
     def __init__(self, latent_dim, data_dim=1):
         """
         Fully connected layer encoder for any type of data
@@ -431,7 +409,7 @@ class Enc_FNN(Module):
         return self.fc21(e), lv
 
 
-class Enc_Audio(Module):
+class Enc_Audio(VaeEncoder):
     def __init__(self, latent_dim, data_dim=1):
         """
         Encoder for audio data
@@ -466,7 +444,7 @@ class Enc_Audio(Module):
         return mu, logvar
 
 
-class Enc_TransformerIMG(Module):
+class Enc_TransformerIMG(VaeEncoder):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=4, dropout=0.1, activation="gelu"):
         """
         Encoder for a sequence of images
@@ -503,14 +481,14 @@ class Enc_TransformerIMG(Module):
         # Convolutional layers
         cnn_kwargs = dict(stride=2, padding=1)
         self.convolve = torch.nn.DataParallel(
-            torch.nn.Sequential(Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs),
-                                torch.nn.SiLU(),
+            Sequential(Conv2d(n_chan, hid_channels, kernel_size, **cnn_kwargs),
+                                torch.SiLU(),
                                 Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                torch.nn.SiLU(),
+                                torch.SiLU(),
                                 Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                torch.nn.SiLU(),
+                                torch.SiLU(),
                                 Conv2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
-                                torch.nn.SiLU()))
+                                torch.SiLU()))
         self.downsample = torch.nn.DataParallel(Linear(np.product(self.reshape), self.latent_dim))
         # Transformer layers
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
@@ -555,7 +533,7 @@ class Enc_TransformerIMG(Module):
         return mu, logvar
 
 
-class Enc_VideoGPT(Module):
+class Enc_VideoGPT(VaeEncoder):
     def __init__(self, latent_dim, data_dim=1, n_res_layers=4, downsample=(2, 4, 4)):
         """
         Encoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
@@ -607,7 +585,7 @@ class Enc_VideoGPT(Module):
         return mu, logvar
 
 
-class Enc_Transformer(Module):
+class Enc_Transformer(VaeEncoder):
     """ Transformer VAE as implemented in https://github.com/Mathux/ACTOR"""
 
     def __init__(self, latent_dim, data_dim, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
@@ -645,7 +623,7 @@ class Enc_Transformer(Module):
         self.mu_layer = torch.nn.DataParallel(Linear(self.latent_dim, self.latent_dim))
         self.logvar_layer = torch.nn.DataParallel(Linear(self.latent_dim, self.latent_dim))
 
-        self.skelEmbedding = torch.nn.DataParallel(Linear(self.input_feats, self.latent_dim))
+        self.skel_Embeding = torch.nn.DataParallel(Linear(self.input_feats, self.latent_dim))
         self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(TransformerEncoderLayer(d_model=self.latent_dim,
                                                                              nhead=self.num_heads,
@@ -687,8 +665,8 @@ class Enc_Transformer(Module):
         return mu, logvar
 
 
-class Enc_TxtTransformer(Enc_Transformer):
-    def __init__(self, latent_dim, data_dim=1):
+class Enc_TxtTransformer(VaeEncoder):
+    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer encoder configured for character-level text reconstructions
 
@@ -697,8 +675,19 @@ class Enc_TxtTransformer(Enc_Transformer):
         :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_TxtTransformer, self).__init__(latent_dim=latent_dim, data_dim=data_dim)
+        super(Enc_TxtTransformer, self).__init__(latent_dim, data_dim, modality_type=ModalityTypes.TEXT,
+                                         net_type=NetworkTypes.TXTTRANSFORMER)
         self.net_type = "TxtTransformer"
+        self.njoints = data_dim[1]
+        self.nfeats = data_dim[2]
+        self.latent_dim = latent_dim
+
+        self.ff_size = ff_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.activation = activation
+        self.input_feats = self.njoints * self.nfeats
         self.embedding = Embedding(self.input_feats, 2)
         self.sequence_pos_encoder = PositionalEncoding(2, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(TransformerEncoderLayer(d_model=self.input_feats * 2,

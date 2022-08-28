@@ -38,7 +38,7 @@ class Config():
 
     def _get_mods_config(self, config):
         """
-        Retrieves the modality-specific configs from the .yml config
+        Makes a list of all modality-specific dicts (self.modality_1, ..., self.modality_n), loads labels if provided
         """
         mods = sorted([x for x in dir(self) if "modality" in x])
         for m in mods:

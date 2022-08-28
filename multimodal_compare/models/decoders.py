@@ -3,6 +3,7 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn import Module
 import torch.nn.functional as F
 from numpy import prod
 
@@ -14,9 +15,9 @@ from models.nn_modules import PositionalEncoding, AttentionResidualBlock, \
 from utils import Constants
 
 
-class VaeDecoder(nn.Module):
+class VaeDecoder(Module):
     def __init__(self, latent_dim, data_dim, modality_type:ModalityTypes, net_type:NetworkTypes):
-        super(VaeDecoder).__init__()
+        super().__init__()
         self.latent_dim = latent_dim
         self.data_dim = data_dim
         self.modality_type = modality_type
@@ -35,7 +36,7 @@ class VaeDecoder(nn.Module):
         raise NotImplementedError
 
 
-class Dec_CNN(nn.Module):
+class Dec_CNN(VaeDecoder):
     def __init__(self, latent_dim, data_dim):
         """
         CNN decoder for RGB images of size 64x64x3
@@ -45,7 +46,8 @@ class Dec_CNN(nn.Module):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_CNN, self).__init__()
+        super(Dec_CNN, self).__init__(latent_dim, data_dim,
+                                      modality_type=ModalityTypes.IMAGE, net_type=NetworkTypes.CNN)
         latent_dim = latent_dim
         self.datadim = data_dim
         self.net_type = "CNN"
@@ -102,7 +104,7 @@ class Dec_CNN(nn.Module):
         return d.squeeze().reshape(-1, *self.datadim), torch.tensor(0.75).to(z.device)
 
 
-class Dec_SVHN(nn.Module):
+class Dec_SVHN(VaeDecoder):
     def __init__(self, latent_dim, data_dim):
         """
         Image decoder for the SVHN dataset or images 32x32x3
@@ -150,7 +152,7 @@ def extra_hidden_layer(hidden_dim):
     return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
 
 
-class Dec_MNISTMoE(nn.Module):
+class Dec_MNISTMoE(VaeDecoder):
     def __init__(self, latent_dim, data_dim, num_hidden_layers=1):
         """
         Decoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -188,7 +190,7 @@ class Dec_MNISTMoE(nn.Module):
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
-class Dec_MNIST(nn.Module):
+class Dec_MNIST(VaeDecoder):
     def __init__(self, latent_dim, data_dim):
         """
         Image decoder for the MNIST images
@@ -229,7 +231,7 @@ class Dec_MNIST(nn.Module):
         return d.squeeze(0), torch.tensor(0.75).to(z.device)
 
 
-class Dec_MNIST_DMVAE(nn.Module):
+class Dec_MNIST_DMVAE(VaeDecoder):
     def __init__(self, latent_dim, data_dim, num_hidden=256, zPrivate_dim=1):
         """
         Decoder for the MNIST dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
@@ -271,7 +273,7 @@ class Dec_MNIST_DMVAE(nn.Module):
         return x, torch.tensor(0.75).to(x.device)
 
 
-class Dec_SVHN_DMVAE(nn.Module):
+class Dec_SVHN_DMVAE(VaeDecoder):
     def __init__(self, latent_dim, data_dim, zPrivate_dim=4):
         """
         Decoder for the SVHN dataset with private and shared latent space, source: https://github.com/seqam-lab/DMVAE
@@ -315,7 +317,7 @@ class Dec_SVHN_DMVAE(nn.Module):
         return x, torch.tensor(0.75).to(x.device)
 
 
-class Dec_SVHNMoE(nn.Module):
+class Dec_SVHNMoE(VaeDecoder):
     def __init__(self, latent_dim, data_dim):
         """
         Decoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -360,7 +362,7 @@ class Dec_SVHNMoE(nn.Module):
         return out, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
-class Dec_FNN(nn.Module):
+class Dec_FNN(VaeDecoder):
     def __init__(self, latent_dim, data_dim=1):
         """
         Fully connected layer decoder for any type of data
@@ -396,7 +398,7 @@ class Dec_FNN(nn.Module):
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
-class Dec_Audio(nn.Module):
+class Dec_Audio(VaeDecoder):
     def __init__(self, latent_dim, data_dim=1):
         """
         Decoder for audio data
@@ -431,7 +433,7 @@ class Dec_Audio(nn.Module):
         return output.reshape(-1, *self.data_dim), torch.tensor(0.75).to(z.device)
 
 
-class Dec_TransformerIMG(nn.Module):
+class Dec_TransformerIMG(VaeDecoder):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=4, dropout=0.1, activation="gelu"):
         """
         Decoder for a sequence of images
@@ -515,7 +517,7 @@ class Dec_TransformerIMG(nn.Module):
         return output.to(z.device), torch.tensor(0.75).to(z.device)
 
 
-class Dec_VideoGPT(nn.Module):
+class Dec_VideoGPT(VaeDecoder):
     def __init__(self, latent_dim, data_dim=1, n_res_layers=4):
         """
         Decoder for image sequences taken from https://github.com/wilson1yan/VideoGPT
@@ -534,7 +536,7 @@ class Dec_VideoGPT(nn.Module):
             nn.ReLU())
         n_times_upsample = np.array([int(math.log2(d)) for d in self.upsample])
         max_us = n_times_upsample.max()
-        self.convts = nn.ModuleList()
+        self.convts = ModuleList()
         for i in range(max_us):
             out_channels = 3 if i == max_us - 1 else latent_dim
             us = tuple([2 if d > 0 else 1 for d in n_times_upsample])
@@ -563,7 +565,7 @@ class Dec_VideoGPT(nn.Module):
         return h, torch.tensor(0.75).to(x.device)
 
 
-class Dec_Transformer(nn.Module):
+class Dec_Transformer(VaeDecoder):
     def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=4, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer decoder for arbitrary sequential data
@@ -639,8 +641,8 @@ class Dec_Transformer(nn.Module):
         return output.to(z.device), torch.tensor(0.75).to(z.device)
 
 
-class Dec_TxtTransformer(Dec_Transformer):
-    def __init__(self, latent_dim, data_dim=1):
+class Dec_TxtTransformer(VaeDecoder):
+    def __init__(self, latent_dim, data_dim=1, ff_size=1024, num_layers=2, num_heads=4, dropout=0.1, activation="gelu"):
         """
         Transformer decoder configured for character-level text reconstructions
 
@@ -649,8 +651,22 @@ class Dec_TxtTransformer(Dec_Transformer):
         :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, ff_size=1024, num_layers=2, num_heads=4, )
+        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, modality_type=ModalityTypes.TEXT,
+                                         net_type=NetworkTypes.TXTTRANSFORMER)
         self.net_type = "Transformer"
+        self.njoints = data_dim[1]
+        if len(data_dim) > 2:
+            self.nfeats = data_dim[2]
+        else:
+            self.nfeats = 1
+        self.data_dim = data_dim
+        self.latent_dim = latent_dim
+        self.ff_size = ff_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.activation = activation
+        self.input_feats = self.njoints * self.nfeats
         self.softmax = nn.Softmax(dim=2)
         self.sigmoid = nn.Sigmoid()
         self.conv2 = nn.ConvTranspose1d(self.latent_dim, self.input_feats,
