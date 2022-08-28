@@ -1,6 +1,8 @@
 import csv
 import glob
 import json
+from abc import ABC, abstractmethod
+
 import yaml
 from glob import glob
 
@@ -14,28 +16,176 @@ import torch
 import models
 import pickle
 from models import objectives
-from models.mmvae_base import MMVAE
+from models.mmvae_base import TorchMMVAE
 from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data
 
 
-def parse_args(pth):
-    """
-    Parses the YAML config provided in the file path
+# We have models, data, objectives
 
-    :param pth: Path to config
-    :type pth: str
-    :return: returns the config dict and modality-specific dict
-    :rtype: tuple(dict, dict)
+
+class MMVAEExperiment():
     """
-    if os.path.isdir(pth):
-        pth = os.path.join(pth, 'config.json')
-    with open(pth, 'r') as stream:
-        config = yaml.safe_load(stream)
-    modalities = []
-    for x in range(20):
-        if "modality_{}".format(x) in list(config.keys()):
-            modalities.append(config["modality_{}".format(x)])
-    return config, modalities
+    This class provides unified access to all assets of MMVAE experiments, i.e., trained models, training stats, config.
+    """
+
+    def __init__(self, path):
+        """
+        Initialize MMVAEExperiment class
+
+        :param path: path to the experiment directory
+        :type path: str
+        """
+        assert os.path.isdir(path), f"Directory {path} does not exist."
+        assert os.path.isfile(os.path.join(path, 'model.rar')), f"Directory {path} does not contain a model."
+        assert os.path.isfile(os.path.join(path, 'config.yml')), f"Directory {path} does not contain a config."
+        self.path = path
+
+        self.config = None
+        self.mods = None
+        self.model = None
+        self.data = None
+
+    def set_data(self, dataloader):
+        self.data = dataloader
+
+    def get_data(self):
+        if self.data is None:
+            raise ValueError(
+                'No data is specified. You can load the test data with exp.set_data(exp.get_model_train_test_data()[1])')
+        return self.data
+
+    def get_model_train_test_data(self):
+        model = self.get_model()
+        train_loader, test_loader = model.load_dataset(32,
+                                                       device=self.get_device())  # TODO: This seems to be not general enough
+        return train_loader, test_loader
+
+    def get_model(self):
+        """
+            Loads the model from the experiment directory
+
+            :return: model object
+            :rtype: object
+            """
+        if self.model is not None:
+            return self.model
+        device = torch.device("cuda")
+        config = self.get_config()
+        mods = self.get_modalities()
+        model_ = "VAE" if len(mods) == 1 else config["mixing"].lower()
+        modelC = getattr(models, model_)
+        params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
+                  [m["feature_dim"] for m in mods], ["image", "text"]]
+        if len(mods) == 1:
+            params = [x[0] for x in params]
+        model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
+        print('Loading model {} from {}'.format(model_.modelName, self.path))
+        model_.load_state_dict(torch.load(os.path.join(self.path, 'model.rar')))
+        model_._pz_params = model_._pz_params
+        model_.eval()
+        self.model = model_
+        return model_
+
+    def get_config(self):
+        """
+        Parses the YAML config provided in the file path
+
+        :param pth: Path to config
+        :type pth: str
+        :return: returns the config dict
+        :rtype: dict
+        """
+        if self.config is not None:
+            return self.config
+        if os.path.isdir(self.path):
+            conf_pth = os.path.join(self.path, 'config.json')
+        with open(conf_pth, 'r') as stream:
+            config = yaml.safe_load(stream)
+        self.config = config
+        return config
+
+    def get_modalities(self):
+        """
+        Loads the modalities of a model based on the config.
+        :return: returns list of modality-specific dicts
+        :rtype: list[]
+        """
+        if self.mods is not None:
+            return self.mods
+        config = self.get_config()
+        modalities = []
+        for x in range(20):
+            if "modality_{}".format(x) in list(config.keys()):
+                modalities.append(config["modality_{}".format(x)])
+        self.mods = modalities
+        return modalities
+
+    def make_evals(self):
+        for evaluation in Evaluations.__subclasses__():
+            evaluation.evaluation()
+
+    def get_device(self):
+        return 'cuda'
+
+
+class Evaluations(ABC):
+    """
+    Base class to register all evaluation methods with the experiment class.
+    """
+
+    @abstractmethod
+    def evaluation(self, exp: MMVAEExperiment):
+        pass
+
+
+class EstimateLogMarginal(Evaluations):
+    @classmethod
+    def evaluation(self, exp:MMVAEExperiment):
+        """
+        Estimate of the log-marginal likelihood of test data.
+
+        :param exp: Experiment object that specifies model, data, config, device etc.
+        :type exp: MMVAEExperiment
+        :return: marginal log-likelihood
+        :rtype: float32
+        """
+        model = exp.get_model()
+        test_data = exp.get_data()
+        assert isinstance(model, TorchMMVAE)
+
+        # train_loader, test_loader = model.load_dataset(32, device=device)
+        model.eval()
+        marginal_loglik = 0
+        objective = getattr(objectives, ('m_' if hasattr(model, 'vaes') else '')
+                            + ("_".join(("elbo", model.modelName)) if hasattr(model, 'vaes') else ["elbo"]))
+        with torch.no_grad():
+            for ix, dataT in enumerate(test_data):
+                data, masks = dataT
+                data = pad_seq_data(data, masks)
+                marginal_loglik += objective(model, data, ltype="lprob")[0]
+
+        marginal_loglik /= len(test_data.dataset)
+        return marginal_loglik
+
+
+# def parse_args(pth):
+#     """
+#     Parses the YAML config provided in the file path
+#
+#     :param pth: Path to config
+#     :type pth: str
+#     :return: returns the config dict and modality-specific dict
+#     :rtype: tuple(dict, dict)
+#     """
+#     if os.path.isdir(pth):
+#         pth = os.path.join(pth, 'config.json')
+#     with open(pth, 'r') as stream:
+#         config = yaml.safe_load(stream)
+#     modalities = []
+#     for x in range(20):
+#         if "modality_{}".format(x) in list(config.keys()):
+#             modalities.append(config["modality_{}".format(x)])
+#     return config, modalities
 
 
 plot_colors = ["blue", "green", "red", "cyan", "magenta", "orange", "navy", "maroon", "brown"]
@@ -103,7 +253,7 @@ def eval_sample(path):
     :type path: str
     """
     model = load_model(path)
-    assert isinstance(model, MMVAE)
+    assert isinstance(model, TorchMMVAE)
     N = 36
     samples = [s.cpu() for s in model.generate_samples(N)]
 
@@ -112,7 +262,7 @@ def eval_sample(path):
     print("Saved samples for {}".format(path))
 
 
-def plot_setup(xname, yname, pth, figname):
+def _plot_setup(xname, yname, pth, figname):
     """
     General plot set up functions
 
@@ -145,9 +295,9 @@ def plot_loss(path):
     losses = loss["Test Loss"]
     kld = loss["Test KLD"]
     plt.plot(epochs, losses, color='green', linestyle='solid', label="Loss")
-    plot_setup("Epochs", "Loss", path, "loss")
+    _plot_setup("Epochs", "Loss", path, "loss")
     plt.plot(epochs, kld, color='blue', linestyle='solid', label="KLD")
-    plot_setup("Epochs", "KLD", path, "KLD")
+    _plot_setup("Epochs", "KLD", path, "KLD")
     print("Saved loss plot")
 
 
@@ -179,7 +329,7 @@ def compare_loss(paths, label_tag):
         plt.clf()
 
 
-def get_all_csvs(pth):
+def _get_all_csvs(pth):
     """
     Extracts paths to all csv files within a directory and its subdirectories
 
@@ -201,7 +351,7 @@ def compare_models_numbers(pth):
     """
     f = open(os.path.join(pth[0], "comparison.csv"), 'w')
     writer = csv.writer(f)
-    all_csvs = get_all_csvs(pth)
+    all_csvs = _get_all_csvs(pth)
     header = None
     for c in all_csvs:
         model_csv = pd.read_csv(c, delimiter=",")
@@ -215,29 +365,29 @@ def compare_models_numbers(pth):
     print("Saved comparison at {}".format(os.path.join(pth[0], "comparison.csv")))
 
 
-def load_model(path):
-    """
-    Loads the model from directory path
-
-    :param path: path to model directory
-    :type path: str
-    :return: model object
-    :rtype: object
-    """
-    device = torch.device("cuda")
-    config, mods = parse_args(path)
-    model_ = "VAE" if len(mods) == 1 else config["mixing"].lower()
-    modelC = getattr(models, model_)
-    params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
-              [m["feature_dim"] for m in mods], ["image", "text"]]
-    if len(mods) == 1:
-        params = [x[0] for x in params]
-    model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
-    print('Loading model {} from {}'.format(model_.modelName, path))
-    model_.load_state_dict(torch.load(os.path.join(path, 'model.rar')))
-    model_._pz_params = model_._pz_params
-    model_.eval()
-    return model_
+# def load_model(path):
+#     """
+#     Loads the model from directory path
+#
+#     :param path: path to model directory
+#     :type path: str
+#     :return: model object
+#     :rtype: object
+#     """
+#     device = torch.device("cuda")
+#     config, mods = parse_args(path)
+#     model_ = "VAE" if len(mods) == 1 else config["mixing"].lower()
+#     modelC = getattr(models, model_)
+#     params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
+#               [m["feature_dim"] for m in mods], ["image", "text"]]
+#     if len(mods) == 1:
+#         params = [x[0] for x in params]
+#     model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
+#     print('Loading model {} from {}'.format(model_.modelName, path))
+#     model_.load_state_dict(torch.load(os.path.join(path, 'model.rar')))
+#     model_._pz_params = model_._pz_params
+#     model_.eval()
+#     return model_
 
 
 def get_traversal_samples(latent_dim, n_samples_per_dim):
@@ -282,7 +432,7 @@ def text_to_image(text, model, path):
         recons = model.forward([None, [txt_inp.unsqueeze(0), None]])[1]
         if model.modelName == 'moe':
             recons = recons[0]
-        image, recon_text = process_recons(recons)
+        image, recon_text = _process_recons(recons)
         txtoutputs.append(recon_text[0][0])
         img_outputs.append(image * 255)
         image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
@@ -290,7 +440,7 @@ def text_to_image(text, model, path):
     return img_outputs, txtoutputs
 
 
-def process_recons(recons):
+def _process_recons(recons):
     """
     Processes the reconstructions from the model so that they can be visualized
 
@@ -325,7 +475,7 @@ def image_to_text(imgs, model, path):
     model.eval()
     for i, w in enumerate(imgs):
         recons = model.forward([w.unsqueeze(0), None])[1]
-        image, recon_text = process_recons(recons)
+        image, recon_text = _process_recons(recons)
         txt_outputs.append(recon_text[0][0])
         img_outputs.append(image * 255)
         image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
@@ -333,7 +483,7 @@ def image_to_text(imgs, model, path):
     return img_outputs, txt_outputs
 
 
-def listdirs(rootdir):
+def _listdirs(rootdir):
     """
     Lists all subdirectories within a directory
 
@@ -351,8 +501,16 @@ def listdirs(rootdir):
 
 
 if __name__ == "__main__":
-    p = ""
-    model = load_model(p)
+    p = "../results/test"
+    exp = MMVAEExperiment(path=p)
+
+    # model = exp.get_model()
+    exp.set_data(exp.get_model_train_test_data()[1])
+    exp.make_evals()
+
+    # model = load_model(p)
     t = ["pieslice", "circle", "spiral", "line", "square", "semicircle", "pieslice", "circle", "spiral", "line",
          "square", "semicircle", "pieslice", "circle", "spiral", "line", "square", "semicircle"]
-    text_to_image(t, model, p)
+    # text_to_image(t, model, p)
+
+    print('still here')
