@@ -1,42 +1,44 @@
 # Multi-modal model specification
+from models.mmvae_base import TorchMMVAE
+
 import torch
 import torch.distributions as dist
-from utils import combinatorial
-from .mmvae_base import MMVAE
+import torch.nn as nn
+import torch.nn.functional as F
+from utils import combinatorial, Constants
 from torch.autograd import Variable
-from utils import Constants
 
 
-class MOE(MMVAE):
-    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+class MOE(TorchMMVAE):
+    def __init__(self, *vaes, model_config=None):
         """
         Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae
-
-        :param encoders: list of encoder names (strings) as listed in config
+        :param vaes: list of modality-specific vae objects
         :type encoders: list
-        :param decoders: list of decoder names (strings) as listed in config
-        :type decoders: list
-        :param data_paths: list of data paths for all modalities
-        :type data_paths: list
-        :param feature_dims: list of modality-specific feature dimensions as listed in config
-        :type feature_dims: list
-        :param mod_types: list of modality types (strings) from config
-        :type mod_types: list
-        :param n_latents: list of latent dimensionalities from config
-        :type n_latents: list
-        :param test_split: fraction of the data to be used for validation
-        :type test_split: float
-        :param batch_size: batch size
-        :type batch_size: int
+        :param model_cofig: config with model-specific parameters
+        :type model_config: dict
         """
+        super().__init__()
+        self.model_config = model_config
+        self.vaes = nn.ModuleList(vaes)
         self.modelName = 'moe'
-        super(MOE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents,
-                                  test_split, batch_size)
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+        ])
+        self.prior_dist = dist.Normal
+        self.pz = dist.Normal
+
+    def pz_params(self):
+        """
+        :return: returns parameters of the prior distribution
+        :rtype: tuple(nn.Parameter, nn.Parameter)
+        """
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
 
     def get_missing_modalities(self, mods):
         """
         Get indices of modalities that are missing
-
         :param mods: list of modalities
         :type mods: list
         :return: list of indices of missing modalities
@@ -51,7 +53,6 @@ class MOE(MMVAE):
     def forward(self, x, K=1):
         """
         Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
-
         :param x: input data, a list of modalities where missing modalities are replaced with None
         :type x: list
         :param K: sample K samples from the posterior
@@ -63,27 +64,23 @@ class MOE(MMVAE):
         # initialise cross-modal matrix
         px_zs = [[None for _ in range(len(self.vaes))] for _ in range(len(self.vaes))]
         for m, vae in enumerate(self.vaes):
-            if x[m] is not None:
-                qz_x, px_z, zs = vae(x[m], K=K)
+            tag = "mod_{}".format(m+1)
+            if x[tag]["data"] is not None:
+                qz_x, px_z, zs = vae(x[tag], K=K)
                 qz_xs.append(qz_x)
                 zss.append(zs)
                 px_zs[m][m] = px_z  # fill-in diagonal
         for ind in self.get_missing_modalities(x):
-            lat = zss[0] if "transformer" not in self.vaes[ind].dec_name.lower() else [zss[0], None]
-            px_zs[ind][ind] = self.vaes[ind].px_z(*self.vaes[ind].dec(lat))
+            px_zs[ind][ind] = self.vaes[ind].px_z(*self.vaes[ind].dec({"latents":zss[0], "masks":None}))
         for e, zs in enumerate(zss):
             for d, vae in enumerate(self.vaes):
                 if e != d:  # fill-in off-diagonal
-                    if "transformer" in self.vaes[d].dec_name.lower():
-                        px_zs[e][d] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None]))
-                    else:
-                        px_zs[e][d] = vae.px_z(*vae.dec(zs))
+                    px_zs[e][d] = vae.px_z(*vae.dec({"latents":zs, "masks":None}))
         return qz_xs, px_zs, zss
 
     def reconstruct(self, data, runPath, epoch, N=8):
         """
         Reconstruct data for individual experts
-
         :param data: list of input modalities
         :type data: list
         :param runPath: path to save data to
@@ -97,37 +94,51 @@ class MOE(MMVAE):
         self.process_reconstructions(recons_mat, data, epoch, runPath)
 
 
-class POE(MMVAE):
-    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+class POE(TorchMMVAE):
+    def __init__(self, *vaes, model_config=None):
         """
         Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public
-
-        :param encoders: list of encoder names (strings) as listed in config
+        :param vaes: list of modality-specific vae objects
         :type encoders: list
-        :param decoders: list of decoder names (strings) as listed in config
-        :type decoders: list
-        :param data_paths: list of data paths for all modalities
-        :type data_paths: list
-        :param feature_dims: list of modality-specific feature dimensions as listed in config
-        :type feature_dims: list
-        :param mod_types: list of modality types (strings) from config
-        :type mod_types: list
-        :param n_latents: list of latent dimensionalities from config
-        :type n_latents: list
-        :param test_split: fraction of the data to be used for validation
-        :type test_split: float
-        :param batch_size: batch size
-        :type batch_size: int
+        :param model_cofig: config with model-specific parameters
+        :type model_config: dict
         """
+        super().__init__()
+        self.vaes = nn.ModuleList(vaes)
+        self.model_config = model_config
         self.modelName = 'poe'
-        super(POE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents,
-                                  test_split, batch_size)
-        self.n_latents = n_latents
+        self.pz = dist.Normal
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+        ])
+        self.prior_dist = dist.Normal
+
+    def pz_params(self):
+        """
+        :return: returns parameters of the prior distribution
+        :rtype: tuple(nn.Parameter, nn.Parameter)
+        """
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
+    def reparameterize(self, mu, logvar):
+        """
+        General reparametrization trick during training
+        :param mu: vector of means
+        :type mu: torch.tensor
+        :param logvar: vector of log variances
+        :type logvar: torch.tensor
+        :return: reparametrized samples
+        :rtype: torch.tensor
+        """
+
+        std = logvar.mul(0.5).exp_()
+        eps = Variable(std.data.new(std.size()).normal_())
+        return eps.mul(std).add_(mu)
 
     def forward(self, inputs, K=1):
         """
         Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
-
         :param inputs: input data, a list of modalities where missing modalities are replaced with None
         :type inputs: list
         :param K: sample K samples from the posterior
@@ -138,24 +149,14 @@ class POE(MMVAE):
         mu, logvar, single_params = self.infer(inputs)
         recons = []
         qz_x = dist.Normal(*[mu, logvar])
-        if self.modelName == "mopoe":
-            z = self.reparameterize(mu, logvar).unsqueeze(0)
-        else:
-            z = qz_x.rsample(torch.Size([1]))
+        z = qz_x.rsample(torch.Size([1]))
         for ind, vae in enumerate(self.vaes):
-            if "transformer" in vae.dec_name.lower():
-                z_dec = [z, inputs[ind][1]] if inputs[ind] is not None else [z, None]
-            else:
-                z_dec = z
-            recons.append(vae.px_z(*vae.dec(z_dec)))
-        if self.modelName == "mopoe":
-            return qz_x, recons, [z], single_params
+            recons.append(vae.px_z*vae.dec({"latents": z, "masks": None}))
         return qz_x, recons, [z]
 
-    def infer(self, inputs):
+    def infer(self,inputs):
         """
         Inference module, calculates the joint posterior
-
         :param inputs: list of input modalities, missing mods are replaced with None
         :type inputs: list
         :return: joint posterior and individual posteriors
@@ -164,11 +165,10 @@ class POE(MMVAE):
         id = 0 if inputs[0] is not None else 1
         batch_size = len(inputs[id]) if len(inputs[id]) != 2 else len(inputs[id][0])
         # initialize the universal prior expert
-        mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
+        mu, logvar = self.prior_expert((1, batch_size, self.vaes[0].n_latents), use_cuda=True)
         for ix, modality in enumerate(inputs):
             if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(
-                    modality.to("cuda") if not isinstance(modality, list) else modality)
+                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
                 mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
                 logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
         mu_before, logvar_before = mu, logvar
@@ -176,10 +176,9 @@ class POE(MMVAE):
         mu, logvar = self.product_of_experts(mu, logvar)
         return mu, logvar, [mu_before[1:], logvar_before[1:]]
 
-    def product_of_experts(mu, logvar):
+    def product_of_experts(self, mu, logvar):
         """
         Calculated the product of experts for input data
-
         :param mu: list of means
         :type mu: list
         :param logvar: list of logvars
@@ -199,7 +198,6 @@ class POE(MMVAE):
     def prior_expert(self, size, use_cuda=False):
         """Universal prior expert. Here we use a spherical
         Gaussian: N(0, 1).
-
         @param size: integer
                      dimensionality of Gaussian
         @param use_cuda: boolean [default: False]
@@ -220,42 +218,57 @@ class POE(MMVAE):
             recons_mat.append(rec)
         self.process_reconstructions(recons_mat, data, epoch, runPath)
 
-
-class MoPOE(POE):
-    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+class MoPOE(TorchMMVAE):
+    def __init__(self, *vaes, model_config=None):
         """
-        Multimodal Variaional Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE
-
-        :param encoders: list of encoder names (strings) as listed in config
+        Multimodal Variational Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE
+        :param vaes: list of modality-specific vae objects
         :type encoders: list
-        :param decoders: list of decoder names (strings) as listed in config
-        :type decoders: list
-        :param data_paths: list of data paths for all modalities
-        :type data_paths: list
-        :param feature_dims: list of modality-specific feature dimensions as listed in config
-        :type feature_dims: list
-        :param mod_types: list of modality types (strings) from config
-        :type mod_types: list
-        :param n_latents: list of latent dimensionalities from config
-        :type n_latents: list
-        :param test_split: fraction of the data to be used for validation
-        :type test_split: float
-        :param batch_size: batch size
-        :type batch_size: int
+        :param model_cofig: config with model-specific parameters
+        :type model_config: dict
         """
+        super().__init__()
+        self.vaes = nn.ModuleList(vaes)
+        self.model_config = model_config
         self.modelName = 'mopoe'
-        super(MoPOE, self).__init__(encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split,
-                                    batch_size)
-        self.n_latents = n_latents
-        self.modelName = "mopoe"
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+        ])
+        self.prior_dist = dist.Normal
+
+    def pz_params(self):
+        """
+        :return: returns parameters of the prior distribution
+        :rtype: tuple(nn.Parameter, nn.Parameter)
+        """
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
+    def forward(self, inputs, K=1):
+        """
+        Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
+        :param inputs: input data, a list of modalities where missing modalities are replaced with None
+        :type inputs: list
+        :param K: sample K samples from the posterior
+        :type K: int
+        :return: a list of posterior distributions, a list of reconstructions and latent samples
+        :rtype: tuple(list, list, list)
+        """
+        mu, logvar, single_params = self.infer(inputs)
+        recons = []
+        qz_x = dist.Normal(*[mu, logvar])
+        z = self.reparameterize(mu, logvar).unsqueeze(0)
+        for ind, vae in enumerate(self.vaes):
+            recons.append(vae.px_z(*vae.dec({"latents": z, "masks": None})))
+        return qz_x, recons, [z], single_params
+        return qz_x, recons, [z]
 
     def infer(self, inputs, num_samples=None):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
         for ix, modality in enumerate(inputs):
             if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(
-                    modality.to("cuda") if not isinstance(modality, list) else modality)
+                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
                 mu[ix] = mod_mu.unsqueeze(0)
                 logvar[ix] = mod_logvar.unsqueeze(0)
         mus, logvars = torch.Tensor().cuda(), torch.Tensor().cuda()
@@ -283,6 +296,7 @@ class MoPOE(POE):
         std = logvar.mul(0.5).exp_()
         eps = Variable(std.data.new(std.size()).normal_())
         return eps.mul(std).add_(mu)
+
 
     def reweight_weights(self, w):
         return w / w.sum()
@@ -321,38 +335,36 @@ class MoPOE(POE):
         return [mu_sel, logvar_sel]
 
 
-class DMVAE(MMVAE):
-    def __init__(self, encoders, decoders, data_paths, feature_dims, mod_types, n_latents, test_split, batch_size):
+class DMVAE(TorchMMVAE):
+    def __init__(self, *vaes, model_config=None):
         """
         Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE
-
-        :param encoders: list of encoder names (strings) as listed in config
+        :param vaes: list of modality-specific vae objects
         :type encoders: list
-        :param decoders: list of decoder names (strings) as listed in config
-        :type decoders: list
-        :param data_paths: list of data paths for all modalities
-        :type data_paths: list
-        :param feature_dims: list of modality-specific feature dimensions as listed in config
-        :type feature_dims: list
-        :param mod_types: list of modality types (strings) from config
-        :type mod_types: list
-        :param n_latents: list of latent dimensionalities from config
-        :type n_latents: list
-        :param test_split: fraction of the data to be used for validation
-        :type test_split: float
-        :param batch_size: batch size
-        :type batch_size: int
+        :param model_cofig: config with model-specific parameters
+        :type model_config: dict
         """
+        super().__init__()
+        self.model_config = model_config
+        self.vaes = nn.ModuleList(vaes)
         self.modelName = 'dmvae'
-        super(DMVAE, self).__init__(dist.Normal, encoders, decoders, data_paths, feature_dims, mod_types, n_latents,
-                                    test_split, batch_size)
-        self.n_latents = n_latents
+        self.pz = dist.Normal
         self.qz_x = dist.Normal
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+        ])
+
+    def pz_params(self):
+        """
+        :return: returns parameters of the prior distribution
+        :rtype: tuple(nn.Parameter, nn.Parameter)
+        """
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
 
     def forward(self, x, K=1):
         """
         Forward pass that takes input data and outputs a list of private and shared posteriors, reconstructions and latent samples
-
         :param inputs: input data, a list of modalities where missing modalities are replaced with None
         :type inputs: list
         :param K: sample K samples from the posterior
@@ -360,7 +372,7 @@ class DMVAE(MMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        qz_xs_shared, px_zs = [], [[None for _ in range(len(self.vaes) + 1)] for _ in range(len(self.vaes))]
+        qz_xs_shared, px_zs= [], [[None for _ in range(len(self.vaes)+1)] for _ in range(len(self.vaes))]
         qz_xs_private = [None for _ in range(len(self.vaes))]
         # initialise cross-modal matrix
         for m, vae in enumerate(self.vaes):
@@ -374,20 +386,17 @@ class DMVAE(MMVAE):
         zss = []
         for d, vae in enumerate(self.vaes):
             for e, dist in enumerate(all_shared):
-                zs_shared = dist.rsample(torch.Size([K]))
-                zs_private = qz_xs_private[d].rsample(torch.Size([K]))
-                zs = torch.cat([zs_private, zs_shared], -1)[0]
-                zss.append(zs)
-                if "transformer" in vae.dec_name.lower():
-                    px_zs[d][e] = vae.px_z(*vae.dec([zs, x[d][1]] if x[d] is not None else [zs, None]))
-                else:
-                    px_zs[d][e] = vae.px_z(*vae.dec(zs))
+                    zs_shared = dist.rsample(torch.Size([K]))
+                    zs_private = qz_xs_private[d].rsample(torch.Size([K]))
+                    zs = torch.cat([zs_private, zs_shared], -1)[0]
+                    zss.append(zs)
+                    px_zs[d][e] = vae.px_z(*vae.dec({"latents": zs, "masks": None}))
         return qz_xs_private + all_shared, px_zs, zss
+
 
     def apply_poe(self, qz_xs_shared):
         """
         Applies the product of experts to the shared posteriors
-
         :param qz_xs_shared: list of posteriors for all modalities
         :type qz_xs_shared: list
         :return: joint means and standard deviations
@@ -404,10 +413,10 @@ class DMVAE(MMVAE):
         muS = muS * (stdS ** 2)
         return muS, stdS
 
+
     def logsumexp(self, x, dim=None, keepdim=False):
         """
         A smooth maximum function
-
         :param x: input data
         :type x: torch.tensor
         :param dim: dimension

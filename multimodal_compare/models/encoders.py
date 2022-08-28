@@ -79,7 +79,7 @@ class Enc_CNN(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        x = torch.stack(x) if isinstance(x, list) else x
+        x = x["data"]
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
         # Convolutional layers with ReLu activations
         x = self.silu(self.conv1(x.float()))
@@ -130,6 +130,7 @@ class Enc_MNIST(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         h = x.view(*x.size()[:-3], -1)
         h = self.enc(h.float())
         h = h.view(h.size(0), -1)
@@ -175,6 +176,7 @@ class Enc_MNISTMoE(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         e = self.enc(x.view(*x.size()[:-3], -1).float())  # flatten data
         lv = self.fc22(e)
         return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
@@ -219,6 +221,7 @@ class Enc_SVHNMoE(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         e = self.enc(x.float())
         lv = self.c2(e).squeeze()
         return self.c1(e).squeeze(), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
@@ -253,6 +256,7 @@ class Enc_SVHN(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         h = self.conv1(x.float())
         h = self.relu(h)
         h = self.conv2(h)
@@ -302,6 +306,7 @@ class Enc_MNIST_DMVAE(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         hiddens = self.enc_hidden(x.reshape(1, x.shape[0], -1).float())
         stats = self.fc(hiddens)
         muPrivate = stats[:, :, :self.zPrivate_dim]
@@ -358,6 +363,7 @@ class Enc_SVHN_DMVAE(VaeEncoder):
         :return: list of private and shared tensors of means, list of private and shared tensors of log variances
         :rtype: tuple(list, list)
         """
+        x = x["data"]
         hiddens = self.enc_hidden(x.float())
         hiddens = hiddens.view(hiddens.size(0), -1)
         stats = self.fc(hiddens)
@@ -401,6 +407,7 @@ class Enc_FNN(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         x = (x).float()
         e = torch.relu(self.lin1(x.view(x.shape[0], -1)))
         e = torch.relu(self.lin2(e))
@@ -435,6 +442,7 @@ class Enc_Audio(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         inputs = torch.stack(x).cuda() if isinstance(x, list) else x
         output = self.TCN(inputs.float()).permute(0, 2, 1)
         x = output.reshape(inputs.shape[0], -1)
@@ -511,15 +519,11 @@ class Enc_TransformerIMG(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        if isinstance(batch, list):
-            x, mask = batch
-            x = torch.stack(x).cuda() if isinstance(x, list) else x
-        else:
-            x, mask = batch, None
+        x = batch["data"]
+        mask = batch["masks"]
         bs, nframes = x.shape[0], x.shape[1]
         imgs_feats = []
         for i in range(x.shape[1]):
-            # imgs_feats.append(self.downsample(self.conv_pretrained(x[:, i, :].permute(0, 3, 2, 1).float())))
             imgs_feats.append(
                 self.downsample(self.convolve(x[:, i, :].permute(0, 3, 2, 1).float()).view(-1, np.prod(self.reshape))))
         x = torch.stack(imgs_feats)
@@ -574,6 +578,7 @@ class Enc_VideoGPT(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = x["data"]
         h = x.permute(0, 4, 1, 2, 3)
         for conv in self.convs:
             h = F.relu(conv(h.float()))
@@ -642,11 +647,8 @@ class Enc_Transformer(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        if isinstance(batch[0], list):
-            x = torch.stack(batch[0]).float()
-        else:
-            x = (batch[0]).float()
-        mask = batch[1]
+        x = batch["data"]
+        mask = batch["masks"]
         bs, nframes, njoints, nfeats = x.shape
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = x.permute((1, 0, 2, 3)).reshape(nframes, bs, njoints * nfeats)
@@ -709,11 +711,8 @@ class Enc_TxtTransformer(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        if isinstance(batch[0], list):
-            x = torch.stack(batch[0]).float()
-        else:
-            x = (batch[0]).float()
-        mask = batch[1] if len(batch) > 1 else None
+        x = batch["data"]
+        mask = batch["masks"]
         bs, nframes, njoints = x.shape
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = self.embedding(x.cuda().long())

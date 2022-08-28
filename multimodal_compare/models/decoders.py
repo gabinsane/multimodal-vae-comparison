@@ -83,6 +83,7 @@ class Dec_CNN(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         if len(z.shape) == 2:
             batch_size = z.size(0)
         else:
@@ -134,6 +135,7 @@ class Dec_SVHN(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         z = z.squeeze(0)
         z = self.linear(z)
         z = z.view(-1, z.size(-1), 1, 1)
@@ -184,6 +186,7 @@ class Dec_MNISTMoE(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         p = self.fc3(self.dec(z))
         d = torch.sigmoid(p.view(*z.size()[:-1], *[1, 28, 28]))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
@@ -223,6 +226,7 @@ class Dec_MNIST(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         x_hat = self.dec(z)
         x_hat = self.fc3(x_hat)
         x_hat = self.sigmoid(x_hat)
@@ -268,6 +272,7 @@ class Dec_MNIST_DMVAE(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         hiddens = self.dec_hidden(z)
         x = self.dec_image(hiddens)
         return x, torch.tensor(0.75).to(x.device)
@@ -311,6 +316,7 @@ class Dec_SVHN_DMVAE(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         hiddens = self.dec_hidden(z)
         hiddens = hiddens.view(-1, 256, 2, 2)
         x = self.dec_image(hiddens)
@@ -355,6 +361,7 @@ class Dec_SVHNMoE(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         z = z.unsqueeze(-1).unsqueeze(-1)  # fit deconv layers
         out = self.dec(z.view(-1, *z.size()[-3:]))
         out = out.view(*z.size()[:-3], *out.size()[1:])
@@ -390,6 +397,7 @@ class Dec_FNN(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         p = torch.relu(self.lin1(z))
         p = torch.relu(self.lin2(p))
         p = torch.relu(self.lin3(p))
@@ -426,6 +434,7 @@ class Dec_Audio(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        z = z["latents"]
         out = torch.relu(self.lin1(z))
         output = self.TCN(out.float().reshape(-1, *self.reshape))
         x = output.reshape(-1, 128 * 3)
@@ -496,11 +505,8 @@ class Dec_TransformerIMG(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        if isinstance(batch, list):
-            z, mask = batch
-        else:
-            z = batch
-            mask = None
+        z = batch["latents"]
+        mask = batch["masks"]
         latent_dim = z.shape[-1]
         bs = z.shape[1]
         mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(
@@ -545,7 +551,7 @@ class Dec_VideoGPT(VaeDecoder):
             n_times_upsample -= 1
         self.upsample = torch.nn.DataParallel(nn.Linear(latent_dim, latent_dim * 16 * 16 * 3))
 
-    def forward(self, x):
+    def forward(self, z):
         """
         Forward pass
 
@@ -554,6 +560,7 @@ class Dec_VideoGPT(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
+        x = z["latents"]
         x_upsampled = self.upsample(x)
         h = self.res_stack(x_upsampled.view(-1, x.shape[2], 3, 16, 16))
         for i, convt in enumerate(self.convts):
@@ -620,7 +627,8 @@ class Dec_Transformer(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        z, mask = batch[0], batch[1]
+        z = batch["latents"]
+        mask = batch["masks"]
         z = z.reshape(-1, self.latent_dim).unsqueeze(0)
         latent_dim = z.shape[-1]
         bs = z.shape[1]
@@ -669,12 +677,21 @@ class Dec_TxtTransformer(VaeDecoder):
         self.input_feats = self.njoints * self.nfeats
         self.softmax = nn.Softmax(dim=2)
         self.sigmoid = nn.Sigmoid()
+        self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.latent_dim, self.dropout))
         self.conv2 = nn.ConvTranspose1d(self.latent_dim, self.input_feats,
                                         kernel_size=4,
                                         stride=2,
                                         padding=1,
                                         dilation=1,
                                         output_padding=0)
+        seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.latent_dim,
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=activation))
+        self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
+                                                                           num_layers=self.num_layers))
+        self.finallayer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.input_feats))
 
     def forward(self, batch):
         """
@@ -685,7 +702,8 @@ class Dec_TxtTransformer(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        z, mask = batch[0], batch[1]
+        z = batch["latents"]
+        mask = batch["masks"]
         z = z.reshape(-1, self.latent_dim).unsqueeze(0)
         latent_dim = z.shape[-1]
         bs = z.shape[1]
