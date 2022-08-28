@@ -16,15 +16,9 @@ from .vae import VAE
 
 
 class BaseMMVAE(object):
+    modelname = 'basemmvae'
 
-    @classmethod
-    def shorthand(cls):
-        """
-        Returns a shorthand that is used to import inheriting classes automatically
-        Returns: str
 
-        """
-        return 'basemmvae'
 
     @abc.abstractmethod
     def forward(self, inputs, K=1):
@@ -69,6 +63,22 @@ class TorchMMVAE(BaseMMVAE, nn.Module):
     """
     Base class for all PyTorch based MMVAE implementations.
     """
+
+    def __init__(self):
+        super().__init__()
+
+        self.vaes = []
+        self.mod_types = []
+        self.data_dims = []
+
+    def forward(self, inputs, K=1, mods=[]):
+        pass
+
+    def encode(self, inputs, K=1, mods=[]):
+        pass
+
+    def decode(self, x, K=1, mods=[]):
+        pass
 
     def infer(self, inputs):
         """

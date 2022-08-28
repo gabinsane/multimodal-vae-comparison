@@ -6,10 +6,33 @@ import torch.nn as nn
 import torch.nn.functional as F
 from numpy import prod
 
+from models.NetworkTypes import NetworkTypes
+from models.modality_types import ModalityTypes
 from models.nn_modules import DeconvNet
 from models.nn_modules import PositionalEncoding, AttentionResidualBlock, \
     SamePadConvTranspose3d
 from utils import Constants
+
+
+class VaeDecoder(nn.Module):
+    def __init__(self, latent_dim, data_dim, modality_type:ModalityTypes, net_type:NetworkTypes):
+        super(VaeDecoder).__init__()
+        self.latent_dim = latent_dim
+        self.data_dim = data_dim
+        self.modality_type = modality_type
+        self.net_type = net_type
+
+
+    def forward(self, x):
+        """
+            Forward pass
+
+            :param x: data batch
+            :type x: list, torch.tensor
+            :return: tensor of means, tensor of log variances
+            :rtype: tuple(torch.tensor, torch.tensor)
+        """
+        raise NotImplementedError
 
 
 class Dec_CNN(nn.Module):

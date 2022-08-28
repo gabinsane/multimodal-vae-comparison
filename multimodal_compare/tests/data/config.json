@@ -13,7 +13,7 @@ modality_1:
   - 64
   - 3
   mod_type: image
-  path: ./data/level2/image
+  path: ../data/level2/image
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
@@ -22,7 +22,7 @@ modality_2:
   - 27
   - 1
   mod_type: text
-  path: ./data/level2/attrs.pkl
+  path: ../data/level2/attrs.pkl
 n_latents: 64
 obj: elbo
 optimizer: adam

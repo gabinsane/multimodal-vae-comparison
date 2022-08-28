@@ -9,6 +9,7 @@ from eval.infer import plot_loss, eval_reconstruct, eval_sample
 import models
 from models import objectives
 from utils import Logger, save_model, unpack_data, pad_seq_data, transpose_dataloader, get_torch_mean
+from models.dataloader import load_dataset
 
 
 class Trainer(object):
@@ -32,6 +33,7 @@ class Trainer(object):
         self.objective = None
         self.mPath = None
         self.model = None
+
         self.setup()
 
     def setup(self):
@@ -42,7 +44,9 @@ class Trainer(object):
         self._get_model()
         self._setup_savedir()
         self._configure_optimizer()
-        self.train_loader, self.test_loader = self.model.load_dataset(self.config["batch_size"], device=self.device)
+        self.train_loader, self.test_loader = load_dataset(self.model, self.config["batch_size"], device=self.device)
+
+        # self.train_loader, self.test_loader = self.model.load_dataset(self.config["batch_size"], device=self.device)
         self.objective = getattr(objectives, ('multimodal_' if hasattr(self.model, 'vaes') else '')
                                  + ("_".join((self.config["obj"], self.config["mixing"])) if hasattr(self.model, 'vaes')
                                     else self.config["obj"]))

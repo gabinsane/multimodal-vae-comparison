@@ -5,7 +5,29 @@ import time
 import glob, imageio
 import numpy as np
 import torch
-import torch.nn.functional as F
+
+
+def get_root_folder():
+    return os.path.dirname(__file__)
+
+
+def get_path_type(path):
+    """
+    See if the provided data path is supported.
+
+    :param path: Path to the dataset
+    :type path: str
+    :return: recognised type of the data
+    :rtype: str
+    """
+    assert os.path.exists(path), "Path does not exist: {}".format(path)
+    if os.path.isdir(path):
+        return "dir"
+    if path[-4:] == ".pth":
+        return "torch"
+    if path[-4:] == ".pkl":
+        return "pickle"
+    raise Exception("Unrecognized dataset format. Supported types are: .pkl, .pth or directory with images")
 
 
 def pad_seq_data(data, masks):
@@ -314,3 +336,20 @@ def log_joint(dists, zs):
         log_p = d.log_prob(zs[i])
         log_prob = log_prob + log_p
     return log_prob
+
+
+def check_img_normalize(data):
+    """
+    Normalizes image data between 0 and 1 (if needed)
+
+    :param data: input images for normalisation
+    :type data: Union[torch.tensor, list]
+    :return: normalised data
+    :rtype: list, torch.tensor
+    """
+    if isinstance(data, list):
+        if torch.max(torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)) > 1:
+            data = [x / 256 for x in data]
+    else:
+        data = data / 256 if torch.max(data) > 1 else data
+    return data
