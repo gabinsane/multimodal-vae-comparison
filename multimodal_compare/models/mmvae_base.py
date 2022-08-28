@@ -1,18 +1,8 @@
 # Base MMVAE class definition, common for PoE, MoE, MoPoE
 import abc
-from itertools import combinations
 import torch, os
 import torch.nn as nn
-import torch.nn.functional as F
 from utils import get_mean, kl_divergence, lengths_to_mask, output_onehot2text
-from data_proc.process_audio import numpy_to_wav
-from visualization import t_sne, tensors_to_df, plot_kls_df
-from torch.utils.data import DataLoader
-from torchnet.dataset import TensorDataset
-import numpy as np
-from torch.autograd import Variable
-import cv2, math
-from .vae import VAE
 
 
 class BaseMMVAE(object):
@@ -69,13 +59,13 @@ class TorchMMVAE(BaseMMVAE, nn.Module):
         self.mod_types = []
         self.data_dims = []
 
-    def forward(self, inputs, K=1, mods=[]):
+    def forward(self, inputs, K=1):
         pass
 
-    def encode(self, inputs, K=1, mods=[]):
+    def encode(self, inputs, K=1):
         pass
 
-    def decode(self, x, K=1, mods=[]):
+    def decode(self, x, K=1):
         pass
 
     def infer(self, inputs):
@@ -87,27 +77,14 @@ class TorchMMVAE(BaseMMVAE, nn.Module):
         :return: joint posterior and individual posteriors
         :rtype: tuple(torch.tensor, torch.tensor, list, list)
         """
-        id = 0 if inputs[0] is not None else 1
-        batch_size = len(inputs[id]) if len(inputs[id]) != 2 else len(inputs[id][0])
-        # initialize the universal prior expert
-        mu, logvar = self.prior_expert((1, batch_size, self.n_latents), use_cuda=True)
-        for ix, modality in enumerate(inputs):
-            if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(
-                    modality.to("cuda") if not isinstance(modality, list) else modality)
-                mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
-                logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
-        mu_before, logvar_before = mu, logvar
-        # product of experts to combine gaussians
-        mu, logvar = self.product_of_experts(mu, logvar)
-        return mu, logvar, [mu_before[1:], logvar_before[1:]]
+        raise NotImplementedError
 
     def reconstruct(self, data):
         """
         Reconstructs the input data
 
-        :param data: list of input modalities
-        :type data: list
+        :param data: dict of input modalities
+        :type data: dict
         :return: reconstructions
         :rtype: list
         """

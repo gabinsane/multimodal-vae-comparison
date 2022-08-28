@@ -58,7 +58,7 @@ class MNIST_SVHN(BaseDataset):
         self.path = pth
 
     def _mod_specific_fns(self):
-        return {"mnist": self._process_mnist(), "svhn": self._process_svhn()}
+        return {"mnist": self._process_mnist, "svhn": self._process_svhn}
 
     def _process_mnist(self):
         data = [torch.from_numpy(np.asarray(x.reshape(1, 28, 28)).astype(np.float)) for x in self.get_data_raw()]

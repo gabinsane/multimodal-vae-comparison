@@ -35,8 +35,8 @@ class DataModule(LightningDataModule):
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
             self.dataset_val.append(d[int(len(d) * (1 - self.val_split)):])
         if len(self.dataset_train) == 1:
-            self.dataset_train = self.dataset_train[0]
-            self.dataset_val = self.dataset_val[0]
+            self.dataset_train = TensorDataset(self.dataset_train[0])
+            self.dataset_val = TensorDataset(self.dataset_val[0])
         else:
             self.dataset_train = TensorDataset(self.dataset_train)
             self.dataset_val = TensorDataset(self.dataset_val)
@@ -63,14 +63,14 @@ class DataModule(LightningDataModule):
                 modality = [x[i] for x in batch]
                 b_dict.update(self.prepare_singlemodal(torch.stack(modality), i+1))
         else:
-            b_dict.update(self.prepare_singlemodal(batch, 1))
+            b_dict.update(self.prepare_singlemodal(torch.stack(batch), 1))
         return b_dict
 
 
     def train_dataloader(self) -> DataLoader:
         return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=os.cpu_count())
+                          num_workers=4)
 
     def val_dataloader(self) -> DataLoader:
         return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=os.cpu_count())
+                          num_workers=4)
