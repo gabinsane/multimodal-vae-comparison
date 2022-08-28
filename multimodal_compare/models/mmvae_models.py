@@ -24,7 +24,7 @@ class MOE(TorchMMVAE):
         self.modelName = 'moe'
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
         ])
         self.prior_dist = dist.Normal
         self.pz = dist.Normal
@@ -110,7 +110,7 @@ class POE(TorchMMVAE):
         self.pz = dist.Normal
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
         ])
         self.prior_dist = dist.Normal
 
@@ -234,7 +234,7 @@ class MoPOE(TorchMMVAE):
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
         ])
         self.prior_dist = dist.Normal
 
@@ -352,7 +352,7 @@ class DMVAE(TorchMMVAE):
         self.qz_x = dist.Normal
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
         ])
 
     def pz_params(self):
