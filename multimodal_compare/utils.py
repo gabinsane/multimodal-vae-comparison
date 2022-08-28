@@ -1,11 +1,11 @@
 import math
 import os, csv
 import shutil
-import time
+import pathlib
 import glob, imageio
 import numpy as np
 import torch
-
+import pickle
 
 def get_root_folder():
     return os.path.dirname(__file__)
@@ -63,6 +63,26 @@ def load_images(path, dim):
         dataset = generate(images)
         return dataset
 
+def load_pickle(pth):
+        with open(pth, 'rb') as handle:
+            return pickle.load(handle)
+
+def load_data(path):
+    """
+    Returns appropriate method for data loading based on path suffix
+    :param path: Path to data
+    :type path: str
+    :return: method to load data
+    :rtype: object
+    """
+    assert os.path.exists(path), "Path does not exist: {}".format(path)
+    if os.path.isdir(path):
+        return load_images(path)
+    if pathlib.Path(path).suffix == ".pth":
+        return torch.load(path)
+    if pathlib.Path(path).suffix == ".pkl":
+        return load_pickle(path)
+    raise Exception("Unrecognized dataset format. Supported types are: .pkl, .pth or directory with images")
 
 def lengths_to_mask(lengths):
     max_len = max(lengths)
