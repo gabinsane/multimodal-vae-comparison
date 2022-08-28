@@ -235,6 +235,7 @@ class MoPOE(TorchMMVAE):
         self.vaes = nn.ModuleList(vaes)
         self.model_config = model_config
         self.modelName = 'mopoe'
+        self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
@@ -268,13 +269,14 @@ class MoPOE(TorchMMVAE):
         return qz_x, recons, [z], single_params
         return qz_x, recons, [z]
 
-    def infer(self, inputs, num_samples=None):
+    def infer(self, x, num_samples=None):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
-        for ix, modality in enumerate(inputs):
-            if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
-                mu[ix] = mod_mu.unsqueeze(0)
-                logvar[ix] = mod_logvar.unsqueeze(0)
+        for m, vae in enumerate(self.vaes):
+            tag = "mod_{}".format(m+1)
+            if x[tag]["data"] is not None:
+                mod_mu, mod_logvar = vae.enc(x[tag])
+                mu[m] = mod_mu.unsqueeze(0)
+                logvar[m] = mod_logvar.unsqueeze(0)
         mus, logvars = torch.Tensor().cuda(), torch.Tensor().cuda()
         distr_subsets = dict()
         for k, subset in enumerate(self.subsets):
@@ -301,6 +303,24 @@ class MoPOE(TorchMMVAE):
         eps = Variable(std.data.new(std.size()).normal_())
         return eps.mul(std).add_(mu)
 
+    def product_of_experts(self, mu, logvar):
+        """
+        Calculated the product of experts for input data
+        :param mu: list of means
+        :type mu: list
+        :param logvar: list of logvars
+        :type logvar: list
+        :return: joint posterior
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
+        eps = 1e-8
+        var = torch.exp(logvar) + eps
+        # precision of i-th Gaussian expert at point x
+        T = 1. / var
+        pd_mu = torch.sum(mu * T, dim=0) / torch.sum(T, dim=0)
+        pd_var = 1. / torch.sum(T, dim=0)
+        pd_logvar = pd_var
+        return pd_mu, pd_logvar
 
     def reweight_weights(self, w):
         return w / w.sum()
@@ -314,8 +334,8 @@ class MoPOE(TorchMMVAE):
 
     def poe_fusion(self, mus, logvars):
         if mus.shape[0] == len(self.vaes):
-            mus = torch.cat((mus.squeeze(1), torch.zeros(1, mus.shape[-2], self.n_latents).cuda()), dim=0)
-            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.n_latents).cuda()), dim=0)
+            mus = torch.cat((mus.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()), dim=0)
+            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()), dim=0)
         mu_poe, logvar_poe = self.product_of_experts(mus, logvars)
         if len(mu_poe.shape) < 3:
             mu_poe = mu_poe.unsqueeze(0)
