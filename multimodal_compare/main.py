@@ -33,7 +33,7 @@ def main():
     torch.cuda.manual_seed(config.seed)
     np.random.seed(config.seed)
     model_wrapped = Trainer(config)
-    pl_trainer = pl.Trainer(gpus=1, default_root_dir=config.mPath, max_epochs=config.epochs)
+    pl_trainer = pl.Trainer(accelerator='gpu', default_root_dir=config.mPath, max_epochs=config.epochs, check_val_every_n_epoch=1)
     data_module = DataModule(config)
     pl_trainer.fit(model_wrapped, data_module)
 

@@ -1,6 +1,5 @@
 # Multi-modal model specification
 from models.mmvae_base import TorchMMVAE
-
 import torch
 import torch.distributions as dist
 import torch.nn as nn
@@ -146,29 +145,34 @@ class POE(TorchMMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        mu, logvar, single_params = self.infer(inputs)
+        mu, logvar, single_params = self.infer(inputs, K)
         recons = []
         qz_x = dist.Normal(*[mu, logvar])
         z = qz_x.rsample(torch.Size([1]))
         for ind, vae in enumerate(self.vaes):
-            recons.append(vae.px_z*vae.dec({"latents": z, "masks": None}))
+            recons.append(vae.px_z(*vae.dec({"latents": z, "masks": None})))
         return qz_x, recons, [z]
 
-    def infer(self,inputs):
+    def infer(self,x, K=1):
         """
         Inference module, calculates the joint posterior
-        :param inputs: list of input modalities, missing mods are replaced with None
-        :type inputs: list
+        :param x: list of input modalities, missing mods are replaced with None
+        :type x: list
+        :param K: sample K samples from the posterior
+        :type K: int
         :return: joint posterior and individual posteriors
         :rtype: tuple(torch.tensor, torch.tensor, list, list)
         """
-        id = 0 if inputs[0] is not None else 1
-        batch_size = len(inputs[id]) if len(inputs[id]) != 2 else len(inputs[id][0])
+        for key in x.keys():
+            if x[key]["data"] is not None:
+                batch_size = x[key]["data"].shape[0]
+                break
         # initialize the universal prior expert
         mu, logvar = self.prior_expert((1, batch_size, self.vaes[0].n_latents), use_cuda=True)
-        for ix, modality in enumerate(inputs):
-            if modality is not None:
-                mod_mu, mod_logvar = self.vaes[ix].enc(modality.to("cuda") if not isinstance(modality, list) else modality)
+        for m, vae in enumerate(self.vaes):
+            tag = "mod_{}".format(m+1)
+            if x[tag]["data"] is not None:
+                mod_mu, mod_logvar = vae.enc(x[tag])
                 mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
                 logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
         mu_before, logvar_before = mu, logvar
