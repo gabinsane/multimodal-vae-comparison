@@ -9,6 +9,7 @@ class BaseDataset():
         self.path = pth
         self.mod_type = mod_type
         self.has_masks = False
+        self.categorical = False
 
     def _mod_specific_fns(self):
         raise NotImplementedError
@@ -41,6 +42,7 @@ class GEBID(BaseDataset):
 
     def _process_text(self):
         self.has_masks = True
+        self.categorical = True
         data = [" ".join(x) for x in self.get_data_raw()]
         data = [one_hot_encode(len(f), f) for f in data]
         data = [torch.from_numpy(np.asarray(x)) for x in data]

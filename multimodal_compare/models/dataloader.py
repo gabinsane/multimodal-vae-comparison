@@ -53,6 +53,7 @@ class DataModule(LightningDataModule):
             d["mod_{}".format(mod_index)] = self.make_masks(batch)
         else:
             d["mod_{}".format(mod_index)] = {"data": batch, "masks":None}
+        d["mod_{}".format(mod_index)]["categorical"] = self.datasets[mod_index-1].categorical
         return d
 
     def collate_fn(self, batch):
