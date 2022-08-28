@@ -36,9 +36,7 @@ class BaseVae(nn.Module):
         self.enc = enc
         self.dec = dec
         assert enc.latent_dim == dec.latent_dim
-        assert enc.modality_type == dec.modality_type
         self.n_latents = enc.latent_dim
-        self.modality_type = enc.modality_type
         self.pz = prior_dist
         self.px_z = likelihood_dist
         self.qz_x = post_dist
@@ -93,7 +91,7 @@ class VAE(BaseVae):
         self.n_latents = n_latents
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.zeros(1, n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, n_latents), requires_grad=False)  # logvar
         ])
         self.modelName = 'vae_{}'.format(enc)
 

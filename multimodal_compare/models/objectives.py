@@ -41,7 +41,7 @@ def reshape_for_loss(output, target, ltype, K=1):
     :rtype: tuple(torch.tensor, torch.tensor, str)
     """
     target = torch.stack(target).float() if isinstance(target, list) else target
-    if not target.reshape(-1).shape == output.loc.reshape(-1).shape:
+    if target.shape[-2] != output.loc.shape[-2]:
         target = torch.nn.functional.pad(target, pad=(0, 0, 0, output.loc.shape[1] - target.shape[1]), mode='constant',
                                          value=0)
     target = target.repeat(K, 1, 1, 1).reshape(*output.loc.shape)
@@ -134,7 +134,7 @@ def elbo(model, x, ltype="lprob"):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    qz_x, px_z, _ = model(x)
+    qz_x, px_z, _ = model(x["mod_1"])
     lpx_z = loss_fn(px_z, x["mod_1"]["data"], ltype=ltype, categorical= x["mod_1"]["categorical"])
     kld = kl_divergence(qz_x, model.pz(*model._pz_params))
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
@@ -192,8 +192,8 @@ def multimodal_elbo_mopoe(model, x, ltype="lprob", beta=5):
     for r, px_z in enumerate(px_zs):
         tag = "mod_{}".format(r+1)
         lpx_z = loss_fn(px_z, x[tag]["data"], ltype=ltype, categorical=x[tag]["categorical"]).cuda() * model.vaes[r].llik_scaling
-        lpx_zs.append(lpx_z)
-    rec_loss = torch.tensor(lpx_zs).sum()/len(lpx_zs)
+        lpx_zs.append(lpx_z.sum(-1))
+    rec_loss = torch.stack(lpx_zs).sum()/len(lpx_zs)
     rec_loss = Variable(rec_loss, requires_grad=True)
     group_divergence = kl_divergence(qz_xs, model.pz(*model._pz_params))
     kld_mods = calc_klds(uni_dists, model)
@@ -257,11 +257,11 @@ def iwae(model, x,  ltype="lprob", beta=1, K=20):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    qz_x, px_z, zs = model(x, K)
+    qz_x, px_z, zs = model(x["mod_1"], K)
     lpz = model.pz(*model._pz_params).log_prob(zs).sum(-1)
     lpx_z = loss_fn(px_z, x["mod_1"]["data"], ltype=ltype, categorical=x["mod_1"]["categorical"], K=K)
     lqz_x = qz_x.log_prob(zs).sum(-1)
-    lw = lpz + lpx_z.sum(-1) - lqz_x
+    lw = lpz + lpx_z.sum(-1).mean(-1) - lqz_x
     return -log_mean_exp(lw).sum(), torch.zeros(1), [torch.zeros(1)]
 
 
@@ -307,7 +307,7 @@ def dreg(model, x, K, ltype="lprob"):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    _, px_z, zs = model(x, K)
+    _, px_z, zs = model(x["mod_1"], K)
     lpz = model.pz(*model._pz_params).log_prob(zs).sum(-1)
     lpx_z = loss_fn(px_z, x["mod_1"]["data"], ltype=ltype, categorical=x["mod_1"]["categorical"], K=K).view(*px_z.batch_shape[:1], -1) * model.llik_scaling
     qz_x = model.qz_x(*[p.detach() for p in model.qz_x_params])  # stop-grad for \phi
@@ -336,10 +336,9 @@ def _m_dreg_looser(model, x, ltype, K=1):
     qz_xs_ = [vae.qz_x(*[p.detach() for p in vae.qz_x_params]) for vae in model.vaes]
     lws = []
     for r, vae in enumerate(model.vaes):
-        tag = "mod_{}".format(r + 1)
         lpz = model.pz(*model._pz_params).log_prob(zss[r]).sum(-1)
         lqz_x = log_mean_exp(torch.stack([qz_x_.log_prob(zss[r]).sum(-1) for qz_x_ in qz_xs_]))
-        lpx_z = [loss_fn(px_z, x[tag]["data"], ltype=ltype, categorical=x[tag]["categorical"], K=K).view(*px_z.batch_shape[:1], -1)
+        lpx_z = [loss_fn(px_z, x["mod_{}".format(d + 1)]["data"], ltype=ltype, categorical=x["mod_{}".format(d + 1)]["categorical"], K=K).view(*px_z.batch_shape[:1], -1)
                      .mul(model.vaes[d].llik_scaling).sum(-1)
                  for d, px_z in enumerate(px_zs[r])]
         lpx_z = torch.stack(lpx_z).sum(0)
