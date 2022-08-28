@@ -10,16 +10,14 @@ from numpy import prod
 from models.NetworkTypes import NetworkTypes
 from models.nn_modules import PositionalEncoding, ConvNet, SamePadConv3d, AttentionResidualBlock
 from utils import Constants
-from models.modality_types import ModalityTypes
 
 
 class VaeEncoder(Module):
-    def __init__(self, latent_dim, data_dim, modality_type:ModalityTypes, net_type:NetworkTypes):
+    def __init__(self, latent_dim, data_dim, net_type:NetworkTypes):
         super().__init__()
         self.latent_dim = latent_dim
         self.data_dim = data_dim
         self.net_type = net_type
-        self.modality_type = modality_type
 
     def forward(self, x):
         """
@@ -44,7 +42,7 @@ class Enc_CNN(VaeEncoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_CNN, self).__init__(latent_dim, data_dim, modality_type=ModalityTypes.IMAGE, net_type=NetworkTypes.CNN)
+        super(Enc_CNN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         hid_channels = 32
         kernel_size = 4
         hidden_dim = 256
@@ -110,7 +108,7 @@ class Enc_MNIST(VaeEncoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_MNIST, self).__init__()
+        super(Enc_MNIST, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "CNN"
         self.hidden_dim = 400
         modules = [Sequential(Linear(784, self.hidden_dim), ReLU(True))]
@@ -237,7 +235,7 @@ class Enc_SVHN(VaeEncoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_SVHN, self).__init__()
+        super(Enc_SVHN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         self.net_type = "CNN"
         self.conv1 = Conv2d(3, 32, kernel_size=4, stride=2, padding=1, dilation=1)
         self.conv2 = Conv2d(32, 64, kernel_size=4, stride=2, padding=1, dilation=1)
@@ -677,8 +675,7 @@ class Enc_TxtTransformer(VaeEncoder):
         :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_TxtTransformer, self).__init__(latent_dim, data_dim, modality_type=ModalityTypes.TEXT,
-                                         net_type=NetworkTypes.TXTTRANSFORMER)
+        super(Enc_TxtTransformer, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.TXTTRANSFORMER)
         self.net_type = "TxtTransformer"
         self.njoints = data_dim[1]
         self.nfeats = data_dim[2]

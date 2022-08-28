@@ -8,7 +8,6 @@ import torch.nn.functional as F
 from numpy import prod
 
 from models.NetworkTypes import NetworkTypes
-from models.modality_types import ModalityTypes
 from models.nn_modules import DeconvNet
 from models.nn_modules import PositionalEncoding, AttentionResidualBlock, \
     SamePadConvTranspose3d
@@ -16,11 +15,10 @@ from utils import Constants
 
 
 class VaeDecoder(Module):
-    def __init__(self, latent_dim, data_dim, modality_type:ModalityTypes, net_type:NetworkTypes):
+    def __init__(self, latent_dim, data_dim, net_type:NetworkTypes):
         super().__init__()
         self.latent_dim = latent_dim
         self.data_dim = data_dim
-        self.modality_type = modality_type
         self.net_type = net_type
 
 
@@ -46,8 +44,7 @@ class Dec_CNN(VaeDecoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_CNN, self).__init__(latent_dim, data_dim,
-                                      modality_type=ModalityTypes.IMAGE, net_type=NetworkTypes.CNN)
+        super(Dec_CNN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         latent_dim = latent_dim
         self.datadim = data_dim
         self.net_type = "CNN"
@@ -115,7 +112,7 @@ class Dec_SVHN(VaeDecoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_SVHN, self).__init__()
+        super(Dec_SVHN, self).__init__(latent_dim, data_dim,  net_type=NetworkTypes.CNN)
         latent_dim = latent_dim
         self.datadim = data_dim
         self.net_type = "CNN"
@@ -203,7 +200,7 @@ class Dec_MNIST(VaeDecoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_MNIST, self).__init__()
+        super(Dec_MNIST, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         latent_dim = latent_dim
         self.datadim = data_dim
         self.net_type = "CNN"
@@ -659,7 +656,7 @@ class Dec_TxtTransformer(VaeDecoder):
         :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim, modality_type=ModalityTypes.TEXT,
+        super(Dec_TxtTransformer, self).__init__(latent_dim, data_dim,
                                          net_type=NetworkTypes.TXTTRANSFORMER)
         self.net_type = "Transformer"
         self.njoints = data_dim[1]
