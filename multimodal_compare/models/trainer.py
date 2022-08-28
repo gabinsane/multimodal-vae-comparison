@@ -43,6 +43,7 @@ class Trainer(pl.LightningModule):
                                        weight_decouple=True, rectify=False, print_change_log=False)
         else:
             raise NotImplementedError
+        return self.optimizer
 
     def get_model(self):
         """
@@ -54,18 +55,17 @@ class Trainer(pl.LightningModule):
         self.model = getattr(models, self.config.mixing.lower())(*vaes) if len(vaes) > 1 else vaes[0]
         if self.config.pre_trained:
             print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
-            self.model.load_state_dict(torch.load(self.config.pre_trained + '/model.rar'))
-            self.model._pz_params = self.model._pz_params
+            self.model = self.load_from_checkpoint(self.config.pre_trained)
 
     def training_step(self, train_batch, batch_idx):
         """
         Iterates over the train loader
         """
         loss, kld, partial_l = self.objective(self.model, train_batch, ltype=self.config.loss)
-        self.log('train_loss', loss)
-        self.log('train_kld', kld)
+        self.log('train_loss', loss, batch_size=self.config.batch_size)
+        self.log('train_kld', kld, batch_size=self.config.batch_size)
         for i, p_l in enumerate(partial_l):
-            self.log("Mod_{}_TrainLoss".format(i), p_l)
+            self.log("Mod_{}_TrainLoss".format(i), p_l, batch_size=self.config.batch_size)
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -73,10 +73,10 @@ class Trainer(pl.LightningModule):
         Iterates over the test loader
         """
         loss, kld, partial_l = self.objective(self.model, val_batch, ltype=self.config.loss)
-        self.log('val_loss', loss)
-        self.log('val_kld', kld)
+        self.log('val_loss', loss, batch_size=self.config.batch_size)
+        self.log('val_kld', kld, batch_size=self.config.batch_size)
         for i, p_l in enumerate(partial_l):
-            self.log("Mod_{}_ValLoss".format(i), p_l)
+            self.log("Mod_{}_ValLoss".format(i), p_l, batch_size=self.config.batch_size)
         if self.trainer.is_last_batch and (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
             self.visualize_latents()
         return loss

@@ -68,9 +68,9 @@ class DataModule(LightningDataModule):
 
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=True, pin_memory=True, collate_fn=self.collate_fn,
-                          )
+        return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
+                          num_workers=os.cpu_count())
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=True, pin_memory=True, collate_fn=self.collate_fn,
-                          )
+        return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
+                          num_workers=os.cpu_count())
