@@ -53,9 +53,9 @@ class Trainer(pl.LightningModule):
             vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents))
         self.model = getattr(models, self.config.mixing.lower())(*vaes) if len(vaes) > 1 else vaes[0]
         if self.config.pre_trained:
-            print('Loading model {} from {}'.format(model.modelName, self.config.pre_trained))
+            print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
             self.model.load_state_dict(torch.load(self.config.pre_trained + '/model.rar'))
-            self.model._pz_params = model._pz_params
+            self.model._pz_params = self.model._pz_params
 
     def training_step(self, train_batch, batch_idx):
         """

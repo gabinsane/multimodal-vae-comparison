@@ -39,29 +39,13 @@ def pad_seq_data(data, masks):
     return data
 
 
-def load_images(path, dim):
-    def generate(images):
-        images = sorted(images)
-        dataset = np.zeros((len(images), dim[0], dim[1], dim[2]), dtype=np.float)
-        for i, image_path in enumerate(images):
-            image = imageio.imread(image_path)
-            if len(image.shape) < 3:
-                image = np.expand_dims(image, axis=2)
-            dataset[i, :] = image / 255
-        return dataset.reshape(-1, dataset.shape[-1], dataset.shape[1], dataset.shape[2])
-
-    if any([os.path.isdir(x) for x in glob.glob(os.path.join(path, "*"))]):
-        subparts = (glob.glob(os.path.join(path, "./*")))
-        datasets = []
-        for s in subparts:
-            images = (glob.glob(os.path.join(s, "*.png")))
-            d = generate(images)
-            datasets.append(d)
-        return np.concatenate(datasets)
-    else:
-        images = (glob.glob(os.path.join(path, "*.png")))
-        dataset = generate(images)
-        return dataset
+def load_images(path):
+    images = sorted(glob.glob(os.path.join(path, "*.png")))
+    dataset = []
+    for i, image_path in enumerate(images):
+        image = imageio.imread(image_path)
+        dataset.append(image.reshape(-1) / 256)
+    return np.asarray(dataset)
 
 def load_pickle(pth):
         with open(pth, 'rb') as handle:
