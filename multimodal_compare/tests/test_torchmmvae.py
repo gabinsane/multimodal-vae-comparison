@@ -10,6 +10,10 @@ class ExampleModel(TorchMMVAE):
         self.vaes["mod_1"] = VAE(enc = "CNN", dec= "CNN", feature_dim=[3,64,64], n_latents = self.n_latents)
         self.vaes["mod_2"] = VAE(enc = "CNN", dec= "CNN", feature_dim=[3,64,64], n_latents = self.n_latents)
 
+    def modality_mixing(self, mods):
+        for key, mod in mods.items():
+            pass
+        return mods
 
 def test_torch_mmvae_encode():
     bsize = 32

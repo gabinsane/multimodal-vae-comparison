@@ -16,10 +16,10 @@ class TorchMMVAE(nn.Module):
         self.vaes = {}
 
 
-    def _pz_params(self):
+    def _pz_params(self, modality):
         return nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.zeros(1, self.vaes[modality].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.ones(1, self.vaes[modality].n_latents), requires_grad=False)  # logvar
         ])
 
     def forward(self, inputs, K=1):
@@ -41,8 +41,10 @@ class TorchMMVAE(nn.Module):
         # sample from each distribution
         zs = {}
         for modality, qz_x in qz_xs.items():
-            qz_x = self.qz_x(*self._qz_x_params())
-            qz_x = dist.Normal(*[qz_x])
+            # my_dist = torch.distributions.Normal(*self._pz_params(modality))
+            qz_x = dist.Normal(*qz_x)
+            # qz_x = qz_x(*self._pz_params(modality))
+            # qz_x = dist.Normal(*[qz_x])
             z = qz_x.rsample(torch.Size([K]))
             zs[modality] = {"latents":z, "masks":None}
 
