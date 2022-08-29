@@ -7,7 +7,7 @@ from models.vae import VAE
 from models.config import Config
 
 class ModelLoader():
-    def load_model(self, pth):
+    def load_model(self, cfg_pth, chkpt_path):
         """
         Loads a model from checkpoint
 
@@ -16,10 +16,13 @@ class ModelLoader():
         :return: returns model object
         :rtype: MMVAE/VAE
         """
-        cfgpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(pth))))
-        cfg = self.get_config(pth=cfgpath)
+        if not isinstance(cfg_pth, Config):
+            cfgpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(pth))))
+            cfg = self.get_config(pth=cfgpath)
+        else:
+            cfg = cfg_pth
         model = Trainer(cfg)
-        model_loaded = model.load_from_checkpoint(pth, cfg=cfg)
+        model_loaded = model.load_from_checkpoint(chkpt_path, cfg=cfg)
         return model_loaded
 
     def get_model(self, config):

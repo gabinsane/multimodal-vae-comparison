@@ -32,8 +32,9 @@ def get_path_type(path):
 
 def pad_seq_data(data, masks):
     for i, _ in enumerate(data):
-        if masks[i] is not None:
-            data[i].append(masks[i])
+        if masks is not None:
+            if masks[i] is not None:
+                data[i].append(masks[i])
         else:
             data[i] = [o[0].clone().detach() for o in data[i][0]]
     return data
@@ -59,6 +60,8 @@ def load_data(path):
     :return: method to load data
     :rtype: object
     """
+    if path.startswith('.'):
+        path = os.path.join(get_root_folder(), path)
     assert os.path.exists(path), "Path does not exist: {}".format(path)
     if os.path.isdir(path):
         return load_images(path)
