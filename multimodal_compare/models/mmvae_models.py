@@ -262,14 +262,19 @@ class MoPOE(TorchMMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        mu, logvar, single_params = self.infer(inputs)
-        recons = []
+        mu, logvar, single_params = self.infer(inputs, K)
         qz_x = dist.Normal(*[mu, logvar])
-        z = self.reparameterize(mu, logvar).unsqueeze(0)
-        for ind, vae in enumerate(self.vaes):
-            recons.append(vae.px_z(*vae.dec({"latents": z, "masks": None})))
-        return qz_x, recons, [z], single_params
-        return qz_x, recons, [z]
+        z = qz_x.rsample(torch.Size([1]))
+        qz_d, px_d, z_d = {}, {}, {}
+        z_d["joint"] = {"latents": z, "masks": None}
+        for mod, vae in self.vaes.items():
+            px_d[mod] = vae.px_z(*vae.dec(z_d["joint"]))
+        output_dict = {}
+        qz_d["joint"] = qz_x
+        for modality in self.vaes.keys():
+            output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
+                                                latent_samples=z_d["joint"])
+        return output_dict
 
     def infer(self, x, num_samples=None):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)

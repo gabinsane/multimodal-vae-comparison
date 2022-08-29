@@ -154,26 +154,30 @@ def multimodal_elbo_moe(model, x, ltype="lprob"):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    output = model(x)
-    lpx_zs, klds, ind_losses = [], [], []
-    for modality, outputs in output.items():
-        kld = kl_divergence(outputs.encoder_dists, model.pz(*model.vaes[modality]._pz_params))
+    output_dict = model(x)
+    qz_xs, px_zs, zss =[], [[None for _ in range(len(x.keys()))] for _ in range(len(x.keys()))], []
+    for ind, mod in enumerate(output_dict.keys()):
+        qz_xs.append(output_dict[mod].encoder_dists)
+        zss.append(output_dict[mod].latent_samples["latents"])
+        px_zs[ind][ind] = output_dict[mod].decoder_dists[0]
+        pos = 0 if ind == 1 else 1
+        px_zs[ind][pos]  = output_dict[mod].decoder_dists[1]
+    lpx_zs, klds = [], []
+    for r, qz_x in enumerate(qz_xs):
+        kld = kl_divergence(qz_x, model.pz(*model.vaes["mod_{}".format(r+1)]._pz_params))
         klds.append(kld.sum(-1))
-        for d in range(len(outputs.decoder_dists)):
-            lpx_z = loss_fn(outputs.decoder_dists[d], x[modality]["data"], ltype=ltype,
-                            categorical=x[modality]["categorical"]).view(*outputs.decoder_dists[d].batch_shape[:1], -1)
-            lpx_z = (lpx_z * model.vaes[modality].llik_scaling).sum(-1)
-            if d == 0:
+        for d in range(len(px_zs)):
+            lpx_z = loss_fn(px_zs[d][d], x["mod_{}".format(d+1)]["data"], ltype=ltype, categorical= x["mod_{}".format(d+1)]["categorical"]).view(*px_zs[d][d].batch_shape[:1], -1)
+            lpx_z = (lpx_z * model.vaes["mod_{}".format(d+1)].llik_scaling).sum(-1)
+            if d == r:
                   lwt = torch.tensor(0.0).cuda()
             else:
-                  zs = outputs.latent_samples["latents"]
-                  outputs.encoder_dists.log_prob(zs)[torch.isnan(outputs.encoder_dists.log_prob(zs))] = 0
-                  lwt = (outputs.encoder_dists.log_prob(zs) - output["mod_{}".format(d+1)].encoder_dists.log_prob(zs).detach()).sum(-1)[0][0]
+                  zs = zss[d].detach()
+                  qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
+                  lwt = (qz_x.log_prob(zs)- qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
             lpx_zs.append((lwt.exp() * lpx_z))
-            if d == 0:
-                ind_losses.append((lwt.exp() * lpx_z))
-    obj = (1 / len(model.vaes.keys())) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    individual_losses = [-m.sum() / model.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(ind_losses)]
+    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
+    individual_losses = [-m.sum() / model.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
     return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 
