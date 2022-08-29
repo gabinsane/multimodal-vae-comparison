@@ -80,9 +80,9 @@ class Dec_CNN(VaeDecoder):
         x = torch.relu(self.convT1(x))
         x = torch.relu(self.convT2(x))
         x = (self.convT3(x))
-        d = torch.sigmoid(x.view(*z.size()[:-1], *self.datadim))  # reshape data
+        d = torch.sigmoid(x.view(*z.size()[:-1], *self.data_dim))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
-        return d.squeeze().reshape(-1, *self.datadim), torch.tensor(0.75).to(z.device)
+        return d.squeeze().reshape(-1, *self.data_dim), torch.tensor(0.75).to(z.device)
 
 
 class Dec_SVHN(VaeDecoder):
@@ -97,7 +97,7 @@ class Dec_SVHN(VaeDecoder):
         """
         super(Dec_SVHN, self).__init__(latent_dim, data_dim,  net_type=NetworkTypes.CNN)
         latent_dim = latent_dim
-        self.datadim = data_dim
+        self.data_dim = data_dim
         self.net_type = "CNN"
         self.linear = nn.Linear(latent_dim, 128)
         self.conv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=1, padding=0, dilation=1)
@@ -185,7 +185,7 @@ class Dec_MNIST(VaeDecoder):
         """
         super(Dec_MNIST, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         latent_dim = latent_dim
-        self.datadim = data_dim
+        self.data_dim = data_dim
         self.net_type = "CNN"
         self.hidden_dim = 400
         modules = []
@@ -210,7 +210,7 @@ class Dec_MNIST(VaeDecoder):
         x_hat = self.dec(z)
         x_hat = self.fc3(x_hat)
         x_hat = self.sigmoid(x_hat)
-        d = x_hat.view(*z.size()[:-1], *self.datadim).squeeze(0)
+        d = x_hat.view(*z.size()[:-1], *self.data_dim).squeeze(0)
         d = d.permute(0, 3, 1, 2) if len(d.shape) == 4 else d.permute(0, 1, 4, 2, 3)
         return d.squeeze(0), torch.tensor(0.75).to(z.device)
 
