@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from utils import combinatorial, Constants
 from torch.autograd import Variable
-
+from models.NetworkTypes import VaeOutput
 
 class MOE(TorchMMVAE):
     def __init__(self, vaes, model_config=None):
@@ -19,12 +19,8 @@ class MOE(TorchMMVAE):
         """
         super().__init__()
         self.model_config = model_config
-        self.vaes = nn.ModuleList(tuple(vaes))
+        self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'moe'
-        self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
-        ])
         self.prior_dist = dist.Normal
         self.pz = dist.Normal
 
@@ -43,11 +39,14 @@ class MOE(TorchMMVAE):
         :return: list of indices of missing modalities
         :rtype: list
         """
-        indices = []
-        for i, e in enumerate(mods):
-            if e is None:
-                indices.append(i)
-        return indices
+        keys = []
+        keys_with_val = []
+        for modality, val in mods.items():
+            if val is None:
+                keys.append(modality)
+            else:
+                keys_with_val.append(modality)
+        return keys, keys_with_val
 
     def forward(self, x, K=1):
         """
@@ -59,23 +58,29 @@ class MOE(TorchMMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        qz_xs, zss = [], []
-        # initialise cross-modal matrix
-        px_zs = [[None for _ in range(len(self.vaes))] for _ in range(len(self.vaes))]
-        for m, vae in enumerate(self.vaes):
-            tag = "mod_{}".format(m+1)
-            if x[tag]["data"] is not None:
-                qz_x, px_z, zs = vae(x[tag], K=K)
-                qz_xs.append(qz_x)
-                zss.append(zs)
-                px_zs[m][m] = px_z  # fill-in diagonal
-        for ind in self.get_missing_modalities(x):
-            px_zs[ind][ind] = self.vaes[ind].px_z(*self.vaes[ind].dec({"latents":zss[0], "masks":None}))
-        for e, zs in enumerate(zss):
-            for d, vae in enumerate(self.vaes):
-                if e != d:  # fill-in off-diagonal
-                    px_zs[e][d] = vae.px_z(*vae.dec({"latents":zs, "masks":None}))
-        return qz_xs, px_zs, zss
+        qz_xs = self.encode(x)
+        zs = {}
+        for modality, qz_x in qz_xs.items():
+            qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
+            z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
+            zs[modality] = {"latents":z, "masks":None}
+        # decode the samples
+        px_zs = self.decode(zs)
+        for modality, px_z in px_zs.items():
+            px_zs[modality] = [dist.Normal(*px_z[0])]
+        missing, filled = self.get_missing_modalities(qz_xs)
+        assert len(filled) > 1, "at least one modality must be present for forward call"
+        for mod_name in missing:
+            px_zs[mod_name] = [dist.Normal(*self.vaes[mod_name].dec(zs[filled[0]]))]
+        for modality, z in zs.items():
+            for mod_vae, vae in self.vaes.items():
+                if mod_vae != modality:  # fill-in off-diagonal
+                    px_zs[mod_vae].append(vae.px_z(*vae.dec(z)))
+        output_dict = {}
+        for modality in self.vaes.keys():
+            output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
+                                                latent_samples=zs[modality])
+        return output_dict
 
     def reconstruct(self, data, runPath, epoch, N=8):
         """
@@ -103,14 +108,10 @@ class POE(TorchMMVAE):
         :type model_config: dict
         """
         super().__init__()
-        self.vaes = nn.ModuleList(tuple(vaes))
+        self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'poe'
         self.pz = dist.Normal
-        self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
-        ])
         self.prior_dist = dist.Normal
 
     def pz_params(self):
@@ -232,15 +233,11 @@ class MoPOE(TorchMMVAE):
         :type model_config: dict
         """
         super().__init__()
-        self.vaes = nn.ModuleList(tuple(vaes))
+        self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'mopoe'
         self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
-        self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
-        ])
         self.prior_dist = dist.Normal
 
     def pz_params(self):
@@ -370,14 +367,11 @@ class DMVAE(TorchMMVAE):
         """
         super().__init__()
         self.model_config = model_config
-        self.vaes = nn.ModuleList(tuple(vaes))
+        self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'dmvae'
         self.pz = dist.Normal
         self.qz_x = dist.Normal
-        self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
-        ])
+
 
     def pz_params(self):
         """

@@ -134,7 +134,9 @@ def elbo(model, x, ltype="lprob"):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    qz_x, px_z, _ = model(x["mod_1"])
+    output = model(x["mod_1"])
+    qz_x = output["mod_1"].encoder_dists
+    px_z = output["mod_1"].decoder_dists
     lpx_z = loss_fn(px_z, x["mod_1"]["data"], ltype=ltype, categorical= x["mod_1"]["categorical"])
     kld = kl_divergence(qz_x, model.pz(*model._pz_params))
     return -(lpx_z.sum(-1) - kld.sum()).sum(), kld.sum(), [-lpx_z.sum()]
@@ -152,24 +154,26 @@ def multimodal_elbo_moe(model, x, ltype="lprob"):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    qz_xs, px_zs, zss = model(x)
-    lpx_zs, klds = [], []
-    for r, qz_x in enumerate(qz_xs):
-        kld = kl_divergence(qz_x, model.pz(*model._pz_params))
+    output = model(x)
+    lpx_zs, klds, ind_losses = [], [], []
+    for modality, outputs in output.items():
+        kld = kl_divergence(outputs.encoder_dists, model.pz(*model.vaes[modality]._pz_params))
         klds.append(kld.sum(-1))
-        for d in range(len(px_zs)):
-            tag = "mod_{}".format(d+1)
-            lpx_z = loss_fn(px_zs[d][d], x[tag]["data"], ltype=ltype, categorical=x[tag]["categorical"]).view(*px_zs[d][d].batch_shape[:1], -1)
-            lpx_z = (lpx_z * model.vaes[d].llik_scaling).sum(-1)
-            if d == r:
+        for d in range(len(outputs.decoder_dists)):
+            lpx_z = loss_fn(outputs.decoder_dists[d], x[modality]["data"], ltype=ltype,
+                            categorical=x[modality]["categorical"]).view(*outputs.decoder_dists[d].batch_shape[:1], -1)
+            lpx_z = (lpx_z * model.vaes[modality].llik_scaling).sum(-1)
+            if d == 0:
                   lwt = torch.tensor(0.0).cuda()
             else:
-                  zs = zss[d].detach()
-                  qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
-                  lwt = (qz_x.log_prob(zs)- qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
+                  zs = outputs.latent_samples["latents"]
+                  outputs.encoder_dists.log_prob(zs)[torch.isnan(outputs.encoder_dists.log_prob(zs))] = 0
+                  lwt = (outputs.encoder_dists.log_prob(zs) - output["mod_{}".format(d+1)].encoder_dists.log_prob(zs).detach()).sum(-1)[0][0]
             lpx_zs.append((lwt.exp() * lpx_z))
-    obj = (1 / len(model.vaes)) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
-    individual_losses = [-m.sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs[0::len(x)+1])]
+            if d == 0:
+                ind_losses.append((lwt.exp() * lpx_z))
+    obj = (1 / len(model.vaes.keys())) * (torch.stack(lpx_zs).sum(0) - torch.stack(klds).sum(0))
+    individual_losses = [-m.sum() / model.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(ind_losses)]
     return -obj.sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 
@@ -257,7 +261,10 @@ def iwae(model, x,  ltype="lprob", beta=1, K=20):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    qz_x, px_z, zs = model(x["mod_1"], K)
+    output = model(x["mod_1"], K)
+    qz_x = output["mod_1"].encoder_dists
+    px_z = output["mod_1"].decoder_dists
+    zs = output["mod_1"].latent_samples
     lpz = model.pz(*model._pz_params).log_prob(zs).sum(-1)
     lpx_z = loss_fn(px_z, x["mod_1"]["data"], ltype=ltype, categorical=x["mod_1"]["categorical"], K=K)
     lqz_x = qz_x.log_prob(zs).sum(-1)
@@ -307,7 +314,10 @@ def dreg(model, x, K, ltype="lprob"):
     :return: loss, kl divergence, reconstruction loss
     :rtype: tuple(torch.tensor, torch.tensor, list)
     """
-    _, px_z, zs = model(x["mod_1"], K)
+    output = model(x["mod_1"], K)
+    qz_x = output["mod_1"].encoder_dists
+    px_z = output["mod_1"].decoder_dists
+    zs = output["mod_1"].latent_samples
     lpz = model.pz(*model._pz_params).log_prob(zs).sum(-1)
     lpx_z = loss_fn(px_z, x["mod_1"]["data"], ltype=ltype, categorical=x["mod_1"]["categorical"], K=K).view(*px_z.batch_shape[:1], -1) * model.llik_scaling
     qz_x = model.qz_x(*[p.detach() for p in model.qz_x_params])  # stop-grad for \phi
