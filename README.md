@@ -47,6 +47,9 @@ mamba env create -f environment.yml
 conda activate multivae                 
 ```
 
+Please note that the framework depends on the [Pytorch Lightning](https://www.pytorchlightning.ai/) framework which manages the model training and evaluation. 
+
+
 ## Get the GeBiD dataset
 
 We provide a bimodal image-text dataset GeBiD (Geometric shapes Bimodal Dataset) for systematic multimodal VAE comparison. There are 5 difficulty levels 
@@ -332,26 +335,17 @@ python main.py --cfg configs/config_cub.yml
 
 ## Extending for own models and networks
 
-The toolkit is designed so that it enables easy extension for new models, objectives or encoder/decoder networks. 
+The toolkit is designed so that it enables easy extension for new models, objectives, datasets or encoder/decoder networks. 
 <div style="text-align: left">
- <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/uml2.png" width="300"  alt="UML class diagram"/>
+ <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/uml3.png" width="300"  alt="UML class diagram"/>
 </div>
 
-Here you can see the UML diagram of the _./models_ folder. The VAE class is initialized at every training (for both the uni/multimodal scenario) along with its
-specified encoder and decoder network.
-In the multimodal scenario, a new VAE class is instantiated for each modality by the MMVAE class (in mmvae_base.py). MMVAE is then wrapped by the selected
-model in multimodal_models (MOE, POE, MoPOE classes), where the multimodal fusion is specified.
-
-New encoder and decoder networks can be added in the corresponding scripts (encoders.py, decoders.py). For choosing these networks in the config,
-use only the part of the class name following after the underscore (e.g. CNN for the class Enc_**CNN**).
-
-The objectives and reconstruction loss terms are defined in objectives.py. By default, when you use more than one modality,
-the model will use the objective named "multimodal_" together with the objective and model defined in the config (e.g., for elbo objective and poe model, the objective _multimodal_elbo_poe_ will be used.).
-If you wish to add new objectives, keep the naming consistent with these rules so that it can be easily configured. 
-
+Here you can see the UML diagram of the framework. The toolkit uses the [Pytorch Lightning](https://www.pytorchlightning.ai/) framework which enables automatic separation of the data, models and the training process. A new model (see NewMMVAE in the diagram) can be added as a new class derived from TorchMMVAE. The model constructor will automatically create a BaseVAE class instance for each modality defined in the config - these BaseVAE classes will handle the modality-dependent operations such as encoding and decoding the data, sampling etc. The NewMMVAE class thus only requires the mixing method which defines how the individual posteriors should be mixed, although it is as well possible to change the whole forward pass if needed. 
 
 [Step-by-step tutorial on how to add a new model](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/addmodel.html)
 
+New encoder and decoder networks can be added in the corresponding scripts (encoders.py, decoders.py). For choosing these networks in the config,
+use only the part of the class name following after the underscore (e.g. CNN for the class Enc_**CNN**). 
 
 
 ## License
