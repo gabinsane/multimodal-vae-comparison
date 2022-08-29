@@ -78,7 +78,15 @@ class MMVAEExperiment():
                   [m["feature_dim"] for m in mods], ["image", "text"]]
         if len(mods) == 1:
             params = [x[0] for x in params]
-        model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
+
+        vaes = []
+        from models import VAE
+        for i, m in enumerate(self.mods):
+            vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config['n_latents']))
+        model_ = modelC(vaes, config).to(device)
+
+
+        # model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
         print('Loading model {} from {}'.format(model_.modelName, self.path))
         model_.load_state_dict(torch.load(os.path.join(self.path, 'model.rar')))
         model_._pz_params = model_._pz_params
