@@ -31,10 +31,10 @@ class ModelLoader():
         :return: prepared model
         :rtype: MMVAE/VAE
         """
-        vaes = []
+        vaes = {}
         for i, m in enumerate(config.mods):
-            vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], config.n_latents))
-        model = getattr(models, config.mixing.lower())(vaes) if len(vaes) > 1 else vaes[0]
+            vaes["mod_{}".format(i+1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], config.n_latents)
+        model = getattr(models, config.mixing.lower())(vaes) if len(vaes.keys()) > 1 else vaes["mod_1"]
         return model
 
     def get_config(self, pth):

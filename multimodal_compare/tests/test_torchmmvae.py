@@ -19,7 +19,7 @@ def test_torch_mmvae_encode():
     bsize = 32
     mmvae = ExampleModel()
     inputs = {"mod_1": {"data":torch.rand((bsize, 3,64,64))}, "mod_2":{"data":torch.rand((bsize, 3,64,64))}}
-    qz_xs = mmvae.encode(inputs, 1)
+    qz_xs = mmvae.encode(inputs)
     assert isinstance(qz_xs, dict)
     assert len(qz_xs.keys()) == len(mmvae.vaes.keys())
     for params in qz_xs.values():
@@ -31,12 +31,12 @@ def test_torch__mmvae_decode():
     mmvae = ExampleModel()
     qz_xs = {"mod_1": {"latents":torch.rand((bsize, mmvae.n_latents)).unsqueeze(0), "masks":None},
             "mod_2": {"latents":torch.rand((bsize, mmvae.n_latents)).unsqueeze(0), "masks":None}}
-    px_zs = mmvae.decode(qz_xs, 1)
+    px_zs = mmvae.decode(qz_xs)
     assert isinstance(px_zs, dict)
     assert len(px_zs.keys()) == len(mmvae.vaes.keys())
     for params in px_zs.values():
-        assert isinstance(params, tuple)
-        assert [d.shape == torch.Size((bsize,*[3,64,64])) for d in params]
+        assert isinstance(params, list)
+        assert [[d.shape == torch.Size((bsize,*[3,64,64])) for d in p] for p in params]
 
 
 def test_torch_mmvae_forward():
@@ -47,7 +47,7 @@ def test_torch_mmvae_forward():
     assert isinstance(output, dict)
     for dists in output.values():
         assert isinstance(dists.encoder_dists, torch.distributions.Normal)
-        assert isinstance(dists.decoder_dists, torch.distributions.Normal)
+        assert [isinstance(d, torch.distributions.Normal) for d in dists.decoder_dists]
         assert isinstance(dists.latent_samples, dict) and "latents" in dists.latent_samples.keys()
         assert dists.latent_samples["latents"].shape == torch.Size([1, bsize, mmvae.n_latents])
 

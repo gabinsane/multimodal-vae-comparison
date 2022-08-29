@@ -123,21 +123,6 @@ class VAE(BaseVae):
             raise NameError("qz_x params not initalised yet!")
         return self._qz_x_params
 
-    def forward(self, x, K=1):
-        """
-        Forward pass
-        :param x: input modality
-        :type x: torch.tensor
-        :param K: sample K samples from the posterior
-        :type K: int
-        :return: the posterior distribution, the reconstruction and latent samples
-        :rtype:tuple(torch.dist, torch.dist, torch.tensor)
-        """
-        self._qz_x_params = self.enc(x)
-        qz_x = self.qz_x(*self._qz_x_params)
-        zs = qz_x.rsample(torch.Size([K]))
-        px_z = self.px_z(*self.dec({"latents":zs, "masks": None}))
-        return qz_x, px_z, zs
 
     def generate_samples(self, N):
         """

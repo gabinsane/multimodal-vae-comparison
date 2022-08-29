@@ -3,7 +3,6 @@ import abc
 import torch, os
 import torch.nn as nn
 from models.NetworkTypes import VaeOutput
-from utils import get_mean
 import torch.distributions as dist
 
 class TorchMMVAE(nn.Module):
@@ -41,15 +40,14 @@ class TorchMMVAE(nn.Module):
         # sample from each distribution
         zs = {}
         for modality, qz_x in qz_xs.items():
-            qz_xs[modality] = dist.Normal(*qz_x)
-            z = dist.Normal(*qz_x).rsample(torch.Size([K]))
+            qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
+            z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
             zs[modality] = {"latents":z, "masks":None}
 
         # decode the samples
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
-            px_zs[modality] = dist.Normal(*px_z)
-
+            px_zs[modality] = [dist.Normal(*p) for p in px_z]
         output_dict = {}
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
@@ -57,7 +55,7 @@ class TorchMMVAE(nn.Module):
         return output_dict
 
 
-    def encode(self, inputs, K=1):
+    def encode(self, inputs):
         """
         Encode inputs with appropriate VAE encoders
 
@@ -73,6 +71,8 @@ class TorchMMVAE(nn.Module):
             if modality in inputs and not inputs[modality]["data"] is None:
                 qz_x = vae.enc(inputs[modality])
                 qz_xs[modality] = qz_x
+            elif modality in inputs and inputs[modality]["data"] is None:
+                qz_xs[modality] = None
         return qz_xs
 
     @abc.abstractmethod
@@ -87,7 +87,7 @@ class TorchMMVAE(nn.Module):
         """
         pass
 
-    def decode(self, samples, K=1):
+    def decode(self, samples):
         """
         Make reconstructions for the input samples
 
@@ -102,34 +102,7 @@ class TorchMMVAE(nn.Module):
         for modality, vae in self.vaes.items():
             if modality in samples and not samples[modality] is None:
                 pz_x = vae.dec(samples[modality])
-                pz_xs[modality] = pz_x
+                pz_xs[modality] = [pz_x]
+            elif modality in samples and samples[modality] is None:
+                pz_xs[modality] = [None]
         return pz_xs
-
-
-    def infer(self, inputs):
-        """
-        Inference module, calculates the joint posterior
-
-        :param inputs: list of input modalities, missing mods are replaced with None
-        :type inputs: list
-        :return: joint posterior and individual posteriors
-        :rtype: tuple(torch.tensor, torch.tensor, list, list)
-        """
-        raise NotImplementedError
-
-    def reconstruct(self, data):
-        """
-        Reconstructs the input data
-
-        :param data: dict of input modalities
-        :type data: dict
-        :return: reconstructions
-        :rtype: list
-        """
-        self.eval()
-        with torch.no_grad():
-            res = self.forward(data)
-            px_zs = res[1]
-            recons = [[get_mean(px_z) for px_z in r] for r in px_zs] if any(isinstance(i, list) for i in px_zs) \
-                else [get_mean(px_z) for px_z in px_zs]
-        return recons
