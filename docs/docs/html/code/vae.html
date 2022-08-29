@@ -1,71 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>VAE class &mdash; multimodal-vae-comparison 1.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Multimodal VAE Base Class" href="mmvae_base.html" />
     <link rel="prev" title="Trainer class" href="trainer.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,24 +37,13 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Tutorials</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">Trainer class</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">VAE class</a></li>
@@ -99,122 +52,80 @@
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Config class</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>VAE class</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/code/vae.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-multimodal_compare.models.vae">
-<span id="vae-class"></span><span id="vae"></span><h1>VAE class<a class="headerlink" href="#module-multimodal_compare.models.vae" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="multimodal_compare.models.vae.VAE">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.vae.</code><code class="sig-name descname">VAE</code><span class="sig-paren">(</span><em class="sig-param">enc</em>, <em class="sig-param">dec</em>, <em class="sig-param">data_path</em>, <em class="sig-param">feature_dim</em>, <em class="sig-param">mod_type</em>, <em class="sig-param">n_latents</em>, <em class="sig-param">test_split</em>, <em class="sig-param">batch_size</em>, <em class="sig-param">prior_dist=&lt;class 'torch.distributions.normal.Normal'&gt;</em>, <em class="sig-param">likelihood_dist=&lt;class 'torch.distributions.normal.Normal'&gt;</em>, <em class="sig-param">post_dist=&lt;class 'torch.distributions.normal.Normal'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.analyse">
-<code class="sig-name descname">analyse</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.analyse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plots KL divergences and T-SNE</p>
+             
+  <section id="module-multimodal_compare.models.vae">
+<span id="vae-class"></span><span id="vae"></span><h1>VAE class<a class="headerlink" href="#module-multimodal_compare.models.vae" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.BaseVae">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.vae.</span></span><span class="sig-name descname"><span class="pre">BaseVae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_dist=&lt;class</span> <span class="pre">'torch.distributions.normal.Normal'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likelihood_dist=&lt;class</span> <span class="pre">'torch.distributions.normal.Normal'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_dist=&lt;class</span> <span class="pre">'torch.distributions.normal.Normal'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae" title="Permalink to this definition"></a></dt>
+<dd><p>Base VAE class for all implementations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.BaseVae.decode">
+<span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae.decode" title="Permalink to this definition"></a></dt>
+<dd><p>Decodes the latent samples</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>torch.tensor</em>) – input data</p></li>
-<li><p><strong>runPath</strong> (<em>str</em>) – path to save data to</p></li>
-<li><p><strong>epoch</strong> (<em>int</em>) – current epoch to name data</p></li>
-<li><p><strong>labels</strong> (<em>list</em>) – labels for labelled T-SNE (optional)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.analyse_data">
-<code class="sig-name descname">analyse_data</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">K</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">labels</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.analyse_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes latent samples and T-SNE</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – test data</p></li>
-<li><p><strong>K</strong> (<em>int</em>) – make K samples from the posterior distribution</p></li>
-<li><p><strong>runPath</strong> (<em>str</em>) – path where to save images</p></li>
-<li><p><strong>epoch</strong> (<em>int</em>) – current epoch (to name images)</p></li>
-<li><p><strong>labels</strong> (<em>list</em>) – labels for the data for labelled T-SNE (optional) - list of strings</p></li>
-</ul>
+<dd class="field-odd"><p><strong>inp</strong> (<em>dict</em>) – Samples dictionary</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>returns K latent samples for each input</p>
+<dd class="field-even"><p>decoded distribution parameters (means and logvars)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">K=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.BaseVae.encode">
+<span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae.encode" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes the inputs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>inp</strong> (<em>dict</em>) – Inputs dictionary</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>encoded distribution parameters (means and logvars)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.BaseVae.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -230,82 +141,24 @@
 <p>:rtype:tuple(torch.dist, torch.dist, torch.tensor)</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.generate">
-<code class="sig-name descname">generate</code><span class="sig-paren">(</span><em class="sig-param">runPath</em>, <em class="sig-param">epoch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate traversals, currently only works for images</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>runPath</strong> (<em>str</em>) – path to save data to</p></li>
-<li><p><strong>epoch</strong> (<em>int</em>) – current epoch to name data</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.generate_samples">
-<code class="sig-name descname">generate_samples</code><span class="sig-paren">(</span><em class="sig-param">N</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.generate_samples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates samples from the latent space</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>N</strong> (<em>int</em>) – How many samples to make</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>output reconstructions</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.tensor</p>
-</dd>
-</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.vae.</span></span><span class="sig-name descname"><span class="pre">VAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_dist=&lt;class</span> <span class="pre">'torch.distributions.normal.Normal'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">likelihood_dist=&lt;class</span> <span class="pre">'torch.distributions.normal.Normal'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_dist=&lt;class</span> <span class="pre">'torch.distributions.normal.Normal'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE.generate_samples">
+<span class="sig-name descname"><span class="pre">generate_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.generate_samples" title="Permalink to this definition"></a></dt>
+<dd><p>Generates samples from the latent space
+:param N: How many samples to make
+:type N: int
+:return: output reconstructions
+:rtype: torch.tensor</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.get_nework_classes">
-<code class="sig-name descname">get_nework_classes</code><span class="sig-paren">(</span><em class="sig-param">enc</em>, <em class="sig-param">dec</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.get_nework_classes" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>Instantiates the encoder and decoder networks</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>enc</strong> (<em>str</em>) – encoder name</p></li>
-<li><p><strong>dec</strong> (<em>str</em>) – decoder name</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>returns encoder and decoder class</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple(object, object)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.load_dataset">
-<code class="sig-name descname">load_dataset</code><span class="sig-paren">(</span><em class="sig-param">batch_size</em>, <em class="sig-param">device='cuda'</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.load_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads data and creates DataLoaders</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>batch_size</strong> (<em>int</em>) – batch size</p></li>
-<li><p><strong>device</strong> (<em>str</em>) – device to put data on</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>train and test split</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple(torch.DataLoader, torch.DataLoader)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.pz_params">
-<em class="property">property </em><code class="sig-name descname">pz_params</code><a class="headerlink" href="#multimodal_compare.models.vae.VAE.pz_params" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE.pz_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.pz_params" title="Permalink to this definition"></a></dt>
 <dd><p>returns likelihood parameters
 :rtype: list(torch.tensor, torch.tensor)</p>
 <dl class="field-list simple">
@@ -315,9 +168,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.qz_x_params">
-<em class="property">property </em><code class="sig-name descname">qz_x_params</code><a class="headerlink" href="#multimodal_compare.models.vae.VAE.qz_x_params" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE.qz_x_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">qz_x_params</span></span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.qz_x_params" title="Permalink to this definition"></a></dt>
 <dd><p>returns posterior distribution parameters
 :rtype: list(torch.tensor, torch.tensor)</p>
 <dl class="field-list simple">
@@ -327,207 +180,39 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.reconstruct">
-<code class="sig-name descname">reconstruct</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">runPath</em>, <em class="sig-param">epoch</em>, <em class="sig-param">N=32</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.reconstruct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstruct data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>torch.tensor</em>) – input modality</p></li>
-<li><p><strong>runPath</strong> (<em>str</em>) – path to save data to</p></li>
-<li><p><strong>epoch</strong> (<em>int</em>) – current epoch to name data</p></li>
-<li><p><strong>N</strong> (<em>int</em>) – How many samples to reconstruct</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.reconstruct_data">
-<code class="sig-name descname">reconstruct_data</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.reconstruct_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstructs data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>torch.tensor</em>) – modality on the input</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>reconstructed data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VAE.seq_collate_fn">
-<code class="sig-name descname">seq_collate_fn</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.seq_collate_fn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collate function for sequential data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>batch</strong> – list with sequential data</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>batch, masks</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="multimodal_compare.models.vae.VaeDataset">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.vae.</code><code class="sig-name descname">VaeDataset</code><span class="sig-paren">(</span><em class="sig-param">pth</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">network_type</em>, <em class="sig-param">network_name</em>, <em class="sig-param">mod_type</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.vae.VaeDataset.check_img_normalize">
-<code class="sig-name descname">check_img_normalize</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset.check_img_normalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalizes image data between 0 and 1 (if needed)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><em>torch.tensor</em><em>, </em><em>list</em><em>]</em>) – input images for normalisation</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>normalised data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list, torch.tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VaeDataset.get_path_type">
-<code class="sig-name descname">get_path_type</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset.get_path_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>See if the provided data path is supported.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Path to the dataset</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>recognised type of the data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VaeDataset.get_train_test_splits">
-<code class="sig-name descname">get_train_test_splits</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">test_fraction</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset.get_train_test_splits" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the data split into train and validation set according to test_fraction</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>torch.tensor</em><em>, </em><em>ndarray</em><em>]</em>) – input data</p></li>
-<li><p><strong>test_fraction</strong> (<em>float32</em>) – fraction of the data that will be used for test set</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>tuple(train_split, test_split)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VaeDataset.load_data">
-<code class="sig-name descname">load_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset.load_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads the data from path</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>data prepared for training</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>torch.tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VaeDataset.prepare_audio">
-<code class="sig-name descname">prepare_audio</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset.prepare_audio" title="Permalink to this definition">¶</a></dt>
-<dd><p>&#64;TODO Support for audio data</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>list</em>) – input audio sequences</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>padded sequences for training</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.models.vae.VaeDataset.prepare_for_encoder">
-<code class="sig-name descname">prepare_for_encoder</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VaeDataset.prepare_for_encoder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares the data for training.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><em>list</em><em>, </em><em>torch.tensor</em><em>, </em><em>ndarray</em><em>]</em>) – the loaded data</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>data reshaped for training,</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="mmvae_base.html" class="btn btn-neutral float-right" title="Multimodal VAE Base Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="trainer.html" class="btn btn-neutral float-left" title="Trainer class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mmvae_base.html" class="btn btn-neutral float-right" title="Multimodal VAE Base Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, Gabriela Sejnova.
-
-    </p>
+    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -1,71 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Decoders &mdash; multimodal-vae-comparison 1.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Objectives" href="objectives.html" />
     <link rel="prev" title="Encoders" href="encoders.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,24 +37,13 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Tutorials</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">Trainer class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
@@ -99,83 +52,45 @@
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Decoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Config class</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Decoders</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/code/decoders.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="decoders">
-<span id="id1"></span><h1>Decoders<a class="headerlink" href="#decoders" title="Permalink to this headline">¶</a></h1>
-<span class="target" id="module-multimodal_compare.models.decoders"></span><dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_Audio">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_Audio</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Audio" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_Audio.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Audio.forward" title="Permalink to this definition">¶</a></dt>
+             
+  <section id="decoders">
+<span id="id1"></span><h1>Decoders<a class="headerlink" href="#decoders" title="Permalink to this heading"></a></h1>
+<span class="target" id="module-multimodal_compare.models.decoders"></span><dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_Audio">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_Audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Audio" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_Audio.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Audio.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -192,12 +107,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_CNN">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_CNN</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_CNN" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_CNN.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_CNN.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_CNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_CNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_CNN" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_CNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_CNN.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -214,12 +129,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_FNN">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_FNN</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_FNN" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_FNN.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_FNN.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_FNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_FNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_FNN" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_FNN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_FNN.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -236,12 +151,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_MNIST">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_MNIST</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_MNIST.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_MNIST">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_MNIST</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_MNIST.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -258,12 +173,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_MNISTMoE">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_MNISTMoE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">num_hidden_layers=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNISTMoE" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_MNISTMoE.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNISTMoE.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_MNISTMoE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_MNISTMoE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNISTMoE" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_MNISTMoE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNISTMoE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -280,12 +195,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_MNIST_DMVAE">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_MNIST_DMVAE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">num_hidden=256</em>, <em class="sig-param">zPrivate_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST_DMVAE" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_MNIST_DMVAE.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST_DMVAE.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_MNIST_DMVAE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_MNIST_DMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zPrivate_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST_DMVAE" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_MNIST_DMVAE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_MNIST_DMVAE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -302,12 +217,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_SVHN">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_SVHN</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_SVHN.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_SVHN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_SVHN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_SVHN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -324,12 +239,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_SVHNMoE">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_SVHNMoE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHNMoE" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_SVHNMoE.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHNMoE.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_SVHNMoE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_SVHNMoE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHNMoE" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_SVHNMoE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHNMoE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -346,12 +261,12 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_SVHN_DMVAE">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_SVHN_DMVAE</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim</em>, <em class="sig-param">zPrivate_dim=4</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN_DMVAE" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_SVHN_DMVAE.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">z</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN_DMVAE.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_SVHN_DMVAE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_SVHN_DMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zPrivate_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN_DMVAE" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_SVHN_DMVAE.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_SVHN_DMVAE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -368,16 +283,16 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_Transformer">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_Transformer</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em>, <em class="sig-param">ff_size=1024</em>, <em class="sig-param">num_layers=4</em>, <em class="sig-param">num_heads=2</em>, <em class="sig-param">dropout=0.1</em>, <em class="sig-param">activation='gelu'</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Transformer" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_Transformer.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Transformer.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_Transformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_Transformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gelu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Transformer" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_Transformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_Transformer.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>z</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list with sampled latent vectors z and (optionally) boolean masks for desired lengths</p>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list with sampled latent vectors z and (optionally) boolean masks for desired lengths</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>output reconstructions, log variance</p>
@@ -390,16 +305,16 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_TransformerIMG">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_TransformerIMG</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em>, <em class="sig-param">ff_size=1024</em>, <em class="sig-param">num_layers=4</em>, <em class="sig-param">num_heads=4</em>, <em class="sig-param">dropout=0.1</em>, <em class="sig-param">activation='gelu'</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TransformerIMG" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_TransformerIMG.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TransformerIMG.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_TransformerIMG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_TransformerIMG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gelu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TransformerIMG" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_TransformerIMG.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TransformerIMG.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>z</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list with sampled latent vectors z and (optionally) boolean masks for desired lengths</p>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list with sampled latent vectors z and (optionally) boolean masks for desired lengths</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>output reconstructions, log variance</p>
@@ -412,16 +327,16 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_TxtTransformer">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_TxtTransformer</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TxtTransformer" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_TxtTransformer.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TxtTransformer.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_TxtTransformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_TxtTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gelu'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TxtTransformer" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_TxtTransformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_TxtTransformer.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>z</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list with sampled latent vectors z and (optionally) boolean masks for desired lengths</p>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list with sampled latent vectors z and (optionally) boolean masks for desired lengths</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>output reconstructions, log variance</p>
@@ -434,16 +349,16 @@
 
 </dd></dl>
 
-<dl class="class">
-<dt id="multimodal_compare.models.decoders.Dec_VideoGPT">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.models.decoders.</code><code class="sig-name descname">Dec_VideoGPT</code><span class="sig-paren">(</span><em class="sig-param">latent_dim</em>, <em class="sig-param">data_dim=1</em>, <em class="sig-param">n_res_layers=4</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_VideoGPT" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="multimodal_compare.models.decoders.Dec_VideoGPT.forward">
-<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_VideoGPT.forward" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_VideoGPT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">Dec_VideoGPT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_res_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_VideoGPT" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.Dec_VideoGPT.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.Dec_VideoGPT.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>z</strong> (<em>torch.tensor</em>) – sampled latent vectors z</p>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.tensor</em>) – sampled latent vectors z</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>output reconstructions, log variance</p>
@@ -456,54 +371,42 @@
 
 </dd></dl>
 
-</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.decoders.VaeDecoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.decoders.</span></span><span class="sig-name descname"><span class="pre">VaeDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">net_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NetworkTypes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.decoders.VaeDecoder" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="objectives.html" class="btn btn-neutral float-right" title="Objectives" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="encoders.html" class="btn btn-neutral float-left" title="Encoders" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="objectives.html" class="btn btn-neutral float-right" title="Objectives" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, Gabriela Sejnova.
-
-    </p>
+    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

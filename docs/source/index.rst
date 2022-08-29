@@ -18,6 +18,8 @@ paper (link will be added soon). This dataset offers 5 levels of difficulty (bas
 to find the minimal functioning scenario for each model. Moreover, its rigid structure enables automatic qualitative
 evaluation of the generated samples. For more info, see below.
 
+The toolkit is using the `PyTorch Lightning <https://www.pytorchlightning.ai/>`_ framework.
+
 .. note::
    This page is currently a work in progress
 
@@ -43,5 +45,8 @@ evaluation of the generated samples. For more info, see below.
    code/encoders
    code/decoders
    code/objectives
+   code/dataloader
+   code/datasets
    code/eval_gebid
    code/infer
+   code/config

@@ -4,5 +4,5 @@ Trainer class
 ===============
 
 
-.. automodule:: multimodal_compare.main
+.. automodule:: multimodal_compare.models.trainer
   :members:
