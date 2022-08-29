@@ -3,7 +3,7 @@ import abc
 import torch, os
 import torch.nn as nn
 from models.NetworkTypes import VaeOutput
-from utils import get_mean, kl_divergence, lengths_to_mask, output_onehot2text
+from utils import get_mean
 import torch.distributions as dist
 
 class TorchMMVAE(nn.Module):
@@ -41,15 +41,15 @@ class TorchMMVAE(nn.Module):
         # sample from each distribution
         zs = {}
         for modality, qz_x in qz_xs.items():
-            # my_dist = torch.distributions.Normal(*self._pz_params(modality))
-            qz_x = dist.Normal(*qz_x)
-            # qz_x = qz_x(*self._pz_params(modality))
-            # qz_x = dist.Normal(*[qz_x])
-            z = qz_x.rsample(torch.Size([K]))
+            qz_xs[modality] = dist.Normal(*qz_x)
+            z = dist.Normal(*qz_x).rsample(torch.Size([K]))
             zs[modality] = {"latents":z, "masks":None}
 
         # decode the samples
         px_zs = self.decode(zs)
+        for modality, px_z in px_zs.items():
+            px_zs[modality] = dist.Normal(*px_z)
+
         output_dict = {}
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],

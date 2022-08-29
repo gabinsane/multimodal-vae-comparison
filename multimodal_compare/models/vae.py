@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from models import encoders, decoders
 from models.decoders import VaeDecoder
 from models.encoders import VaeEncoder
+from models.NetworkTypes import VaeOutput
 from utils import get_mean, kl_divergence, load_images, lengths_to_mask
 
 
@@ -64,7 +65,10 @@ class BaseVae(nn.Module):
         zs = qz_x.rsample(torch.Size([K]))
         px_z_params = self.decode({"latents":zs, "masks": None})
         px_z = self.px_z(*px_z_params)
-        return qz_x, px_z, zs
+        output_dict = {}
+        output_dict["mod_1"] = VaeOutput(encoder_dists=qz_x, decoder_dists=px_z,
+                                          latent_samples=zs)
+        return output_dict
 
 
 

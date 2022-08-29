@@ -39,11 +39,15 @@ def test_torch__mmvae_decode():
         assert [d.shape == torch.Size((bsize,*[3,64,64])) for d in params]
 
 
-
 def test_torch_mmvae_forward():
+    bsize = 32
     mmvae = ExampleModel()
     inputs = {"mod_1": {"data": torch.rand((32, 3, 64, 64))}, "mod_2": {"data": torch.rand((32, 3, 64, 64))}}
-    qz_xs = mmvae.forward(inputs, 1)
-    assert isinstance(qz_xs, dict)
+    output = mmvae.forward(inputs, 1)
+    assert isinstance(output, dict)
+    for dists in output.values():
+        assert isinstance(dists.encoder_dists, torch.distributions.Normal)
+        assert isinstance(dists.decoder_dists, torch.distributions.Normal)
+        assert isinstance(dists.latent_samples, dict) and "latents" in dists.latent_samples.keys()
+        assert dists.latent_samples["latents"].shape == torch.Size([1, bsize, mmvae.n_latents])
 
-    print('hello')
