@@ -241,21 +241,21 @@
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
-:param inputs: input data, a list of modalities where missing modalities are replaced with None
-:type inputs: list
+<dd><p>Forward pass that takes input data and outputs a dict with  posteriors, reconstructions and latent samples
+:param inputs: input data, a dict of modalities where missing modalities are replaced with None
+:type inputs: dict
 :param K: sample K samples from the posterior
 :type K: int
-:return: a list of posterior distributions, a list of reconstructions and latent samples
-:rtype: tuple(list, list, list)</p>
+:return: dict where keys are modalities and values are a named tuple
+:rtype: dict</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.infer">
 <span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.infer" title="Permalink to this definition"></a></dt>
 <dd><p>Inference module, calculates the joint posterior
-:param x: list of input modalities, missing mods are replaced with None
-:type x: list
+:param inputs: input data, a dict of modalities where missing modalities are replaced with None
+:type inputs: dict
 :param K: sample K samples from the posterior
 :type K: int
 :return: joint posterior and individual posteriors

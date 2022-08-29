@@ -102,26 +102,25 @@ You can add a new objective, encoder/decoder networks and of course other suppor
 <p>First, we start by defining the model in <code class="docutils literal notranslate"><span class="pre">mmvae_models.py</span></code>. Our model will need a name and should inherit the TorchMMVAE
 class defined in <code class="docutils literal notranslate"><span class="pre">mmvae_base.py</span></code>.
 <code class="docutils literal notranslate"><span class="pre">self.modelName</span></code> will be used for model selection from the config file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>  <span class="k">class</span> <span class="nc">POE</span><span class="p">(</span><span class="n">TorchMMVAE</span><span class="p">):</span>
-      <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vaes</span><span class="p">,</span> <span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-          <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">          Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public</span>
-<span class="sd">          :param vaes: list of modality-specific vae objects</span>
-<span class="sd">          :type encoders: list</span>
-<span class="sd">          :param model_cofig: config with model-specific parameters</span>
-<span class="sd">          :type model_config: dict</span>
-<span class="sd">          &quot;&quot;&quot;</span>
-          <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-          <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span><span class="n">vaes</span><span class="p">)</span>
-          <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span> <span class="o">=</span> <span class="n">model_config</span>
-          <span class="bp">self</span><span class="o">.</span><span class="n">modelName</span> <span class="o">=</span> <span class="s1">&#39;poe&#39;</span>
-          <span class="bp">self</span><span class="o">.</span><span class="n">pz</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
-          <span class="bp">self</span><span class="o">.</span><span class="n">prior_dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
-
-<span class="n">The</span> <span class="n">TorchMMVAE</span> <span class="k">class</span> <span class="nc">includes</span> <span class="n">the</span> <span class="n">bare</span> <span class="n">functional</span> <span class="n">minimum</span> <span class="k">for</span> <span class="n">a</span> <span class="n">multimodal</span> <span class="n">VAE</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">e</span><span class="o">.</span> <span class="n">the</span> <span class="n">forward</span> <span class="k">pass</span> <span class="ow">and</span> <span class="n">multimodal_mixing</span> <span class="n">function</span><span class="o">.</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">POE</span><span class="p">(</span><span class="n">TorchMMVAE</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vaes</span><span class="p">,</span> <span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public</span>
+<span class="sd">        :param vaes: list of modality-specific vae objects</span>
+<span class="sd">        :type encoders: list</span>
+<span class="sd">        :param model_cofig: config with model-specific parameters</span>
+<span class="sd">        :type model_config: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span><span class="n">vaes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span> <span class="o">=</span> <span class="n">model_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modelName</span> <span class="o">=</span> <span class="s1">&#39;poe&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pz</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
 </pre></div>
 </div>
-<p>The newly added model can override both these methods or keep the forward function as it is. Here we add the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> pass and all methods necessary for the multimodal data integration. The first input parameter
+<p>The TorchMMVAE class includes the bare functional minimum for a multimodal VAE, i.e. the forward pass and multimodal_mixing function.
+The newly added model can override both these methods or keep the forward function as it is. Here we add the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> pass and all methods necessary for the multimodal data integration. The first input parameter
 will be the multimodal data specified in a config where the keys label the modalities and values contain the data (and possibly masks where applicable).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"> <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 </span>     <span class="sd">&quot;&quot;&quot;</span>

@@ -40,7 +40,8 @@ class defined in ``mmvae_base.py``.
            self.pz = dist.Normal
            self.prior_dist = dist.Normal
 
- The TorchMMVAE class includes the bare functional minimum for a multimodal VAE, i.e. the forward pass and multimodal_mixing function.
+
+The TorchMMVAE class includes the bare functional minimum for a multimodal VAE, i.e. the forward pass and multimodal_mixing function.
 The newly added model can override both these methods or keep the forward function as it is. Here we add the ``forward()`` pass and all methods necessary for the multimodal data integration. The first input parameter
 will be the multimodal data specified in a config where the keys label the modalities and values contain the data (and possibly masks where applicable).
 
