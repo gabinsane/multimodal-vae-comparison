@@ -138,13 +138,13 @@ class POE(TorchMMVAE):
 
     def forward(self, inputs, K=1):
         """
-        Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
-        :param inputs: input data, a list of modalities where missing modalities are replaced with None
-        :type inputs: list
+        Forward pass that takes input data and outputs a dict with  posteriors, reconstructions and latent samples
+        :param inputs: input data, a dict of modalities where missing modalities are replaced with None
+        :type inputs: dict
         :param K: sample K samples from the posterior
         :type K: int
-        :return: a list of posterior distributions, a list of reconstructions and latent samples
-        :rtype: tuple(list, list, list)
+        :return: dict where keys are modalities and values are a named tuple
+        :rtype: dict
         """
         mu, logvar, single_params = self.infer(inputs, K)
         qz_x = dist.Normal(*[mu, logvar])
@@ -163,8 +163,8 @@ class POE(TorchMMVAE):
     def infer(self,x, K=1):
         """
         Inference module, calculates the joint posterior
-        :param x: list of input modalities, missing mods are replaced with None
-        :type x: list
+        :param inputs: input data, a dict of modalities where missing modalities are replaced with None
+        :type inputs: dict
         :param K: sample K samples from the posterior
         :type K: int
         :return: joint posterior and individual posteriors
@@ -219,14 +219,6 @@ class POE(TorchMMVAE):
             mu, logvar = mu.to("cuda"), logvar.to("cuda")
         return mu, logvar
 
-    def reconstruct(self, data, runPath, epoch, N=64):
-        recons_mat = []
-        for ix, i in enumerate(data):
-            input_mat = [None] * len(data)
-            input_mat[ix] = i[:N]
-            rec = super(POE, self).reconstruct(input_mat)
-            recons_mat.append(rec)
-        self.process_reconstructions(recons_mat, data, epoch, runPath)
 
 class MoPOE(TorchMMVAE):
     def __init__(self, vaes, model_config=None):
