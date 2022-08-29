@@ -41,7 +41,7 @@ class ModelLoader():
         """
         Parses the YAML config provided in the file path
 
-        :param pth: Path to config
+        :param pth: Path to config dir
         :type pth: str
         :return: returns the config dict
         :rtype: dict

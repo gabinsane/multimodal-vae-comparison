@@ -12,38 +12,36 @@ import numpy as np
 import os
 import pandas as pd
 import torch
-
+from models.trainer import ModelLoader
+from models.config import Config
 import models
 import pickle
 from models import objectives
 from models.mmvae_base import TorchMMVAE
 from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data
-
-
-# We have models, data, objectives
-
+from models.dataloader import DataModule
 
 class MMVAEExperiment():
     """
-    This class provides unified access to all assets of MMVAE experiments, i.e., trained models, training stats, config.
+    This class provides unified access to all assets of MMVAE eval experiments, i.e., trained models, training stats, config.
     """
 
     def __init__(self, path):
         """
         Initialize MMVAEExperiment class
 
-        :param path: path to the experiment directory
+        :param path: path to the model checkpoint .ckpt file
         :type path: str
         """
-        assert os.path.isdir(path), f"Directory {path} does not exist."
-        assert os.path.isfile(os.path.join(path, 'model.rar')), f"Directory {path} does not contain a model."
-        assert os.path.isfile(os.path.join(path, 'config.yml')), f"Directory {path} does not contain a config."
+        assert os.path.exists(path), f"{path} does not exist."
+        assert os.path.isfile(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))),
+                                           'config.yml')), f"Directory {path} does not contain a config."
         self.path = path
-
         self.config = None
         self.mods = None
         self.model = None
         self.data = None
+        self.test_loader = None
 
     def set_data(self, dataloader):
         self.data = dataloader
@@ -54,11 +52,11 @@ class MMVAEExperiment():
                 'No data is specified. You can load the test data with exp.set_data(exp.get_model_train_test_data()[1])')
         return self.data
 
-    def get_model_train_test_data(self):
-        model = self.get_model()
-        train_loader, test_loader = model.load_dataset(32,
-                                                       device=self.get_device())  # TODO: This seems to be not general enough
-        return train_loader, test_loader
+    def get_model_test_data(self):
+        datamodule = DataModule(self.get_config())
+        datamodule.setup()
+        self.test_loader = datamodule.val_dataloader()
+        return self.test_loader
 
     def get_model(self):
         """
@@ -69,30 +67,11 @@ class MMVAEExperiment():
             """
         if self.model is not None:
             return self.model
-        device = torch.device("cuda")
-        config = self.get_config()
-        mods = self.get_modalities()
-        model_ = "VAE" if len(mods) == 1 else config["mixing"].lower()
-        modelC = getattr(models, model_)
-        params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
-                  [m["feature_dim"] for m in mods], ["image", "text"]]
-        if len(mods) == 1:
-            params = [x[0] for x in params]
-
-        vaes = []
-        from models import VAE
-        for i, m in enumerate(self.mods):
-            vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config['n_latents']))
-        model_ = modelC(vaes, config).to(device)
-
-
-        # model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
-        print('Loading model {} from {}'.format(model_.modelName, self.path))
-        model_.load_state_dict(torch.load(os.path.join(self.path, 'model.rar')))
-        model_._pz_params = model_._pz_params
-        model_.eval()
-        self.model = model_
-        return model_
+        loader = ModelLoader()
+        model = loader.load_model(self.config)
+        model.eval()
+        self.model = model
+        return model
 
     def get_config(self):
         """
@@ -105,28 +84,9 @@ class MMVAEExperiment():
         """
         if self.config is not None:
             return self.config
-        if os.path.isdir(self.path):
-            conf_pth = os.path.join(self.path, 'config.json')
-        with open(conf_pth, 'r') as stream:
-            config = yaml.safe_load(stream)
-        self.config = config
-        return config
-
-    def get_modalities(self):
-        """
-        Loads the modalities of a model based on the config.
-        :return: returns list of modality-specific dicts
-        :rtype: list[]
-        """
-        if self.mods is not None:
-            return self.mods
-        config = self.get_config()
-        modalities = []
-        for x in range(20):
-            if "modality_{}".format(x) in list(config.keys()):
-                modalities.append(config["modality_{}".format(x)])
-        self.mods = modalities
-        return modalities
+        pth = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(self.path)))))
+        self.config = Config(pth)
+        return self.config
 
     def make_evals(self):
         for evaluation in Evaluations.__subclasses__():
@@ -159,72 +119,49 @@ class EstimateLogMarginal(Evaluations):
         """
         model = exp.get_model()
         test_data = exp.get_data()
-        assert isinstance(model, TorchMMVAE)
-
-        # train_loader, test_loader = model.load_dataset(32, device=device)
-        model.eval()
         marginal_loglik = 0
-        objective = getattr(objectives, ('m_' if hasattr(model, 'vaes') else '')
-                            + ("_".join(("elbo", model.modelName)) if hasattr(model, 'vaes') else ["elbo"]))
+        objective = model.objective
         with torch.no_grad():
             for ix, dataT in enumerate(test_data):
                 data, masks = dataT
                 data = pad_seq_data(data, masks)
                 marginal_loglik += objective(model, data, ltype="lprob")[0]
-
         marginal_loglik /= len(test_data.dataset)
         return marginal_loglik
 
 
-# def parse_args(pth):
-#     """
-#     Parses the YAML config provided in the file path
-#
-#     :param pth: Path to config
-#     :type pth: str
-#     :return: returns the config dict and modality-specific dict
-#     :rtype: tuple(dict, dict)
-#     """
-#     if os.path.isdir(pth):
-#         pth = os.path.join(pth, 'config.json')
-#     with open(pth, 'r') as stream:
-#         config = yaml.safe_load(stream)
-#     modalities = []
-#     for x in range(20):
-#         if "modality_{}".format(x) in list(config.keys()):
-#             modalities.append(config["modality_{}".format(x)])
-#     return config, modalities
+class GeBiDCrossGeneration(Evaluations):
+    @classmethod
+    def evaluation(self, exp:MMVAEExperiment):
+        self.model = exp.get_model()
+        self.path = exp.path
 
+    def text_to_image(self, text):
+        """
+        Reconstructs text from the image input using the provided model
 
-plot_colors = ["blue", "green", "red", "cyan", "magenta", "orange", "navy", "maroon", "brown"]
-
-
-def estimate_log_marginal(model, device="cuda"):
-    """
-    Estimate of the log-marginal likelihood of test data.
-
-
-    :param model: VAE model
-    :type model: object
-    :param device: device (cuda/cpu)
-    :type device: str
-    :return: marginal log-likelihood
-    :rtype: float32
-    """
-    train_loader, test_loader = model.load_dataset(32, device=device)
-    model.eval()
-    marginal_loglik = 0
-    objective = getattr(objectives, ('m_' if hasattr(model, 'vaes') else '')
-                        + ("_".join(("elbo", model.modelName)) if hasattr(model, 'vaes') else ["elbo"]))
-    with torch.no_grad():
-        for ix, dataT in enumerate(test_loader):
-            data, masks = dataT
-            data = pad_seq_data(data, masks)
-            marginal_loglik += objective(model, data, ltype="lprob")[0]
-
-    marginal_loglik /= len(test_loader.dataset)
-    return marginal_loglik
-
+        :param text: list of strings to reconstruct
+        :type text: list
+        :param model: model object
+        :type model: object
+        :param path: where to save the outputs
+        :type path: str
+        :return: returns reconstructed images and also texts
+        :rtype: tuple(list, list)
+        """
+        img_outputs, txtoutputs = [], []
+        for i, w in enumerate(text):
+            txt_inp = one_hot_encode(len(w), w.lower())
+            self.model.eval()
+            recons = self.model.forward([None, [txt_inp.unsqueeze(0), None]])[1]
+            if self.model.modelName == 'moe':
+                recons = recons[0]
+            image, recon_text = _process_recons(recons)
+            txtoutputs.append(recon_text[0][0])
+            img_outputs.append(image * 255)
+            image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
+            cv2.imwrite(os.path.join(self.path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)], i)), image)
+        return img_outputs, txtoutputs
 
 def eval_reconstruct(path, testloader=None):
     """
@@ -335,68 +272,6 @@ def compare_loss(paths, label_tag):
         plt.savefig(os.path.join(os.path.dirname(os.path.dirname(paths[0])),
                                  "losstype_compared_{}.png".format(ll.lower().replace(" ", "_"))))
         plt.clf()
-
-
-def _get_all_csvs(pth):
-    """
-    Extracts paths to all csv files within a directory and its subdirectories
-
-    :param pth: path to directory
-    :type pth: str
-    :return: list of loss paths
-    :rtype: list
-    """
-    pth = pth + "/" if pth[-1] != "/" else pth
-    return glob.glob(pth + "**/loss.csv", recursive=True)
-
-
-def compare_models_numbers(pth):
-    """
-    Compares losses for multiple models and prints it into a text file
-
-    :param pth: list of model directories to compare
-    :type pth: list
-    """
-    f = open(os.path.join(pth[0], "comparison.csv"), 'w')
-    writer = csv.writer(f)
-    all_csvs = _get_all_csvs(pth)
-    header = None
-    for c in all_csvs:
-        model_csv = pd.read_csv(c, delimiter=",")
-        if not header:
-            writer.writerow(["Model", "Epochs"] + list(model_csv.keys())[1:])
-            header = True
-        row = [c.split(pth)[-1].split("/loss.csv")[0]] + [int(model_csv.values[-1][0])] + [round(x, 4) for x in list(
-            model_csv.values[-1][1:])]
-        writer.writerow(row)
-    f.close()
-    print("Saved comparison at {}".format(os.path.join(pth[0], "comparison.csv")))
-
-
-# def load_model(path):
-#     """
-#     Loads the model from directory path
-#
-#     :param path: path to model directory
-#     :type path: str
-#     :return: model object
-#     :rtype: object
-#     """
-#     device = torch.device("cuda")
-#     config, mods = parse_args(path)
-#     model_ = "VAE" if len(mods) == 1 else config["mixing"].lower()
-#     modelC = getattr(models, model_)
-#     params = [[m["encoder"] for m in mods], [m["decoder"] for m in mods], [m["path"] for m in mods],
-#               [m["feature_dim"] for m in mods], ["image", "text"]]
-#     if len(mods) == 1:
-#         params = [x[0] for x in params]
-#     model_ = modelC(*params, config["n_latents"], 0.1, config["batch_size"]).to(device)
-#     print('Loading model {} from {}'.format(model_.modelName, path))
-#     model_.load_state_dict(torch.load(os.path.join(path, 'model.rar')))
-#     model_._pz_params = model_._pz_params
-#     model_.eval()
-#     return model_
-
 
 def get_traversal_samples(latent_dim, n_samples_per_dim):
     """
