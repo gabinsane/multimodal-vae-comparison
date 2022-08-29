@@ -1,20 +1,25 @@
 import os
 import pickle
 import yaml
+import argparse
 
 class Config():
     def __init__(self, parser):
         """
         Config manager
 
-        :param parser: argument parser
+        :param parser: argument parser or str path to config
         :type parser: argparse.ArgumentParser
         """
         self.num_mods = None
         self.mPath = None
         self.parser = parser
         self.mods = []
-        self.params = self._parse_args()
+        assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str))
+        if isinstance(parser, argparse.ArgumentParser):
+            self.params = self._parse_args()
+        elif isinstance(parser, str):
+            self.params = self._load_config(parser)
         self._define_params()
         self._setup_savedir()
 
@@ -59,6 +64,10 @@ class Config():
         with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
             yaml.dump(self.params, yaml_file, default_flow_style=False)
 
+    def _load_config(self, pth):
+        with open(pth) as file:
+            config = yaml.safe_load(file)
+        return config
 
     def _parse_args(self):
         """
@@ -67,8 +76,7 @@ class Config():
         :rtype: dict
         """
         args = self.parser.parse_args()
-        with open(args.cfg) as file:
-            config = yaml.safe_load(file)
+        config = self._load_config(args.cfg)
         for name, value in vars(args).items():
             if value is not None and name != "cfg" and name in config.keys():
                 config[name] = value

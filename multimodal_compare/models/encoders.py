@@ -1,3 +1,4 @@
+import abc
 import math
 
 import numpy as np
@@ -7,18 +8,30 @@ from torch.nn import Conv2d, BatchNorm3d, Sequential, TransformerEncoderLayer, E
 import torch.nn.functional as F
 from numpy import prod
 
-from models.NetworkTypes import NetworkTypes
+from models.NetworkTypes import NetworkTypes, NetworkRoles
 from models.nn_modules import PositionalEncoding, ConvNet, SamePadConv3d, AttentionResidualBlock
 from utils import Constants
 
 
-class VaeEncoder(Module):
-    def __init__(self, latent_dim, data_dim, net_type:NetworkTypes):
+class VaeComponent(Module):
+    def __init__(self, latent_dim: int, data_dim: tuple, net_type=NetworkTypes.UNSPECIFIED, net_role=NetworkRoles.UNSPECIFIED):
+        """
+        Base for all
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: tuple
+        :net_type: network type used as encoder
+        :type net_type: NetworkTypes
+        """
         super().__init__()
+        self.net_role = net_role
         self.latent_dim = latent_dim
         self.data_dim = data_dim
         self.net_type = net_type
 
+    @abc.abstractmethod
     def forward(self, x):
         """
             Forward pass
@@ -28,10 +41,24 @@ class VaeEncoder(Module):
             :return: tensor of means, tensor of log variances
             :rtype: tuple(torch.tensor, torch.tensor)
         """
-        raise NotImplementedError
+        pass
+
+class VaeEncoder(VaeComponent):
+    def __init__(self, latent_dim, data_dim, net_type: NetworkTypes):
+        """
+        Base for all encoders
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: tuple
+        :net_type: network type used as encoder
+        :type net_type: NetworkTypes
+        """
+        super().__init__(latent_dim, data_dim, net_type)
+        self.net_role = NetworkRoles.ENCODER
 
 
-# Classes
 class Enc_CNN(VaeEncoder):
     def __init__(self, latent_dim, data_dim):
         """
@@ -40,8 +67,9 @@ class Enc_CNN(VaeEncoder):
         :param latent_dim: latent vector dimensionality
         :type latent_dim: int
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
-        :type data_dim: list
+        :type data_dim:
         """
+        data_dim = (3, 64, 64)
         super(Enc_CNN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         hid_channels = 32
         kernel_size = 4
@@ -77,7 +105,8 @@ class Enc_CNN(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        x = x["data"]
+        if isinstance(x, dict):
+            x = x["data"]
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
         # Convolutional layers with ReLu activations
         x = self.silu(self.conv1(x.float()))

@@ -8,6 +8,7 @@ from models.decoders import VaeDecoder
 from models.encoders import VaeEncoder
 from utils import get_mean, kl_divergence, load_images, lengths_to_mask
 
+
 class DencoderFactory(object):
     @classmethod
     def get_nework_classes(cls, enc_name, dec_name, n_latents, data_dim:tuple):
@@ -36,10 +37,18 @@ class BaseVae(nn.Module):
         self.enc = enc
         self.dec = dec
         assert enc.latent_dim == dec.latent_dim
+        assert enc.modality_type == dec.modality_type
         self.n_latents = enc.latent_dim
+        self.modality_type = enc.modality_type
         self.pz = prior_dist
         self.px_z = likelihood_dist
         self.qz_x = post_dist
+
+    def encode(self, inp):
+        return self.enc(inp)
+
+    def decode(self, inp):
+        return self.dec(inp)
 
     def forward(self, x, K=1):
         """
@@ -52,14 +61,13 @@ class BaseVae(nn.Module):
         :return: the posterior distribution, the reconstruction and latent samples
         :rtype:tuple(torch.dist, torch.dist, torch.tensor)
         """
-        self._qz_x_params = self.enc(x)
+        self._qz_x_params = self.encode(x)
         qz_x = self.qz_x(*self._qz_x_params)
         zs = qz_x.rsample(torch.Size([K]))
-        if "transformer" in self.dec.net_type.lower():
-            px_z = self.px_z(*self.dec([zs, x[1]] if x is not None else [zs, None]))
-        else:
-            px_z = self.px_z(*self.dec(zs))
+        px_z_params = self.decode({"latents":zs, "masks": None})
+        px_z = self.px_z(*px_z_params)
         return qz_x, px_z, zs
+
 
 
 class VAE(BaseVae):

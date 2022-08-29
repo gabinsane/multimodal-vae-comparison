@@ -2,71 +2,104 @@
 import abc
 import torch, os
 import torch.nn as nn
+from models.NetworkTypes import VaeOutput
 from utils import get_mean, kl_divergence, lengths_to_mask, output_onehot2text
+import torch.distributions as dist
 
-
-class BaseMMVAE(object):
-    modelname = 'basemmvae'
-
-    @abc.abstractmethod
-    def forward(self, inputs, K=1):
-        """
-        Forward pass that takes input data and outputs a list of private and shared posteriors, reconstructions and latent samples
-
-        :param inputs: input data, a list of modalities where missing modalities are replaced with None
-        :type inputs: list
-        :param K: sample K samples from the posterior
-        :type K: int
-        :return: a list of posterior distributions, a list of reconstructions and latent samples
-        :rtype: tuple(list, list, list)
-        """
-        pass
-
-    @abc.abstractmethod
-    def infer(self, inputs):
-        """
-        Inference module, calculates the joint posterior
-
-        :param inputs: list of input modalities, missing mods are replaced with None
-        :type inputs: list
-        :return: joint posterior and individual posteriors
-        :rtype: tuple(torch.tensor, torch.tensor, list, list)
-        """
-        pass
-
-    @abc.abstractmethod
-    def reconstruct(self, data):
-        """
-        Reconstructs the input data
-
-        :param data: list of input modalities
-        :type data: list
-        :return: reconstructions
-        :rtype: list
-        """
-        pass
-
-
-class TorchMMVAE(BaseMMVAE, nn.Module):
+class TorchMMVAE(nn.Module):
     """
     Base class for all PyTorch based MMVAE implementations.
     """
 
     def __init__(self):
         super().__init__()
-
-        self.vaes = []
-        self.mod_types = []
-        self.data_dims = []
+        self.vaes = {}
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+        ])
 
     def forward(self, inputs, K=1):
-        pass
+        """
+        The general forward pass of multimodal VAE
+
+        :param inputs: input dictionary with modalities as keys and data tensors as values
+        :type inputs: dict
+        :param K: number of samples
+        :type K: int
+        :return: dictionary with modalities as keys and namedtuples as values
+        :rtype: dict[str,VaeOutput]
+        """
+
+        # encode all present inputs using corresponding VAEs
+        qz_xs = self.encode(inputs)
+        qz_xs = self.modality_mixing(qz_xs)
+
+        # sample from each distribution
+        zs = {}
+        for modality, qz_x in qz_xs.items():
+            qz_x = self.qz_x(*self._qz_x_params)
+            qz_x = dist.Normal(*[qz_x])
+            z = qz_x.rsample(torch.Size([K]))
+            zs[modality] = z
+
+        # decode the samples
+        px_zs = self.decode(zs)
+        output_dict = {}
+        for modality in self.vaes.keys():
+            output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
+                                                latent_samples=zs[modality])
+        return output_dict
+
 
     def encode(self, inputs, K=1):
+        """
+        Encode inputs with appropriate VAE encoders
+
+        :param inputs: input dictionary with modalities as keys and data tensors as values
+        :type inputs: dict
+        :param K: number of samples
+        :type K: int
+        :return: qz_xs dictionary with modalities as keys and distribution parameters as values
+        :rtype: dict
+        """
+        qz_xs = {}
+        for modality, vae in self.vaes.items():
+            if modality in inputs and not inputs[modality]["data"] is None:
+                qz_x = vae.enc(inputs[modality], K=K)
+                qz_xs[modality] = qz_x
+        return qz_xs
+
+    @abc.abstractmethod
+    def modality_mixing(self, mods):
+        """
+        Mix the encoded distributions according to the chosen approach
+
+        :param mods: qz_xs dictionary with modalities as keys and distribution parameters as values
+        :type mods: dict
+        :return: latent samples dictionary with modalities as keys and latent sample tensors as values
+        :rtype: dict
+        """
         pass
 
-    def decode(self, x, K=1):
-        pass
+    def decode(self, samples, K=1):
+        """
+        Make reconstructions for the input samples
+
+        :param samples: Dictionary with modalities as keys and latent sample tensors as values
+        :type samples: dict
+        :param K: number of samples
+        :type K: int
+        :return: dictionary with modalities as keys and torch distributions as values
+        :rtype: dict
+        """
+        pz_xs = {}
+        for modality, vae in self.vaes.items():
+            if modality in samples and not samples[modality] is None:
+                pz_x = vae.dec(samples[modality], K=K)
+                pz_xs[modality] = pz_x
+        return pz_xs
+
 
     def infer(self, inputs):
         """

@@ -52,7 +52,7 @@ class Trainer(pl.LightningModule):
         vaes = []
         for i, m in enumerate(self.config.mods):
             vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents))
-        self.model = getattr(models, self.config.mixing.lower())(*vaes) if len(vaes) > 1 else vaes[0]
+        self.model = getattr(models, self.config.mixing.lower())(vaes) if len(vaes) > 1 else vaes[0]
         if self.config.pre_trained:
             print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
             self.model = self.load_from_checkpoint(self.config.pre_trained)

@@ -9,7 +9,7 @@ from torch.autograd import Variable
 
 
 class MOE(TorchMMVAE):
-    def __init__(self, *vaes, model_config=None):
+    def __init__(self, vaes, model_config=None):
         """
         Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae
         :param vaes: list of modality-specific vae objects
@@ -19,7 +19,7 @@ class MOE(TorchMMVAE):
         """
         super().__init__()
         self.model_config = model_config
-        self.vaes = nn.ModuleList(vaes)
+        self.vaes = nn.ModuleList(tuple(vaes))
         self.modelName = 'moe'
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
@@ -94,7 +94,7 @@ class MOE(TorchMMVAE):
 
 
 class POE(TorchMMVAE):
-    def __init__(self, *vaes, model_config=None):
+    def __init__(self, vaes, model_config=None):
         """
         Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public
         :param vaes: list of modality-specific vae objects
@@ -103,7 +103,7 @@ class POE(TorchMMVAE):
         :type model_config: dict
         """
         super().__init__()
-        self.vaes = nn.ModuleList(vaes)
+        self.vaes = nn.ModuleList(tuple(vaes))
         self.model_config = model_config
         self.modelName = 'poe'
         self.pz = dist.Normal
@@ -223,7 +223,7 @@ class POE(TorchMMVAE):
         self.process_reconstructions(recons_mat, data, epoch, runPath)
 
 class MoPOE(TorchMMVAE):
-    def __init__(self, *vaes, model_config=None):
+    def __init__(self, vaes, model_config=None):
         """
         Multimodal Variational Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE
         :param vaes: list of modality-specific vae objects
@@ -232,7 +232,7 @@ class MoPOE(TorchMMVAE):
         :type model_config: dict
         """
         super().__init__()
-        self.vaes = nn.ModuleList(vaes)
+        self.vaes = nn.ModuleList(tuple(vaes))
         self.model_config = model_config
         self.modelName = 'mopoe'
         self.pz = dist.Normal
@@ -360,7 +360,7 @@ class MoPOE(TorchMMVAE):
 
 
 class DMVAE(TorchMMVAE):
-    def __init__(self, *vaes, model_config=None):
+    def __init__(self, vaes, model_config=None):
         """
         Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE
         :param vaes: list of modality-specific vae objects
@@ -370,7 +370,7 @@ class DMVAE(TorchMMVAE):
         """
         super().__init__()
         self.model_config = model_config
-        self.vaes = nn.ModuleList(vaes)
+        self.vaes = nn.ModuleList(tuple(vaes))
         self.modelName = 'dmvae'
         self.pz = dist.Normal
         self.qz_x = dist.Normal
