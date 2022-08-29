@@ -229,19 +229,19 @@ def multimodal_elbo_poe(model, x,  ltype="lprob"):
             mods = x
         else:
             mods["mod_{}".format(m+1)] = x["mod_{}".format(m+1)]
-        qz_x, px_zs, _ = model(mods)
-        kld = kl_divergence(qz_x, model.pz(*model._pz_params))
+        output_dic = model(mods)
+        kld = kl_divergence(output_dic["mod_1"].encoder_dists, model.pz(*model.vaes["mod_1"]._pz_params))
         klds.append(kld.sum(-1))
         loc_lpx_z = []
-        for d in range(len(px_zs)):
-            tag = "mod_{}".format(d + 1)
-            lpx_z = (loss_fn(px_zs[d], x[tag]["data"], ltype=ltype, categorical=x[tag]["categorical"]) * model.vaes[d].llik_scaling).sum(-1)
+        for mod in output_dic.keys():
+            px_z = output_dic[mod].decoder_dists[0]
+            lpx_z = (loss_fn(px_z, x[mod]["data"], ltype=ltype, categorical=x[mod]["categorical"]) * model.vaes[d].llik_scaling).sum(-1)
             loc_lpx_z.append(lpx_z)
-            if d == m:
+            if mod == "mod_{}".format(m+1):
                 lpx_zs[m].append(lpx_z)
         elbo = (torch.stack(loc_lpx_z).sum(0) - kld.sum(-1).sum())
         elbos.append(elbo)
-    individual_losses = [-torch.stack(m).sum() / model.vaes[idx].llik_scaling for idx, m in enumerate(lpx_zs)]
+    individual_losses = [-torch.stack(m).sum() / model.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs)]
     return -torch.stack(elbos).sum(), torch.stack(klds).mean(0).sum(), individual_losses
 
 def iwae(model, x,  ltype="lprob", beta=1, K=20):

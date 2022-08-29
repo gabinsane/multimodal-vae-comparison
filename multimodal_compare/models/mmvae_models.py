@@ -147,12 +147,18 @@ class POE(TorchMMVAE):
         :rtype: tuple(list, list, list)
         """
         mu, logvar, single_params = self.infer(inputs, K)
-        recons = []
         qz_x = dist.Normal(*[mu, logvar])
         z = qz_x.rsample(torch.Size([1]))
-        for ind, vae in enumerate(self.vaes):
-            recons.append(vae.px_z(*vae.dec({"latents": z, "masks": None})))
-        return qz_x, recons, [z]
+        qz_d, px_d, z_d = {}, {}, {}
+        z_d["joint"] = {"latents": z, "masks": None}
+        for mod, vae in self.vaes.items():
+            px_d[mod] = vae.px_z(*vae.dec(z_d["joint"]))
+        output_dict = {}
+        qz_d["joint"] = qz_x
+        for modality in self.vaes.keys():
+            output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
+                                                latent_samples=z_d["joint"])
+        return output_dict
 
     def infer(self,x, K=1):
         """
@@ -169,11 +175,10 @@ class POE(TorchMMVAE):
                 batch_size = x[key]["data"].shape[0]
                 break
         # initialize the universal prior expert
-        mu, logvar = self.prior_expert((1, batch_size, self.vaes[0].n_latents), use_cuda=True)
-        for m, vae in enumerate(self.vaes):
-            tag = "mod_{}".format(m+1)
-            if x[tag]["data"] is not None:
-                mod_mu, mod_logvar = vae.enc(x[tag])
+        mu, logvar = self.prior_expert((1, batch_size, self.vaes["mod_1"].n_latents), use_cuda=True)
+        for m, vae in self.vaes.items():
+            if x[m]["data"] is not None:
+                mod_mu, mod_logvar = vae.enc(x[m])
                 mu = torch.cat((mu, mod_mu.unsqueeze(0)), dim=0)
                 logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
         mu_before, logvar_before = mu, logvar
