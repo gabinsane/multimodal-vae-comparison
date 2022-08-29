@@ -19,3 +19,12 @@ def test_torch_mmvae_encode():
     for dist in qz_xs.values():
         assert isinstance(dist, torch.distributions.Distribution)
         assert dist.loc.shape == 64
+
+
+def test_torch_mmvae_forward():
+    mmvae = ExampleModel()
+    inputs = {"mod_1": {"data": torch.rand((32, 3, 64, 64))}, "mod_2": {"data": torch.rand((32, 3, 64, 64))}}
+    qz_xs = mmvae.forward(inputs, 1)
+    assert isinstance(qz_xs, dict)
+
+    print('hello')

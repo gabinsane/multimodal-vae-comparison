@@ -38,7 +38,7 @@ class TorchMMVAE(nn.Module):
         # sample from each distribution
         zs = {}
         for modality, qz_x in qz_xs.items():
-            qz_x = self.qz_x(*self._qz_x_params)
+            qz_x = qz_x(*self._qz_x_params)
             qz_x = dist.Normal(*[qz_x])
             z = qz_x.rsample(torch.Size([K]))
             zs[modality] = z
@@ -80,7 +80,7 @@ class TorchMMVAE(nn.Module):
         :return: latent samples dictionary with modalities as keys and latent sample tensors as values
         :rtype: dict
         """
-        pass
+        return mods
 
     def decode(self, samples, K=1):
         """
