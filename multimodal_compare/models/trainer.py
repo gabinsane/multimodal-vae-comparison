@@ -1,9 +1,52 @@
-import torch
 from torch import optim
+import os
 import pytorch_lightning as pl
 import models
 from models import objectives
 from models.vae import VAE
+from models.config import Config
+
+class ModelLoader(object):
+    @classmethod
+    def load_model(cls, pth):
+        """
+        Loads a model from checkpoint
+
+        :param pth: path to checkpoint directory
+        :type pth: str
+        :return: returns model object
+        :rtype: MMVAE/VAE
+        """
+        pass
+
+    def get_model(cls, config):
+        """
+        Prepares class instances according to config
+
+        :param config: instance of Config class
+        :type config: Config
+        :return: prepared model
+        :rtype:
+        """
+        vaes = []
+        for i, m in enumerate(config.mods):
+            vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], config.n_latents))
+        model = getattr(models, config.mixing.lower())(vaes) if len(vaes) > 1 else vaes[0]
+        return model
+
+    def get_config(cls, pth):
+        """
+        Parses the YAML config provided in the file path
+
+        :param pth: Path to config
+        :type pth: str
+        :return: returns the config dict
+        :rtype: dict
+        """
+        conf_pth = os.path.join(pth, 'config.yml')
+        config = Config(conf_pth)
+        return config
+
 
 
 class Trainer(pl.LightningModule):
