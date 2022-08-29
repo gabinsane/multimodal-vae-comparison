@@ -17,11 +17,7 @@ from utils import Constants
 
 class VaeDecoder(VaeComponent):
     def __init__(self, latent_dim, data_dim, net_type: NetworkTypes):
-        super().__init__()
-        self.latent_dim = latent_dim
-        self.data_dim = data_dim
-        self.net_type = net_type
-        self.net_role = NetworkRoles.DECODER
+        super().__init__(latent_dim, data_dim, net_type, NetworkRoles.DECODER)
 
 
 class Dec_CNN(VaeDecoder):
@@ -35,9 +31,6 @@ class Dec_CNN(VaeDecoder):
         :type data_dim: list
         """
         super(Dec_CNN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
-        latent_dim = latent_dim
-        self.datadim = data_dim
-        self.net_type = "CNN"
 
         # Layer parameters
         hid_channels = 32

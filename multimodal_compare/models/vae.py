@@ -37,9 +37,7 @@ class BaseVae(nn.Module):
         self.enc = enc
         self.dec = dec
         assert enc.latent_dim == dec.latent_dim
-        assert enc.modality_type == dec.modality_type
         self.n_latents = enc.latent_dim
-        self.modality_type = enc.modality_type
         self.pz = prior_dist
         self.px_z = likelihood_dist
         self.qz_x = post_dist

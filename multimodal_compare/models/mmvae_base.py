@@ -14,10 +14,10 @@ class TorchMMVAE(nn.Module):
     def __init__(self):
         super().__init__()
         self.vaes = {}
-        self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
-        ])
+        # self._pz_params = nn.ParameterList([
+        #     nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
+        #     nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
+        # ])
 
     def forward(self, inputs, K=1):
         """
@@ -66,7 +66,7 @@ class TorchMMVAE(nn.Module):
         qz_xs = {}
         for modality, vae in self.vaes.items():
             if modality in inputs and not inputs[modality]["data"] is None:
-                qz_x = vae.enc(inputs[modality], K=K)
+                qz_x = vae.enc(inputs[modality])
                 qz_xs[modality] = qz_x
         return qz_xs
 
