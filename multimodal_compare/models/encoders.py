@@ -55,7 +55,7 @@ class VaeEncoder(VaeComponent):
         :net_type: network type used as encoder
         :type net_type: NetworkTypes
         """
-        super().__init__(latent_dim, data_dim, net_type)
+        super().__init__(latent_dim, data_dim, net_type, net_role=1)
         self.net_role = NetworkRoles.ENCODER
 
 

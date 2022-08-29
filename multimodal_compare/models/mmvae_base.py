@@ -14,7 +14,10 @@ class TorchMMVAE(nn.Module):
     def __init__(self):
         super().__init__()
         self.vaes = {}
-        self._pz_params = nn.ParameterList([
+
+
+    def _pz_params(self):
+        return nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[0].n_latents), requires_grad=False),  # mu
             nn.Parameter(torch.ones(1, self.vaes[0].n_latents), requires_grad=False)  # logvar
         ])
@@ -38,10 +41,10 @@ class TorchMMVAE(nn.Module):
         # sample from each distribution
         zs = {}
         for modality, qz_x in qz_xs.items():
-            qz_x = self.qz_x(*self._qz_x_params)
+            qz_x = self.qz_x(*self._qz_x_params())
             qz_x = dist.Normal(*[qz_x])
             z = qz_x.rsample(torch.Size([K]))
-            zs[modality] = z
+            zs[modality] = {"latents":z, "masks":None}
 
         # decode the samples
         px_zs = self.decode(zs)
@@ -66,7 +69,7 @@ class TorchMMVAE(nn.Module):
         qz_xs = {}
         for modality, vae in self.vaes.items():
             if modality in inputs and not inputs[modality]["data"] is None:
-                qz_x = vae.enc(inputs[modality], K=K)
+                qz_x = vae.enc(inputs[modality])
                 qz_xs[modality] = qz_x
         return qz_xs
 
@@ -96,7 +99,7 @@ class TorchMMVAE(nn.Module):
         pz_xs = {}
         for modality, vae in self.vaes.items():
             if modality in samples and not samples[modality] is None:
-                pz_x = vae.dec(samples[modality], K=K)
+                pz_x = vae.dec(samples[modality])
                 pz_xs[modality] = pz_x
         return pz_xs
 
