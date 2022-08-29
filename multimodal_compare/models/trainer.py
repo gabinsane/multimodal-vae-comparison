@@ -55,6 +55,7 @@ class ModelLoader():
 class Trainer(pl.LightningModule):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
+
     :param cfg: instance of Config class
     :type cfg: Config
     """
@@ -124,19 +125,3 @@ class Trainer(pl.LightningModule):
         if self.trainer.is_last_batch and (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
             self.visualize_latents()
         return loss
-
-    def visualize_latents(self):
-        """
-        Runs the model analysis, saves T-SNE and KL-Divergences
-        """
-        pass
-
-    def make_reconstructions(self):
-        """
-        Make reconstructions and save into vis dir
-        """
-
-    def generate_traversals(self):
-        """
-        Make traversals and save into vis dir
-        """

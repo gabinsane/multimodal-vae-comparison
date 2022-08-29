@@ -5,24 +5,55 @@ from utils import one_hot_encode, output_onehot2text, lengths_to_mask
 
 
 class BaseDataset():
+    """
+    Abstract dataset class shared for all datasets
+    """
     def __init__(self, pth, mod_type):
+        """
+
+        :param pth: path to the given modality
+        :type pth: str
+        :param mod_type: tag for the modality for correct processing (e.g. "text", "image", "mnist", "svhn" etc.)
+        :type mod_type: str
+        """
         self.path = pth
         self.mod_type = mod_type
         self.has_masks = False
         self.categorical = False
 
     def _mod_specific_fns(self):
+        """
+        Assigns the preprocessing function based on the mod_type
+        """
         raise NotImplementedError
 
     def _preprocess(self):
+        """
+        Preprocesses the loaded data according to modality type
+
+        :return: preprocessed data
+        :rtype: list
+        """
         assert self.mod_type in self._mod_specific_fns().keys(), "Unsupported modality type for {}".format(self.path)
         return self._mod_specific_fns()[self.mod_type]()
 
     def get_data_raw(self):
+        """
+        Loads raw data from path
+
+        :return: loaded raw data
+        :rtype: list
+        """
         data = load_data(self.path)
         return data
 
     def get_data(self):
+        """
+        Returns processed data
+
+        :return: processed data
+        :rtype: list
+        """
         return self._preprocess()
 
 #----- Multimodal Datasets ---------

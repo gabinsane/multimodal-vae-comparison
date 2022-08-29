@@ -11,6 +11,7 @@ class DataModule(LightningDataModule):
     def __init__(self, config):
         """
         Class for dataset loading and adjustments for training
+
         :param pth: parsed config
         :type pth: object
         """
@@ -42,12 +43,30 @@ class DataModule(LightningDataModule):
             self.dataset_val = TensorDataset(self.dataset_val)
 
     def make_masks(self, batch):
+        """
+        Makes masks for sequential data
+
+        :param batch: data batch
+        :type batch: list
+        :return: dictionary with data and masks
+        :rtype: dict
+        """
         masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in batch])))
         data = list(torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.0))
         dic = {"data": torch.stack(data), "masks": masks}
         return dic
 
     def prepare_singlemodal(self, batch, mod_index):
+        """
+        Prepares singlemodal data for given modality
+
+        :param batch: input batch
+        :type batch: list
+        :param mod_index: index of the modality (as the order in config)
+        :type mod_index: int
+        :return: prepared data for training
+        :rtype: dict
+        """
         d = {}
         if self.datasets[mod_index-1].has_masks:
             d["mod_{}".format(mod_index)] = self.make_masks(batch)
@@ -57,6 +76,14 @@ class DataModule(LightningDataModule):
         return d
 
     def collate_fn(self, batch):
+        """
+        Custom collate function that puts data in a dictionary and prepares masks if needed
+
+        :param batch: input batcg
+        :type batch: list
+        :return: dictionary with data batch
+        :rtype: dict
+        """
         b_dict = {}
         if len(self.config.mods) > 1:
             for i in range(len(self.config.mods)):
@@ -68,9 +95,11 @@ class DataModule(LightningDataModule):
 
 
     def train_dataloader(self) -> DataLoader:
+        """Return Train DataLoader"""
         return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                           num_workers=4)
 
     def val_dataloader(self) -> DataLoader:
+        """Return Test DataLoader"""
         return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                           num_workers=4)
