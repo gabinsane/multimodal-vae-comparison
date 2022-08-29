@@ -6,9 +6,8 @@ from models import objectives
 from models.vae import VAE
 from models.config import Config
 
-class ModelLoader(object):
-    @classmethod
-    def load_model(cls, pth):
+class ModelLoader():
+    def load_model(self, pth):
         """
         Loads a model from checkpoint
 
@@ -17,16 +16,20 @@ class ModelLoader(object):
         :return: returns model object
         :rtype: MMVAE/VAE
         """
-        pass
+        cfgpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(pth))))
+        cfg = self.get_config(pth=cfgpath)
+        model = Trainer(cfg)
+        model_loaded = model.load_from_checkpoint(pth, cfg=cfg)
+        return model_loaded
 
-    def get_model(cls, config):
+    def get_model(self, config):
         """
         Prepares class instances according to config
 
         :param config: instance of Config class
         :type config: Config
         :return: prepared model
-        :rtype:
+        :rtype: MMVAE/VAE
         """
         vaes = []
         for i, m in enumerate(config.mods):
@@ -34,7 +37,7 @@ class ModelLoader(object):
         model = getattr(models, config.mixing.lower())(vaes) if len(vaes) > 1 else vaes[0]
         return model
 
-    def get_config(cls, pth):
+    def get_config(self, pth):
         """
         Parses the YAML config provided in the file path
 
@@ -92,13 +95,11 @@ class Trainer(pl.LightningModule):
         """
         Sets up the model according to the config file
         """
-        vaes = []
-        for i, m in enumerate(self.config.mods):
-            vaes.append(VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents))
-        self.model = getattr(models, self.config.mixing.lower())(vaes) if len(vaes) > 1 else vaes[0]
+        loader = ModelLoader()
+        self.model = loader.get_model(self.config)
         if self.config.pre_trained:
             print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
-            self.model = self.load_from_checkpoint(self.config.pre_trained)
+            self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
 
     def training_step(self, train_batch, batch_idx):
         """
