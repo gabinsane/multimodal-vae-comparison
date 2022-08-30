@@ -1,22 +1,13 @@
-import csv
-import glob
-import json
 from abc import ABC, abstractmethod
-
-import yaml
-from glob import glob
-
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 import torch
-from models.trainer import ModelLoader
-from models.config import Config
-import models
 import pickle
-from models import objectives
+from models.trainer import MultimodalVAE
+from models.config import Config
 from models.mmvae_base import TorchMMVAE
 from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data
 from models.dataloader import DataModule
@@ -34,13 +25,13 @@ class MMVAEExperiment():
         :type path: str
         """
         assert os.path.exists(path), f"{path} does not exist."
-        assert os.path.isfile(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))),
+        assert os.path.isfile(os.path.join(os.path.dirname(path),
                                            'config.yml')), f"Directory {path} does not contain a config."
         self.base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
+        self.model = self.load_model_ckpt()
         self.path = path
         self.config = None
         self.mods = None
-        self.model = None
         self.data = None
         self.test_loader = None
 
@@ -62,18 +53,20 @@ class MMVAEExperiment():
         self.test_loader = datamodule.val_dataloader()
         return self.test_loader
 
-    def get_model(self):
+    def load_model_ckpt(self):
         """
-            Loads the model from the experiment directory
-            :return: model object
-            :rtype: object
-            """
-        if self.model is not None:
-            return self.model
-        loader = ModelLoader()
-        model = loader.load_model(self.config, self.path)
-        model.eval()
-        self.model = model
+        Loads a model from checkpoint
+
+        :param pth: path to checkpoint directory
+        :type pth: str
+        :return: returns model object
+        :rtype: MMVAE/VAE
+        """
+        config = self.get_config()
+        model = MultimodalVAE(config)
+        model_loaded = model.load_from_checkpoint(self.path, cfg=config)
+        model_loaded.eval()
+        self.model = model_loaded
         return model
 
     def get_config(self):
@@ -86,8 +79,8 @@ class MMVAEExperiment():
         """
         if self.config is not None:
             return self.config
-        pth = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(self.path)))), 'config.yml')
-        self.config = Config(pth)
+        pth = os.path.join(os.path.dirname(self.path), 'config.yml')
+        self.config = Config(pth, eval_only=True)
         return self.config
 
     def make_evals(self):
@@ -106,9 +99,9 @@ class MMVAEExperiment():
         N = 36
         samples = [s.cpu() for s in model.generate_samples(N)]
 
-        with open(os.path.join(path, "visuals/latent_samples.pkl"), 'wb') as handle:
+        with open(os.path.join(self.path, "visuals/latent_samples.pkl"), 'wb') as handle:
             pickle.dump(np.asarray(samples), handle)
-        print("Saved samples for {}".format(path))
+        print("Saved samples for {}".format(self.path))
 
     def get_device(self):
         return 'cuda'

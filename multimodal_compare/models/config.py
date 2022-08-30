@@ -4,7 +4,7 @@ import yaml
 import argparse
 
 class Config():
-    def __init__(self, parser):
+    def __init__(self, parser, eval_only=False):
         """
         Config manager
 
@@ -14,6 +14,7 @@ class Config():
         self.num_mods = None
         self.mPath = None
         self.parser = parser
+        self.eval_only = eval_only
         self.mods = []
         assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str))
         if isinstance(parser, argparse.ArgumentParser):
@@ -58,11 +59,12 @@ class Config():
         Creates the model directory in the results folder and saves the config copy
         """
         self.mPath = os.path.join('results/', self.exp_name)
-        os.makedirs(self.mPath, exist_ok=True)
-        os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
-        print('Experiment path:', self.mPath)
-        with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
-            yaml.dump(self.params, yaml_file, default_flow_style=False)
+        if not self.eval_only:
+            os.makedirs(self.mPath, exist_ok=True)
+            os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
+            print('Experiment path:', self.mPath)
+            with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
+                yaml.dump(self.params, yaml_file, default_flow_style=False)
 
     def _load_config(self, pth):
         with open(pth) as file:

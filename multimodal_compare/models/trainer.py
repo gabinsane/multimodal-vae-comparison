@@ -1,55 +1,9 @@
 from torch import optim
-import os
 import pytorch_lightning as pl
 import models
-from models import objectives
 from models.vae import VAE
+from models import objectives
 from models.config import Config
-
-
-class ModelLoader():
-    def load_model(self, pth):
-        """
-        Loads a model from checkpoint
-
-        :param pth: path to checkpoint directory
-        :type pth: str
-        :return: returns model object
-        :rtype: MMVAE/VAE
-        """
-        cfgpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(pth))))
-        cfg = self.get_config(pth=cfgpath)
-        model = MultimodalVAE(cfg)
-        model_loaded = model.load_from_checkpoint(pth, cfg=cfg)
-        return model_loaded
-
-    def get_model(self, config):
-        """
-        Prepares class instances according to config
-
-        :param config: instance of Config class
-        :type config: Config
-        :return: prepared model
-        :rtype: MMVAE/VAE
-        """
-        vaes = {}
-        for i, m in enumerate(config.mods):
-            vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], config.n_latents)
-        model = getattr(models, config.mixing.lower())(vaes) if len(vaes.keys()) > 1 else vaes["mod_1"]
-        return model
-
-    def get_config(self, pth):
-        """
-        Parses the YAML config provided in the file path
-
-        :param pth: Path to config dir
-        :type pth: str
-        :return: returns the config dict
-        :rtype: dict
-        """
-        conf_pth = os.path.join(pth, 'config.yml')
-        config = Config(conf_pth)
-        return config
 
 
 class MultimodalVAE(pl.LightningModule):
@@ -97,8 +51,10 @@ class MultimodalVAE(pl.LightningModule):
         """
         Sets up the model according to the config file
         """
-        loader = ModelLoader()
-        self.model = loader.get_model(self.config)
+        vaes = {}
+        for i, m in enumerate(self.config.mods):
+                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents)
+        self.model = getattr(models, self.config.mixing.lower())(vaes) if len(vaes.keys()) > 1 else vaes["mod_1"]
         if self.config.pre_trained:
             print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
             self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
