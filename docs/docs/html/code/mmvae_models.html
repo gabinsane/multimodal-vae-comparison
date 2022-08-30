@@ -45,7 +45,8 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="trainer.html">Trainer class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Multimodal VAE models</a></li>
@@ -56,7 +57,6 @@
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Config class</a></li>
 </ul>
 
         </div>
@@ -88,7 +88,13 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">DMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vaes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TorchMMVAE</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE.apply_poe">
 <span class="sig-name descname"><span class="pre">apply_poe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qz_xs_shared</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.apply_poe" title="Permalink to this definition"></a></dt>
 <dd><p>Applies the product of experts to the shared posteriors
@@ -137,12 +143,23 @@
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">MOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vaes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TorchMMVAE</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
@@ -191,12 +208,23 @@
 :type N: int</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">MoPOE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vaes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TorchMMVAE</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
@@ -207,6 +235,26 @@
 :return: a list of posterior distributions, a list of reconstructions and latent samples
 :rtype: tuple(list, list, list)</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.infer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.mixture_component_selection">
+<span class="sig-name descname"><span class="pre">mixture_component_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_modalities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.mixture_component_selection" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.moe_fusion">
+<span class="sig-name descname"><span class="pre">moe_fusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.moe_fusion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.poe_fusion">
+<span class="sig-name descname"><span class="pre">poe_fusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvars</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.poe_fusion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.product_of_experts">
@@ -233,12 +281,33 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.reparameterize">
+<span class="sig-name descname"><span class="pre">reparameterize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.reparameterize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.reweight_weights">
+<span class="sig-name descname"><span class="pre">reweight_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.reweight_weights" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_models.</span></span><span class="sig-name descname"><span class="pre">POE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vaes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE" title="Permalink to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TorchMMVAE</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass that takes input data and outputs a dict with  posteriors, reconstructions and latent samples
@@ -313,6 +382,11 @@ Gaussian: N(0, 1).
 :return: reparametrized samples
 :rtype: torch.tensor</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

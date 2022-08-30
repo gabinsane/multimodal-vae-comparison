@@ -4,10 +4,11 @@ import yaml
 import argparse
 
 class Config():
+    """
+    Config manager
+    """
     def __init__(self, parser, eval_only=False):
         """
-        Config manager
-
         :param parser: argument parser or str path to config
         :type parser: argparse.ArgumentParser
         """

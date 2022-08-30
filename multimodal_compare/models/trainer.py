@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 import models
 from models.vae import VAE
 from models import objectives
-from models.config import Config
+from models.config_cls import Config
 
 
 class MultimodalVAE(pl.LightningModule):

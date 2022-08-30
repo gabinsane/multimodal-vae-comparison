@@ -12,7 +12,7 @@ import torch
 
 from main import MultimodalVAE
 from utils import output_onehot2text
-from .infer import load_model, text_to_image, get_traversal_samples, image_to_text
+from .infer import MMVAEExperiment
 
 shapetemplates = glob.glob('./eval/templates/*.png')
 colors = {"yellow": [255, 255, 0], "red": [255, 0, 0], "green": [0, 255, 0], "blue": [0, 0, 255],

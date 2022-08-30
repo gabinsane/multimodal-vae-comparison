@@ -39,14 +39,14 @@ The toolkit is using the `PyTorch Lightning <https://www.pytorchlightning.ai/>`_
    :caption: Code documentation
 
    code/trainer
-   code/vae
    code/mmvae_base
    code/mmvae_models
    code/encoders
    code/decoders
+   code/vae
    code/objectives
    code/dataloader
    code/datasets
-   code/eval_gebid
    code/infer
-   code/config
+   code/eval_gebid
+   code/config_cls

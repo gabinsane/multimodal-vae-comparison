@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import pytorch_lightning as pl
 from models.trainer import MultimodalVAE
-from models.config import Config
+from models.config_cls import Config
 from models.dataloader import DataModule
 from pytorch_lightning.callbacks import ModelCheckpoint
 

@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import pickle
 from models.trainer import MultimodalVAE
-from models.config import Config
+from models.config_cls import Config
 from models.mmvae_base import TorchMMVAE
 from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data
 from models.dataloader import DataModule
