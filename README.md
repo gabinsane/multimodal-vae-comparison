@@ -37,7 +37,7 @@ This code was tested with:
 
 - Python version 3.8.13
 - PyTorch version 1.12.1
-- CUDA version 11.6
+- CUDA version 10.2 and 11.6
 
 We recommend to install the conda enviroment as follows:
 
@@ -175,6 +175,8 @@ cd ~/multimodal-vae-comparison/multimodal_compare
  - **Weights** - download the pretrained weights
  - **Config** - config to reproduce the results
 
+Please note that we are currently preparing weights compatible with the newly-added Pytorch Lightning framework. For evaluating the models using the weights provided below, please checkout the following revision: abd4071da1c034b6496f98e2ff379a92f0b92cde
+ 
  
 In brackets we show standard deviations over the 5 seeds.
 
