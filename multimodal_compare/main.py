@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from models.trainer import MultimodalVAE
 from models.config import Config
 from models.dataloader import DataModule
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--cfg", help="Specify config file", metavar="FILE")
@@ -33,8 +34,9 @@ def main():
     torch.cuda.manual_seed(config.seed)
     np.random.seed(config.seed)
     model_wrapped = MultimodalVAE(config)
+    checkpoint_callback = ModelCheckpoint(dirpath=config.mPath, save_on_train_epoch_end=True, save_last=True)
     pl_trainer = pl.Trainer(accelerator='gpu', default_root_dir=config.mPath, max_epochs=config.epochs,
-                            check_val_every_n_epoch=1)
+                            check_val_every_n_epoch=1, callbacks=[checkpoint_callback])
     data_module = DataModule(config)
     pl_trainer.fit(model_wrapped, data_module)
 
