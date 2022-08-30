@@ -1,6 +1,6 @@
 import torch
 
-from models.trainer import Trainer
+from models.trainer import MultimodalVAE
 
 
 def test_make_trainer():
@@ -10,15 +10,13 @@ def test_make_trainer():
     assert config['epochs'] == 2
 
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    trainer = Trainer(config, dev)
+    trainer = MultimodalVAE(config, dev)
 
     assert isinstance(trainer.model, torch.nn.Module)
 
     check_optimizer(trainer, config)
 
     config['optimizer'] = 'adabelief'
-    # trainer = Trainer(config, dev)
-    # check_optimizer(trainer, config)
 
 
 def check_optimizer(trainer, config):

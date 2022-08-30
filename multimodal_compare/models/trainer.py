@@ -6,6 +6,7 @@ from models import objectives
 from models.vae import VAE
 from models.config import Config
 
+
 class ModelLoader():
     def load_model(self, pth):
         """
@@ -18,7 +19,7 @@ class ModelLoader():
         """
         cfgpath = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(pth))))
         cfg = self.get_config(pth=cfgpath)
-        model = Trainer(cfg)
+        model = MultimodalVAE(cfg)
         model_loaded = model.load_from_checkpoint(pth, cfg=cfg)
         return model_loaded
 
@@ -33,7 +34,7 @@ class ModelLoader():
         """
         vaes = {}
         for i, m in enumerate(config.mods):
-            vaes["mod_{}".format(i+1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], config.n_latents)
+            vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], config.n_latents)
         model = getattr(models, config.mixing.lower())(vaes) if len(vaes.keys()) > 1 else vaes["mod_1"]
         return model
 
@@ -51,14 +52,14 @@ class ModelLoader():
         return config
 
 
-
-class Trainer(pl.LightningModule):
+class MultimodalVAE(pl.LightningModule):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
 
     :param cfg: instance of Config class
     :type cfg: Config
     """
+
     def __init__(self, cfg):
         super().__init__()
         self.config = cfg

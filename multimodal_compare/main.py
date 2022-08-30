@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 import torch
 import pytorch_lightning as pl
-from models.trainer import Trainer
+from models.trainer import MultimodalVAE
 from models.config import Config
 from models.dataloader import DataModule
 
@@ -32,7 +32,7 @@ def main():
     torch.manual_seed(config.seed)
     torch.cuda.manual_seed(config.seed)
     np.random.seed(config.seed)
-    model_wrapped = Trainer(config)
+    model_wrapped = MultimodalVAE(config)
     pl_trainer = pl.Trainer(accelerator='gpu', default_root_dir=config.mPath, max_epochs=config.epochs,
                             check_val_every_n_epoch=1)
     data_module = DataModule(config)

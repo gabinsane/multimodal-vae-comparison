@@ -10,7 +10,7 @@ import numpy as np
 import pickle
 import torch
 
-from main import Trainer
+from main import MultimodalVAE
 from utils import output_onehot2text
 from .infer import load_model, text_to_image, get_traversal_samples, image_to_text
 
@@ -597,7 +597,7 @@ if __name__ == "__main__":
                     for m in all_models:
                         model = load_model(m)
                         model, config = load_model(m, modelname="model.rar")
-                        trainer = Trainer(config, dev)
+                        trainer = MultimodalVAE(config, dev)
                         labelled_tsne(model)
                     #     output = calculate_cross_coherency(model)
                     #     #print(output)
