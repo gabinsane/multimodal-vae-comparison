@@ -4,19 +4,17 @@ from models.trainer import MultimodalVAE
 
 
 def test_make_trainer():
-    from eval.infer import parse_args
+    from eval.infer import Config
     path = './data/config.json'
-    config, mods = parse_args(path)
-    assert config['epochs'] == 2
+    config = Config(path)
+    assert config.epochs == 2
 
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    trainer = MultimodalVAE(config, dev)
+    trainer = MultimodalVAE(config)
 
     assert isinstance(trainer.model, torch.nn.Module)
 
-    check_optimizer(trainer, config)
 
-    config['optimizer'] = 'adabelief'
 
 
 def check_optimizer(trainer, config):

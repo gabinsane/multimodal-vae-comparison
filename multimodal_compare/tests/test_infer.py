@@ -1,12 +1,15 @@
 
 
-def test_parse_args():
-    from eval.infer import parse_args
+def test_parse_args_file():
+    from eval.infer import Config
 
-    path = './data/config.json'
-    config, mods = parse_args(path)
-    assert config['epochs'] == 2
+    path = './data/config.yml'
+    config = Config(path)
+    assert config.epochs == 2
+
+def test_parse_args_dir():
+    from eval.infer import Config
 
     path = './data/'
-    config, mods = parse_args(path)
-    assert config['epochs'] == 2
+    config = Config(path)
+    assert config.epochs == 2

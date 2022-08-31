@@ -22,8 +22,11 @@ class Config():
         assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str))
         if isinstance(parser, argparse.ArgumentParser):
             self.params = self._parse_args()
-        elif isinstance(parser, str):
+        elif isinstance(parser, str) and os.path.isfile(parser):
             self.params = self._load_config(parser)
+        elif isinstance(parser, str) and os.path.isdir(parser):
+            if os.path.isfile(os.path.join(parser, 'config.yml')):
+                self.params = self._load_config(os.path.join(parser, 'config.yml'))
         self._define_params()
         self._setup_savedir()
 
