@@ -1,9 +1,10 @@
-from torch import optim
+from torch import optim, nn
 import pytorch_lightning as pl
 import models
 from models.vae import VAE
 from models import objectives
 from models.config_cls import Config
+from models.mmvae_base import TorchMMVAE, BaseVae
 
 
 class MultimodalVAE(pl.LightningModule):
@@ -19,7 +20,7 @@ class MultimodalVAE(pl.LightningModule):
         self.config = cfg
         self.optimizer = None
         self.objective = None
-        self.model = None
+        self.model = TorchMMVAE()
         self.get_model()
         self.get_objective()
 
@@ -47,7 +48,7 @@ class MultimodalVAE(pl.LightningModule):
             raise NotImplementedError
         return self.optimizer
 
-    def get_model(self):
+    def get_model_old(self):
         """
         Sets up the model according to the config file
         """
@@ -58,6 +59,21 @@ class MultimodalVAE(pl.LightningModule):
         if self.config.pre_trained:
             print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
             self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
+        return self.model
+
+    def get_model(self):
+        """
+        Sets up the model according to the config file
+        """
+        vaes = nn.ModuleDict()
+        for i, m in enumerate(self.config.mods):
+                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents)
+        self.model = getattr(models, self.config.mixing.lower())(vaes) if len(vaes.keys()) > 1 else vaes["mod_1"]
+        if self.config.pre_trained:
+            print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
+            self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
+
+        assert isinstance(self.model, TorchMMVAE)
         return self.model
 
     def training_step(self, train_batch, batch_idx):
