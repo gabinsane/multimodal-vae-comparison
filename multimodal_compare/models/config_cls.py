@@ -3,10 +3,12 @@ import pickle
 import yaml
 import argparse
 
+
 class Config():
     """
     Config manager
     """
+
     def __init__(self, parser, eval_only=False):
         """
         :param parser: argument parser or str path to config
@@ -25,14 +27,12 @@ class Config():
         self._define_params()
         self._setup_savedir()
 
-
     def get_vis_dir(self):
         """
         :return: returns path to the model's visualisation directory
         :rtype: str
         """
         return os.path.join(self.mPath, "visuals/")
-
 
     def _define_params(self):
         """
@@ -41,7 +41,6 @@ class Config():
         for p in self.params.keys():
             setattr(self, p, self.params[p])
         self._get_mods_config(self.params)
-
 
     def _get_mods_config(self, config):
         """
@@ -53,7 +52,6 @@ class Config():
         if config["labels"]:
             with open(config["labels"], 'rb') as handle:
                 self.labels = pickle.load(handle)
-
 
     def _setup_savedir(self):
         """
