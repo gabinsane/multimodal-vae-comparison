@@ -741,7 +741,7 @@ class Enc_TxtTransformer(VaeEncoder):
         mask = batch["masks"]
         bs, nframes, njoints = x.shape
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
-        x = self.embedding(x.cuda().long())
+        x = self.embedding(x.long())
         x = self.sequence_pos_encoder(x)
         final = self.seqTransEncoder(x.view(nframes, bs, -1), src_key_padding_mask=~mask)
         z = final.mean(axis=0)

@@ -58,6 +58,7 @@ class MultimodalVAE(pl.LightningModule):
         if self.config.pre_trained:
             print('Loading model {} from {}'.format(self.model.modelName, self.config.pre_trained))
             self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
+        return self.model
 
     def training_step(self, train_batch, batch_idx):
         """

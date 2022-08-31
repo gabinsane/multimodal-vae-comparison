@@ -1,3 +1,5 @@
+import argparse
+import glob
 from abc import ABC, abstractmethod
 import cv2
 import matplotlib.pyplot as plt
@@ -9,7 +11,7 @@ import pickle
 from models.trainer import MultimodalVAE
 from models.config_cls import Config
 from models.mmvae_base import TorchMMVAE
-from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data
+from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data, get_root_folder
 from models.dataloader import DataModule
 
 
@@ -25,15 +27,16 @@ class MMVAEExperiment():
         :type path: str
         """
         assert os.path.exists(path), f"{path} does not exist."
-        assert os.path.isfile(os.path.join(os.path.dirname(path),
-                                           'config.yml')), f"Directory {path} does not contain a config."
+
         self.base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
-        self.model = self.load_model_ckpt()
+        assert os.path.isfile(os.path.join(self.base_path,
+                                           'config.yml')), f"Directory {path} does not contain a config."
         self.path = path
         self.config = None
         self.mods = None
         self.data = None
         self.test_loader = None
+        self.model = self.load_model_ckpt()
 
     def get_base_path(self):
         return self.base_path
@@ -53,6 +56,12 @@ class MMVAEExperiment():
         self.test_loader = datamodule.val_dataloader()
         return self.test_loader
 
+    def get_model(self):
+        if self.model is not None:
+            return self.model
+        self.model = self.load_model_ckpt()
+        return self.model
+
     def load_model_ckpt(self):
         """
         Loads a model from checkpoint
@@ -67,7 +76,7 @@ class MMVAEExperiment():
         model_loaded = model.load_from_checkpoint(self.path, cfg=config)
         model_loaded.eval()
         self.model = model_loaded
-        return model
+        return self.model
 
     def get_config(self):
         """
@@ -79,7 +88,7 @@ class MMVAEExperiment():
         """
         if self.config is not None:
             return self.config
-        pth = os.path.join(os.path.dirname(self.path), 'config.yml')
+        pth = os.path.join(self.get_base_path(), 'config.yml')
         self.config = Config(pth, eval_only=True)
         return self.config
 
@@ -229,12 +238,13 @@ class EstimateLogMarginal(Evaluations):
         objective = model.objective
         with torch.no_grad():
             for dataTs in test_data:
-                for mod, dataT in dataTs.items():
-                    data, masks = dataT['data'], dataT['masks']
-                    xo = [o[0].clone().detach() for o in data[1][0]]
-                    data = pad_seq_data(data, masks)
-                    marginal_loglik += objective(model, data, ltype="lprob")[0]
+                # for mod, dataT in dataTs.items():
+                #     data, masks = dataT['data'], dataT['masks']
+                #     xo = [o[0].clone().detach() for o in data[1][0]]
+                #     data = pad_seq_data(data, masks)
+                marginal_loglik += objective(model.model, dataTs, ltype="lprob")[0]
         marginal_loglik /= len(test_data.dataset)
+        print(f'The marginal loglikelihood is: {marginal_loglik}')
         return marginal_loglik
 
     @classmethod
@@ -243,6 +253,7 @@ class EstimateLogMarginal(Evaluations):
 
 
 class EvalReconstruct(Evaluations):
+    @classmethod
     def evaluation(cls, exp: MMVAEExperiment):
         """
         Makes reconstructions from the testloader for the given model and dumps them into pickle
@@ -256,18 +267,21 @@ class EvalReconstruct(Evaluations):
         device = torch.device("cuda")
         recons = []
         for i, data in enumerate(testloader):
-            d = unpack_data(data[0], device=device)
-            recon = model.reconstruct_data(d)
-            recons.append(np.asarray(d[0].detach().cpu()))
-            recons.append(np.asarray(recon[0].detach().cpu())[0])
-            if i == 10:
+            #d = unpack_data(data['mod_1'], device=device)
+            #recon = model.reconstruct_data(d)
+            recon = model.model.forward(data)
+            recons.append([np.asarray(data[mod]['data'].detach().cpu()) for mod in data.keys()])
+            recons.append([recon[mod].decoder_dists for mod in data.keys()])
+            # recons.append(np.asarray(recon[0].detach().cpu())[0])
+            if i == 2:
                 break
         config = exp.get_config()
-        path = exp.get_base_dir()
+        path = exp.get_base_path()
         with open(os.path.join(path, "visuals/reconstructions.pkl"), 'wb') as handle:
             pickle.dump(recons, handle)
         print("Saved reconstructions for {}".format(path))
 
+    @classmethod
     def isApplicable(cls, exp):
         return True
 
@@ -350,7 +364,20 @@ def _listdirs(rootdir):
 
 
 if __name__ == "__main__":
-    p = ''
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--exp", type=str, help="name of the experiment directory")
+    args = parser.parse_args()
+    if args.exp:
+        model = args.exp
+    else:
+        model = 'test'
+    p = os.path.join(get_root_folder(), f"results/{model}/lightning_logs/version_0/checkpoints/*.ckpt")
+    files = glob.glob(p)
+    if len(files) > 0:
+        p = files[0]
+    else:
+        raise FileNotFoundError('No ckpt file available')
+
     exp = MMVAEExperiment(path=p)
     data = exp.get_model_test_data()
     exp.set_data(data)
