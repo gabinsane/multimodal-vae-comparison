@@ -10,6 +10,11 @@ import numpy as np
 import pickle
 import torch
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from utils import output_onehot2text
 from eval.infer import MMVAEExperiment, define_path
 
