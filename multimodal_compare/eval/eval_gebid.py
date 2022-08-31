@@ -544,11 +544,11 @@ def labelled_tsne(model_exp):
     :param model: multimodal VAE
     :type model: object
     """
-    model_exp.get_model_test_data(batch_size=250)
+    model_exp.get_test_data_bs(batch_size=250)
     testset = model_exp.get_test_data_sample()
     labels = prepare_labels(testset["mod_2"])
     for i, label in enumerate(labels):
-        model.analyse(testset, m, "eval_model_{}_{}".format(i, 1), label)
+        model_exp.model.analyse_data(testset, label, path_label="eval_{}".format(i))
     print("Saved labelled T-SNEs in {}".format(os.path.join(model_exp.get_base_path(), "visuals")))
 
 
@@ -594,6 +594,7 @@ def print_save_stats(stats_dict, path):
 def eval_single_model(dir):
     pth = os.path.join(dir, "last.ckpt")
     m_exp = MMVAEExperiment(path=pth)
+    m_exp.model.to(torch.device("cuda"))
     output_cross, output_joint = eval_all(m_exp)
     output_dict = {"Text-Image Strict":{"value":output_cross["text_image"][0], "stdev":None},
                    "Text-Image Features":{"value":output_cross["text_image"][1], "stdev":None},
@@ -615,6 +616,7 @@ def eval_over_seeds(parent_dir):
     for m in all_models:
         pth = os.path.join(m, "last.ckpt")
         m_exp = MMVAEExperiment(path=pth)
+        m_exp.model.to(torch.device("cuda"))
         output_cross, output_joint = eval_all(m_exp)
         for i, x in enumerate(output_cross["text_image"]):
               text_image[i].append(x)
