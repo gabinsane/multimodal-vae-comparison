@@ -20,9 +20,9 @@ def custom_cmap(n):
     return cmap, cmap_array
 
 
-def t_sne(data, runPath, epoch, K, labels):
+def t_sne(data, path, labels):
     tsne = TSNE(n_components=2, verbose=0, random_state=123)
-    z = tsne.fit_transform(np.concatenate(data))
+    z = tsne.fit_transform(np.concatenate([x.detach().cpu().numpy() for x in data]))
     df = pd.DataFrame()
     df["comp-1"] = z[:, 0]
     df["comp-2"] = z[:, 1]
@@ -37,14 +37,14 @@ def t_sne(data, runPath, epoch, K, labels):
                 l = ["Class {} Mod {}".format(str(i), ind +1) for i in list(labels)]
             else:
                 l = ["Class {}".format(str(i)) for i in list(labels)]
-            data_labels.append([val for val in l for _ in range(K)])
-    df["y"] = np.concatenate(data_labels)
+    if data_labels:
+        labels = np.concatenate(data_labels)
+    df["y"] = labels
     ax = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = palette, data = df)
     ax.set(title="T-SNE projection")
     cols = len(data) if labels else 1
     sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=cols)
-    p = os.path.join(runPath, "visuals/t-sne_epoch{}.png".format(epoch)) if not ".png" in runPath else runPath
-    plt.savefig(p, bbox_inches='tight')
+    plt.savefig(path, bbox_inches='tight')
     plt.clf()
 
 

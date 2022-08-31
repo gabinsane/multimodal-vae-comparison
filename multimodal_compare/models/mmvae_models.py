@@ -30,7 +30,7 @@ class MOE(TorchMMVAE):
         :return: returns parameters of the prior distribution
         :rtype: tuple(nn.Parameter, nn.Parameter)
         """
-        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
     def get_missing_modalities(self, mods):
         """
@@ -120,7 +120,7 @@ class POE(TorchMMVAE):
         :return: returns parameters of the prior distribution
         :rtype: tuple(nn.Parameter, nn.Parameter)
         """
-        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
     def reparameterize(self, mu, logvar):
         """
@@ -243,7 +243,7 @@ class MoPOE(TorchMMVAE):
         :return: returns parameters of the prior distribution
         :rtype: tuple(nn.Parameter, nn.Parameter)
         """
-        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
     def forward(self, inputs, K=1):
         """
@@ -381,7 +381,7 @@ class DMVAE(TorchMMVAE):
         :return: returns parameters of the prior distribution
         :rtype: tuple(nn.Parameter, nn.Parameter)
         """
-        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
     def forward(self, x, K=1):
         """

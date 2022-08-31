@@ -13,10 +13,15 @@ def get_root_folder():
     return os.path.dirname(__file__)
 
 def make_kl_df(qz_xs, pz):
+    pz.loc = pz.loc.detach().cpu()
+    pz.scale = pz.scale.detach().cpu()
     if isinstance(qz_xs, list):
+        for i, qz in enumerate(qz_xs):
+            qz_xs[i].loc = qz.loc.detach().cpu()
+            qz_xs[i].scale = qz.scale.detach().cpu()
         kls_df = tensors_to_df(
-            [*[kl_divergence(qz_x, pz).cpu().numpy() for qz_x in qz_xs],
-             *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p)).cpu().numpy()
+            [*[kl_divergence(qz_x, pz) for qz_x in qz_xs],
+             *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p))
                for p, q in combinations(qz_xs, 2)]],
             head='KL',
             keys=[*[r'KL$(q(z|x_{})\,||\,p(z))$'.format(i) for i in range(len(qz_xs))],
@@ -24,7 +29,9 @@ def make_kl_df(qz_xs, pz):
                     for i, j in combinations(range(len(qz_xs)), 2)]],
             ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
     else:
-        kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
+        qz_xs.loc = qz_xs.loc.detach().cpu()
+        qz_xs.scale = qz_xs.scale.detach().cpu()
+        kls_df = tensors_to_df([kl_divergence(qz_xs, pz)], head='KL',
                                keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
     return kls_df
 
