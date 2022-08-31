@@ -77,7 +77,7 @@ Alternatively, you can generate a dataset on your own. For the default configura
 
  ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python ./data_proc/generate_dataset.py --dir ./data/level4 --level 4 --size 10000 
+python ./data_proc/generate_dataset.py --dir ./data/level2 --level 2 --size 10000 
 ```
 
 The code will make an _./image_ folder in the target directory that includes the _.png_ images. The text is stored in 
@@ -138,8 +138,7 @@ Furthermore, to calculate the joint- and cross-generation accuracy, you can run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-export PYTHONPATH=${PWD}
-python eval/eval_gebid.py --m model_dir_name --level 4  # specify the level on which the model was trained
+python eval/eval_gebid.py --model model_dir_name --level 2  # specify the level on which the model was trained
 ```
 
 The trained model is expected to be placed in the results folder. The script will print the statistics in the terminal 
@@ -352,6 +351,16 @@ Here you can see the UML diagram of the framework. The toolkit uses the [Pytorch
 
 New encoder and decoder networks can be added in the corresponding scripts (encoders.py, decoders.py). For choosing these networks in the config,
 use only the part of the class name following after the underscore (e.g. CNN for the class Enc_**CNN**). 
+
+## Unit tests
+
+We provide a set of unit tests to check whether any newly-added implementations meet the requirements and did not disrupt
+any of the existing functions. To verify that everything is implemented correctly, run:
+
+```
+cd ~/multimodal-vae-comparison/
+py.test .
+```
 
 
 ## License
