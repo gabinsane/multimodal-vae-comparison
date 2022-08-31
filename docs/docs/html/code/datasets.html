@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Evaluate on GeBiD dataset" href="eval_gebid.html" />
+    <link rel="next" title="Inference module" href="infer.html" />
     <link rel="prev" title="DataLoader" href="dataloader.html" /> 
 </head>
 
@@ -46,17 +46,17 @@
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Dataset Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
         </div>
@@ -141,6 +141,28 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">CUB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._mod_specific_fns">
+<span class="sig-name descname"><span class="pre">_mod_specific_fns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._mod_specific_fns" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._process_images">
+<span class="sig-name descname"><span class="pre">_process_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._process_images" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._process_text">
+<span class="sig-name descname"><span class="pre">_process_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._process_text" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">GEBID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
@@ -191,7 +213,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="dataloader.html" class="btn btn-neutral float-left" title="DataLoader" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="eval_gebid.html" class="btn btn-neutral float-right" title="Evaluate on GeBiD dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="infer.html" class="btn btn-neutral float-right" title="Inference module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

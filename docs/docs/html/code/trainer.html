@@ -19,7 +19,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Config class" href="config_cls.html" />
+    <link rel="next" title="Multimodal VAE Base Class" href="mmvae_base.html" />
     <link rel="prev" title="Add a new dataset" href="../tutorials/adddataset.html" /> 
 </head>
 
@@ -46,17 +46,17 @@
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">MultimodalVAE class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
         </div>
@@ -99,6 +99,18 @@
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE._is_full_backward_hook">
 <span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.analyse_data">
+<span class="sig-name descname"><span class="pre">analyse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.analyse_data" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes data and plots T-SNE.
+:param data: test data
+:type data: torch.tensor
+:param labels: labels for the data for labelled T-SNE (optional) - list of strings
+:type labels: list
+:return: returns K latent samples for each input
+:rtype: list</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.configure_optimizers">
@@ -144,7 +156,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../tutorials/adddataset.html" class="btn btn-neutral float-left" title="Add a new dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="config_cls.html" class="btn btn-neutral float-right" title="Config class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="mmvae_base.html" class="btn btn-neutral float-right" title="Multimodal VAE Base Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

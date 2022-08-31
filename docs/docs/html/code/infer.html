@@ -19,7 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Evaluate on GeBiD dataset" href="eval_gebid.html" /> 
+    <link rel="next" title="Evaluate on GeBiD dataset" href="eval_gebid.html" />
+    <link rel="prev" title="Dataset Classes" href="datasets.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,17 +46,17 @@
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
         </div>
@@ -149,7 +150,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct.evaluation">
-<span class="sig-name descname"><span class="pre">evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="multimodal_compare.eval.infer.MMVAEExperiment"><span class="pre">MMVAEExperiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct.evaluation" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="multimodal_compare.eval.infer.MMVAEExperiment"><span class="pre">MMVAEExperiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct.evaluation" title="Permalink to this definition"></a></dt>
 <dd><p>Makes reconstructions from the testloader for the given model and dumps them into pickle
 :param path: path to the model directory
 :type path: str
@@ -159,7 +160,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct.isApplicable">
-<span class="sig-name descname"><span class="pre">isApplicable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct.isApplicable" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isApplicable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct.isApplicable" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -205,6 +206,11 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">MMVAEExperiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="Permalink to this definition"></a></dt>
 <dd><p>This class provides unified access to all assets of MMVAE eval experiments, i.e., trained models, training stats, config.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.decode_latents">
+<span class="sig-name descname"><span class="pre">decode_latents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.decode_latents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.eval_sample">
 <span class="sig-name descname"><span class="pre">eval_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.eval_sample" title="Permalink to this definition"></a></dt>
 <dd><p>Generates random samples from the learned posterior and saves them in the model directory
@@ -214,7 +220,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_base_path">
-<span class="sig-name descname"><span class="pre">get_base_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_base_path" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_base_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_within_exp_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_base_path" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -238,8 +244,23 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_model_test_data">
-<span class="sig-name descname"><span class="pre">get_model_test_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_model_test_data" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_test_data">
+<span class="sig-name descname"><span class="pre">get_test_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_bs">
+<span class="sig-name descname"><span class="pre">get_test_data_bs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_bs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_sample">
+<span class="sig-name descname"><span class="pre">get_test_data_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_sample" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -361,13 +382,19 @@
 :type label_tag: list</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.define_path">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">define_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.define_path" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="eval_gebid.html" class="btn btn-neutral float-left" title="Evaluate on GeBiD dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="datasets.html" class="btn btn-neutral float-left" title="Dataset Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="eval_gebid.html" class="btn btn-neutral float-right" title="Evaluate on GeBiD dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

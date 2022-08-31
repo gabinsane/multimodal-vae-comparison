@@ -10,13 +10,11 @@ you can train the models on your own data.
 Supported data formats, config
 --------------------------------
 
-By default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
-text data (arbitrary strings which we encode on the character-level) and sequential data (e.g. actions suitable for a Transformer network).
+In general, the preferred data formats (supported by default) are:
 
-The preferred data formats (supported by default) are:
-- pickle (``.pkl``)
-- the pytorch format (``.pth``)
-- a directory containing ``.png`` images
+* pickle (``.pkl``)
+* the pytorch format (``.pth``)
+* a directory containing ``.png`` images
 
 To train with any of these, specify the path to your data in the ``config.yml``:
 
@@ -100,15 +98,22 @@ we have "mnist" and "svhn". You specify mod_type in the config.
 
 Next thing you need are methods that prepare each modality for training (_process_text and _process_images). Data loading is handled automatically by BaseDataset, so you
 only perform reshaping, converting to tensors etc., so that these functions return tensors of the same length on the output.
-Note: In case of sequential data, like text here, we make boolean masks and concatenate them with the last dimension of the text data.
+Note: In case of sequential data (like text here), we make boolean masks and concatenate them with the last dimension of the text data. This is then automatically handled by the collate function.
 
+The last thing we need to do is map the data processing functions to the modality types, i.e. define _mod_specific_fns():
 
+.. code-block:: yaml
 
-Adding a new dataset
----------------------
+       def _mod_specific_fns(self):
+           return {"image": self._process_images, "text": self._process_text}
+
+Here we just assign the methods to the selected mod_types. Once this is done, the dataset class should be ready and you can launch training.
+
+Different data formats
+------------------------
 
 If you want to train on an unsupported data format, you can file an issue on our `GitHub repository <https://github.com/gabinsane/multimodal-vae-comparison>`_.
-Alternatively, you can try to incorporate it on your own. You will need to adjust three methods in the ``VaeDataset`` class in  ``vae.py``.
+Alternatively, you can try to incorporate it on your own. You will need to adjust two methods in the ``utils.py``.
 
 First, add your new data format in ``get_path_type()`` so that it is recognised from the path.
 
@@ -154,39 +159,6 @@ Next, decide how you will load the data.
         d = self.prepare_for_encoder(d)
         return d
 
-Finally, add any preprocessing that you need so that your data is in the ``torch.tensor`` format.
-
-.. code-block:: python
-
-    def prepare_for_encoder(self, data):
-        """
-        Prepares the data for training.
-
-        :param data: the loaded data
-        :type data: Union[list, torch.tensor, ndarray]
-        :return: data reshaped for training,
-        :rtype: torch.tensor
-        """
-        if self.network_type.lower() in ["transformer", "cnn", "3dcnn", "fnn"]:
-            data = [torch.from_numpy(np.asarray(x).astype(np.float)) for x in data]
-            if self.network_type in ["cnn", "fnn"]:
-                data = torch.stack(data).transpose(1,3)
-            if "transformer" in self.network_type.lower():
-                if len(data[0].shape) < 3:
-                    data = [torch.unsqueeze(i, dim=1) for i in data]
-        elif "text" in self.mod_type:
-            if len(data[0]) > 1 and not isinstance(data[0], str):
-                data = [" ".join(x) for x in data] if not "cub_" in self.pth else data
-            data = [one_hot_encode(len(f), f) for f in data]
-            data = [torch.from_numpy(np.asarray(x)) for x in data]
-            if "transformer" not in self.network_type.lower():
-                data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
-        if self.network_type.lower() == "audioconv":
-            self.prepare_audio(data)
-        if "image" in self.mod_type:
-            data = self.check_img_normalize(data)
-        return data
-
-
-That should be it. If needed, you can also add visualization methods to see the results during training. For unimodal VAE,
-this would be the ``reconstruct()`` method in ``vae.py``. For multimodal VAEs, it is ``process_reconstructions()`` in ``mmvae_models.py``
+ByPlease note that by default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
+text data (arbitrary strings which we encode on the character-level) and sequential data (e.g. actions suitable for a Transformer network). If you add a new data structure or image resolution,
+you will also need to add new encoder and decoder networks - you can then specify these in the config file.

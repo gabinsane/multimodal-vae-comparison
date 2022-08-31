@@ -19,8 +19,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Inference module" href="infer.html" />
-    <link rel="prev" title="Dataset Classes" href="datasets.html" /> 
+    <link rel="next" title="Config class" href="config_cls.html" />
+    <link rel="prev" title="Inference module" href="infer.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,17 +46,17 @@
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
         </div>
@@ -87,7 +87,7 @@
 <span id="evaluate-on-gebid-dataset"></span><span id="eval-gebid"></span><h1>Evaluate on GeBiD dataset<a class="headerlink" href="#module-multimodal_compare.eval.eval_gebid" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.calculate_cross_coherency">
-<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">calculate_cross_coherency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.calculate_cross_coherency" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">calculate_cross_coherency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.calculate_cross_coherency" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the cross-coherency accuracy for the given model (Img -&gt; Txt and Txt -&gt; Img)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -104,7 +104,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.calculate_joint_coherency">
-<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">calculate_joint_coherency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.calculate_joint_coherency" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">calculate_joint_coherency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.calculate_joint_coherency" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the joint-coherency accuracy for the given model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -292,6 +292,21 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.eval_all">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">eval_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.eval_all" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.eval_over_seeds">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">eval_over_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.eval_over_seeds" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.eval_single_model">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">eval_single_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.eval_single_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.find_in_list">
 <span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">find_in_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.find_in_list" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
@@ -350,11 +365,14 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.get_mean_stats">
-<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">get_mean_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_stats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.get_mean_stats" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">get_mean_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">list_of_stats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.get_mean_stats" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a list of means for a nested list with accuracies</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>list_of_stats</strong> (<em>list</em>) – multiple lists with accuracies</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list_of_stats</strong> (<em>list</em>) – multiple lists with accuracies</p></li>
+<li><p><strong>percentage</strong> (<em>bool</em>) – whether to report the number as percent (True) or fraction (False)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>a list of means of the accuracies</p>
@@ -387,7 +405,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.labelled_tsne">
-<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">labelled_tsne</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.labelled_tsne" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">labelled_tsne</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.labelled_tsne" title="Permalink to this definition"></a></dt>
 <dd><p>Plots the T-SNE visualizations with the GeBiD text labels (one T-SNE per each feature)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -473,6 +491,11 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.print_save_stats">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">print_save_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stats_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.print_save_stats" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="multimodal_compare.eval.eval_gebid.search_att">
 <span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.eval_gebid.</span></span><span class="sig-name descname"><span class="pre">search_att</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.eval_gebid.search_att" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
@@ -515,8 +538,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="datasets.html" class="btn btn-neutral float-left" title="Dataset Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="infer.html" class="btn btn-neutral float-right" title="Inference module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="infer.html" class="btn btn-neutral float-left" title="Inference module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config_cls.html" class="btn btn-neutral float-right" title="Config class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

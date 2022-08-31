@@ -46,17 +46,17 @@
 <p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
         </div>
@@ -112,7 +112,7 @@
 <dd><p>Makes masks for sequential data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>batch</strong> (<em>list</em>) – data batch</p>
+<dd class="field-odd"><p><strong>batch</strong> (<em>torch.tensor</em>) – data batch</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>dictionary with data and masks</p>
@@ -121,6 +121,12 @@
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.dataloader.DataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataLoader</span></span></span><a class="headerlink" href="#multimodal_compare.models.dataloader.DataModule.predict_dataloader" title="Permalink to this definition"></a></dt>
+<dd><p>Return Val DataLoader with custom batch size</p>
 </dd></dl>
 
 <dl class="py method">
@@ -158,7 +164,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.dataloader.DataModule.val_dataloader">
 <span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataLoader</span></span></span><a class="headerlink" href="#multimodal_compare.models.dataloader.DataModule.val_dataloader" title="Permalink to this definition"></a></dt>
-<dd><p>Return Test DataLoader</p>
+<dd><p>Return Val DataLoader</p>
 </dd></dl>
 
 </dd></dl>
