@@ -7,13 +7,17 @@ By default, we support the proposed GeBiD dataset as well as MNIST, SVHN or the 
 you can train the models on your own data.
 
 
-Supported data formats
------------------------
+Supported data formats, config
+--------------------------------
 
 By default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
 text data (arbitrary strings which we encode on the character-level) and sequential data (e.g. actions suitable for a Transformer network).
 
-The prefered data formats (supported by default) ar pickle (``.pkl``), the pytorch format (``.pth``) or a directory containing ``.png`` images.
+The preferred data formats (supported by default) are:
+- pickle (``.pkl``)
+- the pytorch format (``.pth``)
+- a directory containing ``.png`` images
+
 To train with any of these, specify the path to your data in the ``config.yml``:
 
 
@@ -36,13 +40,11 @@ To train with any of these, specify the path to your data in the ``config.yml``:
     test_split: 0.1
     modality_1:
       path: ./data/cub/images
-      feature_dim: [64, 64, 3]
       mod_type: image
       decoder: CNN
       encoder: CNN
     modality_2:
       path: ./data/cub/cub_captions.pkl
-      feature_dim: [256,27,1]
       mod_type: text
       decoder: TxtTransformer
       encoder: TxtTransformer
@@ -53,15 +55,53 @@ This is an example of the config file for the CUB dataset (for download, see our
 
 As you can see, we specified the path to an image folder (``./data/cub/images``) and to the pickled captions (``./data/cub/cub_captions.pkl``). Both
 modalities are expected to be ordered so that they can be semantically matched into pairs (e.g. the first image should match with the first caption).
-We also provided the data feature dimensions (``feature_dim``) - this is helpful for visualization methods and for the encoder/decoder networks to
-reshape the data as needed. In case of sequential data (text in this case), the first value should be the maximum length of a sequence in the dataset. The value
-27 here corresponds to the one-hot encodings with the length of the alphabet.
-``mod_type`` is a string which helps the visualization methods to recognize how to display the reconstructions. We currently only support "image" or "text".
 
-Finally, specify the corresponding encoder and decoder networks which suit your data type.
 
-If your own dataset is in the supported format, you should be ready to train just after making your config. If you find bugs,
-please let us know.
+
+Adding a new dataset class
+---------------------------
+
+If you wish to train on your own data, you will need to make a custom dataset class in ``datasets.py``. Any new dataset must inherit
+from BaseDataset to have some common methods used by the DataModule.
+
+Here we show how we added CUB in datasets.py:
+
+.. code-block:: yaml
+   :linenos:
+
+   class CUB(BaseDataset):
+       def __init__(self, pth, mod_type):
+           super().__init__(pth, mod_type)
+           self.mod_type = mod_type
+           self.path = pth
+
+       def _mod_specific_fns(self):
+           return {"image": self._process_images, "text": self._process_text}
+
+       def _process_images(self):
+           data = [torch.from_numpy(np.asarray(x.reshape(3, 64,64)).astype(np.float)) for x in self.get_data_raw()]
+           return torch.stack(data)
+
+       def _process_text(self):
+           self.has_masks = True
+           self.categorical = True
+           data = [" ".join(x) for x in self.get_data_raw()]
+           data = [one_hot_encode(len(f), f) for f in data]
+           data = [torch.from_numpy(np.asarray(x)) for x in data]
+           masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
+           data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
+           data_masks = torch.cat((data, masks), dim=-1)
+           return data_masks
+
+Eventhough the dataset is multimodal, a new instance of it will be created for each modality. Therefore,
+the constructor gets two arguments: path to the modality (str) and modality_type (str). Modality type is any string
+that you assign to the given modality to distinguish it from the others. For CUB we chose "image" for images and "text" for text, for MNIST_SVHN
+we have "mnist" and "svhn". You specify mod_type in the config.
+
+Next thing you need are methods that prepare each modality for training (_process_text and _process_images). Data loading is handled automatically by BaseDataset, so you
+only perform reshaping, converting to tensors etc., so that these functions return tensors of the same length on the output.
+Note: In case of sequential data, like text here, we make boolean masks and concatenate them with the last dimension of the text data.
+
 
 
 Adding a new dataset
