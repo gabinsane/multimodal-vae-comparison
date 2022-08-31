@@ -544,7 +544,7 @@ def labelled_tsne(model_exp):
     :param model: multimodal VAE
     :type model: object
     """
-    model_exp.set_model_test_data(batch_size=250)
+    model_exp.get_model_test_data(batch_size=250)
     testset = model_exp.get_test_data_sample()
     labels = prepare_labels(testset["mod_2"])
     for i, label in enumerate(labels):
