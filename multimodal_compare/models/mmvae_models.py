@@ -62,16 +62,21 @@ class MOE(TorchMMVAE):
         qz_xs = self.encode(x)
         zs = {}
         for modality, qz_x in qz_xs.items():
-            qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
-            z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
-            zs[modality] = {"latents": z, "masks": None}
+            if qz_x is not None:
+                qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
+                z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
+                zs[modality] = {"latents": z, "masks": None}
+            else:
+                zs[modality] = {"latents":None, "masks":None}
         # decode the samples
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
-            px_zs[modality] = [dist.Normal(*px_z[0])]
+            if px_z[0]:
+                px_zs[modality] = [dist.Normal(*px_z[0])]
         missing, filled = self.get_missing_modalities(qz_xs)
-        assert len(filled) > 1, "at least one modality must be present for forward call"
+        assert len(filled) > 0, "at least one modality must be present for forward call"
         for mod_name in missing:
+            zs[mod_name] = zs[filled[0]]
             px_zs[mod_name] = [dist.Normal(*self.vaes[mod_name].dec(zs[filled[0]]))]
         for modality, z in zs.items():
             for mod_vae, vae in self.vaes.items():

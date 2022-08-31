@@ -151,6 +151,13 @@ class MMVAEExperiment():
     def get_device(self):
         return 'cuda'
 
+    def decode_latents(self, samples):
+        zs = {}
+        for key in self.model.model.vaes.keys():
+            zs[key] = {"latents": samples.to(torch.device("cuda")).unsqueeze(0), "masks": None}
+        recons = self.model.model.decode(zs)
+        return recons
+
     def get_traversal_samples(self, latent_dim=None, n_samples_per_dim=1):
         """
         Generates random sample traversals across the whole latent space.
@@ -188,10 +195,14 @@ class MMVAEExperiment():
         """
         model = self.get_model()
         path = os.path.join(self.get_base_path(), 'image_to_text/')
+        os.makedirs(path, exist_ok=True)
         txt_outputs, img_outputs = [], []
         model.eval()
         for i, w in enumerate(imgs):
-            recons = model.forward([w.unsqueeze(0), None])[1]
+            inp = {"mod_1": {"data": w.unsqueeze(0).to(torch.device("cuda")), "masks": None},
+                   "mod_2": {"data": None, "masks": None}}
+            recons = model.model.to(torch.device("cuda")).forward(inp)
+            recons = [recons["mod_1"].decoder_dists[0].loc[0], recons["mod_2"].decoder_dists[0].loc]
             image, recon_text = _process_recons(recons)
             txt_outputs.append(recon_text[0][0])
             img_outputs.append(image * 255)
@@ -213,13 +224,14 @@ class MMVAEExperiment():
         """
         model = self.get_model()
         path = os.path.join(self.get_base_path(), 'text_to_image/')
+        os.makedirs(path, exist_ok=True)
         img_outputs, txtoutputs = [], []
         for i, w in enumerate(text):
             txt_inp = one_hot_encode(len(w), w.lower())
             model.eval()
-            recons = model.forward([None, [txt_inp.unsqueeze(0), None]])[1]
-            if model.modelName == 'moe':
-                recons = recons[0]
+            inp = {"mod_1":{"data":None, "masks":None}, "mod_2":{"data":txt_inp.unsqueeze(0).to(torch.device("cuda")), "masks":None}}
+            recons = model.model.to(torch.device("cuda")).forward(inp)
+            recons = [recons["mod_1"].decoder_dists[0].loc[0], recons["mod_2"].decoder_dists[0].loc]
             image, recon_text = _process_recons(recons)
             txtoutputs.append(recon_text[0][0])
             img_outputs.append(image * 255)
@@ -374,12 +386,8 @@ def _process_recons(recons):
     :return: image and text
     :rtype: tuple(ndarray, string)
     """
-    recons_image = recons[0] if isinstance(recons, list) else recons
-    recons_image = recons_image[0] if isinstance(recons_image, list) else recons_image
-    recons_text = recons[1][1] if isinstance(recons[1], list) else recons[1]
-    image = np.asarray(recons_image.loc[0].cpu().detach())
-    recon_text = recons_text.loc[0]
-    recon_text = output_onehot2text(recon=recon_text.unsqueeze(0))
+    image = np.asarray(recons[0].cpu().detach())
+    recon_text = output_onehot2text(recon=recons[1])
     return image, recon_text
 
 
@@ -398,16 +406,7 @@ def _listdirs(rootdir):
             dirs.append(d)
     return dirs
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--exp", type=str, help="name of the experiment directory")
-    args = parser.parse_args()
-    if args.exp:
-        model = args.exp
-    else:
-        model = 'test'
-
+def define_path(model):
     # get all checkpoints in the folder and select the latest one
     p1 = os.path.join(get_root_folder(), f"results/{model}/lightning_logs/version_*/checkpoints/*.ckpt")
     p2 = os.path.join(get_root_folder(), f"results/{model}/*.ckpt")
@@ -420,7 +419,18 @@ if __name__ == "__main__":
         p = max(files_grabbed, key=os.path.getctime)
     else:
         raise FileNotFoundError('No ckpt file available')
+    return p
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--exp", type=str, help="name of the experiment directory")
+    args = parser.parse_args()
+    if args.exp:
+        model = args.exp
+    else:
+        model = 'test'
+
+    p = define_path(model)
     exp = MMVAEExperiment(path=p)
     data = exp.get_test_data_bs(32)
     exp.set_data(data)

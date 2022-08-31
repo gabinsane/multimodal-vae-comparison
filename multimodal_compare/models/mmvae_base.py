@@ -124,9 +124,9 @@ class TorchMMVAE(nn.Module):
         """
         pz_xs = {}
         for modality, vae in self.vaes.items():
-            if modality in samples and not samples[modality] is None:
+            if modality in samples and not samples[modality]["latents"] is None:
                 pz_x = vae.dec(samples[modality])
                 pz_xs[modality] = [pz_x]
-            elif modality in samples and samples[modality] is None:
+            elif modality in samples and samples[modality]["latents"] is None:
                 pz_xs[modality] = [None]
         return pz_xs

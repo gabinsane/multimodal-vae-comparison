@@ -11,7 +11,7 @@ import pickle
 import torch
 
 from utils import output_onehot2text
-from eval.infer import MMVAEExperiment
+from eval.infer import MMVAEExperiment, define_path
 
 shapetemplates = glob.glob('./eval/templates/*.png')
 colors = {"yellow": [255, 255, 0], "red": [255, 0, 0], "green": [0, 255, 0], "blue": [0, 0, 255],
@@ -313,9 +313,9 @@ def get_attribute_from_recon(attribute, txt):
     if attribute == "size":
         idx, indices = 0, None
     elif attribute == "shape":
-        idx, indices = {1: 0, 2: 1, 3: 2, 4: 2, 5: 2}[difflevel], None
+        idx, indices = {1: 0, 2: 1, 3: 2, 4: 2, 5: 2}[args.level], None
     elif attribute == "color":
-        idx, indices = {3: 1, 4: 1, 5: 1}[difflevel], None
+        idx, indices = {3: 1, 4: 1, 5: 1}[args.level], None
     elif attribute == "background":
         idx, indices = None, [-2, -1]
     else:
@@ -333,7 +333,7 @@ def try_retrieve_atts(txt):
     :rtype:
     """
     atts = []
-    for a in level_attributes[difflevel]:
+    for a in level_attributes[args.level]:
         a = get_attribute_from_recon(a, txt)
         if a is None:
             atts.append("Unknown")
@@ -396,7 +396,7 @@ def check_cross_sample_correct(testtext, reconimage=None, recontext=None):
     correct_attributes = []
     correct_letters = None
     assert (reconimage is None) or (recontext is None), "for evaluation of both text and image, use joint_coherency"
-    for att in level_attributes[difflevel]:
+    for att in level_attributes[args.level]:
         correct = 0
         if reconimage is not None:
             att_value = get_attribute(att, testtext)
@@ -408,8 +408,8 @@ def check_cross_sample_correct(testtext, reconimage=None, recontext=None):
                 if attr in testtext:
                     correct = 1
         correct_attributes.append(int(correct))
-    correct_features = sum(correct_attributes) / len(level_attributes[difflevel])
-    if sum(correct_attributes) == len(level_attributes[difflevel]):
+    correct_features = sum(correct_attributes) / len(level_attributes[args.level])
+    if sum(correct_attributes) == len(level_attributes[args.level]):
         all_correct = True
     else:
         all_correct = False
@@ -420,22 +420,27 @@ def check_cross_sample_correct(testtext, reconimage=None, recontext=None):
     return all_correct, correct_features, correct_letters
 
 
-def get_mean_stats(list_of_stats):
+def get_mean_stats(list_of_stats, percentage=True):
     """
     Returns a list of means for a nested list with accuracies
 
     :param list_of_stats: multiple lists with accuracies
     :type list_of_stats: list
+    :param percentage: whether to report the number as percent (True) or fraction (False)
+    :type percentage: bool
     :return: a list of means of the accuracies
     :rtype: list
     """
     stats = []
     for l in list_of_stats:
-        stats.append(sum(l) / len(l))
+        if percentage:
+            stats.append(100 * sum(l) / len(l))
+        else:
+            stats.append(sum(l) / len(l))
     return stats
 
 
-def calculate_cross_coherency(model):
+def calculate_cross_coherency(model_exp):
     """
     Calculates the cross-coherency accuracy for the given model (Img -> Txt and Txt -> Img)
 
@@ -444,15 +449,15 @@ def calculate_cross_coherency(model):
     :return: mean cross accuracies
     :rtype: dict
     """
-    with open("./eval/templates/cross_level_{}.pkl".format(difflevel), 'rb') as handle:
+    with open("./eval/templates/cross_level_{}.pkl".format(args.level), 'rb') as handle:
         t = pickle.load(handle)[:100]
-        if difflevel > 1:
+        if args.level > 1:
             t = [" ".join(x) for x in t]
-    with open("./eval/templates/cross_level{}_images.pkl".format(difflevel), 'rb') as handle:
+    with open("./eval/templates/cross_level{}_images.pkl".format(args.level), 'rb') as handle:
         test_images = pickle.load(handle)[:100]
         test_images = torch.tensor(test_images).permute(0, 3, 2, 1) / 255
     acc_all = {"text_image": [0, 0], "image_text": [0, 0, 0]}
-    images, texts = text_to_image(t, model, m)
+    images, texts = model_exp.text_to_image(t)
     correct_pairs, corr_feats, corr_letters = [], [], []
     for ind, img in enumerate(images):
         img = np.asarray(img, dtype="uint8")
@@ -461,7 +466,7 @@ def calculate_cross_coherency(model):
         corr_feats.append(corr_feat)
         corr_letters.append(corr_letter)
     acc_all["text_image"] = get_mean_stats([correct_pairs, corr_feats])
-    images, texts = image_to_text(test_images, model, m)
+    images, texts = model_exp.image_to_text(test_images)
     correct_pairs, corr_feats, corr_letters = [], [], []
     for ind, txt in enumerate(texts):
         correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=t[ind], recontext=txt)
@@ -472,7 +477,7 @@ def calculate_cross_coherency(model):
     return acc_all
 
 
-def calculate_joint_coherency(model):
+def calculate_joint_coherency(model_exp):
     """
     Calculates the joint-coherency accuracy for the given model
 
@@ -481,10 +486,10 @@ def calculate_joint_coherency(model):
     :return: mean joint accuracy
     :rtype: dict
     """
-    samples = get_traversal_samples(latent_dim=model.n_latents, n_samples_per_dim=15)
-    recons = model.generate_from_latents(samples.unsqueeze(0).cuda())
-    img_recons = recons[0].loc
-    txt_recons = recons[1].loc
+    samples = model_exp.get_traversal_samples(latent_dim=model_exp.model.config.n_latents, n_samples_per_dim=15)
+    recons = model_exp.decode_latents(samples)
+    img_recons = recons["mod_1"][0][0]
+    txt_recons = recons["mod_2"][0][0]
     correct_pairs, corr_feats = [], []
     for ind, txt in enumerate(txt_recons):
         text = output_onehot2text(recon=txt.unsqueeze(0))[0][0]
@@ -574,13 +579,13 @@ def last_letter(word):
 
 
 def eval_all(model_exp):
-    labelled_tsne(model_exp)
+    #labelled_tsne(model_exp)
     output_cross = calculate_cross_coherency(model_exp)
     output_joint = calculate_joint_coherency(model_exp)
     return output_cross, output_joint
 
 def print_save_stats(stats_dict, path):
-    with open(os.path.join(path,'gebid_stats.txt'), 'w') as f:
+    with open(os.path.join(os.path.dirname(path),'gebid_stats.txt'), 'w') as f:
         for key, value_dict in stats_dict.items():
             if value_dict["stdev"]:
                 stat = "{}: {:.2f} ({:. 2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
@@ -591,8 +596,7 @@ def print_save_stats(stats_dict, path):
             f.write('\n')
 
 
-def eval_single_model(dir):
-    pth = os.path.join(dir, "last.ckpt")
+def eval_single_model(pth):
     m_exp = MMVAEExperiment(path=pth)
     m_exp.model.to(torch.device("cuda"))
     output_cross, output_joint = eval_all(m_exp)
@@ -603,7 +607,7 @@ def eval_single_model(dir):
                    "Image-Text Letters":{"value":output_cross["image_text"][2], "stdev":None},
                    "Joint Strict":{"value":output_joint["joint"][0], "stdev":None},
                    "Joint Featres":{"value":output_joint["joint"][1], "stdev":None}}
-    print_save_stats(output_dict, dir)
+    print_save_stats(output_dict, pth)
 
 
 
@@ -644,8 +648,8 @@ if __name__ == "__main__":
     assert args.model or args.model_multi, "Provide either path to a single model directory or a parent directory " \
                                            "containing multiple models"
     if args.model:
-        assert os.path.exists(args.model) and os.path.isdir(args.model)
-        eval_single_model(args.model)
+        p = define_path(args.model)
+        eval_single_model(p)
     elif args.model_multi:
         assert os.path.exists(args.model_multi) and os.path.isdir(args.model_multi)
         eval_over_seeds(args.model_multi)
