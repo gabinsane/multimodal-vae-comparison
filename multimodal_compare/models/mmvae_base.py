@@ -5,6 +5,9 @@ import torch.nn as nn
 from models.NetworkTypes import VaeOutput
 import torch.distributions as dist
 
+from models.vae import BaseVae
+
+
 class TorchMMVAE(nn.Module):
     """
     Base class for all PyTorch based MMVAE implementations.
@@ -12,14 +15,34 @@ class TorchMMVAE(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.vaes = {}
+        self.vaes = nn.ModuleDict()
 
+        self.modelName = 'TorchMMVAE'
+        self.prior_dist = dist.Normal
+        self.pz = dist.Normal
 
     def _pz_params(self, modality):
         return nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.vaes[modality].n_latents), requires_grad=False),  # mu
             nn.Parameter(torch.ones(1, self.vaes[modality].n_latents), requires_grad=False)  # logvar
         ])
+
+    def add_vaes(self, vae_dict: nn.ModuleDict):
+        """
+        This functions updates the VAEs of the MMVAE with a given dictionary.
+        Args:
+            vae_dict: A dictionary with the modality names as keys and BaseVAEs as values
+            type vae_dict: nn.ModuleDict
+
+        Returns:
+
+        """
+        if not all(isinstance(key, str) for key in vae_dict.keys()):
+            raise ValueError(f'Expected modality name as str, but got {list(vae_dict.keys())}.')
+        if not all(isinstance(vae, BaseVae) for vae in vae_dict.values()):
+            raise ValueError(f'Expected modality name as str, but got {list(vae_dict.values())}.')
+        self.vaes.update(vae_dict)
+        print(f'Updated MMVae has the following modalities: {list(self.vaes.keys())}')
 
     def forward(self, inputs, K=1):
         """
@@ -42,7 +65,7 @@ class TorchMMVAE(nn.Module):
         for modality, qz_x in qz_xs.items():
             qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
             z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
-            zs[modality] = {"latents":z, "masks":None}
+            zs[modality] = {"latents": z, "masks": None}
 
         # decode the samples
         px_zs = self.decode(zs)
@@ -51,9 +74,8 @@ class TorchMMVAE(nn.Module):
         output_dict = {}
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
-                                                latent_samples=zs[modality])
+                                              latent_samples=zs[modality])
         return output_dict
-
 
     def encode(self, inputs):
         """
