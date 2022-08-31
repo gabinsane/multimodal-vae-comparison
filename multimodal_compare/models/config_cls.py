@@ -2,6 +2,7 @@ import os
 import pickle
 import yaml
 import argparse
+from utils import get_root_folder
 
 
 class Config():

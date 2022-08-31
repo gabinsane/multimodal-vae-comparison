@@ -5,7 +5,7 @@ from models.trainer import MultimodalVAE
 
 def test_make_trainer():
     from eval.infer import Config
-    path = './data/config.json'
+    path = 'tests/data/config.yml'
     config = Config(path)
     assert config.epochs == 2
 
