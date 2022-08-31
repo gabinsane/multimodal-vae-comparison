@@ -28,7 +28,8 @@ class MMVAEExperiment():
         """
         assert os.path.exists(path), f"{path} does not exist."
 
-        self.base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
+        self.base_path = None
+        self.base_path = self.get_base_path(path)
         assert os.path.isfile(os.path.join(self.base_path,
                                            'config.yml')), f"Directory {path} does not contain a config."
         self.path = path
@@ -38,8 +39,30 @@ class MMVAEExperiment():
         self.test_loader = None
         self.model = self.load_model_ckpt()
 
-    def get_base_path(self):
-        return self.base_path
+    def get_base_path(self, path_within_exp_folder=None):
+        if self.base_path is not None:
+            return self.base_path
+        else:
+            if not os.path.exists(path_within_exp_folder):
+                raise ValueError(f"Path is not valid: {path_within_exp_folder}")
+            base_path = None
+            if os.path.isdir(path_within_exp_folder):
+                base_path = path_within_exp_folder
+            else:
+                base_path = os.path.dirname(path_within_exp_folder)
+
+            # base path should contain a file config.yml and be under the results folder
+            while 'results' in base_path:
+                if os.path.exists(os.path.join(base_path, 'config.yml')):
+                    self.base_path = base_path
+                    break
+                else:
+                    base_path = os.path.dirname(base_path)
+
+            if self.base_path is None:
+                raise ValueError(f"{path_within_exp_folder} is not within an exp folder")
+            return self.base_path
+
 
     def set_data(self, dataloader):
         self.data = dataloader
@@ -371,10 +394,17 @@ if __name__ == "__main__":
         model = args.exp
     else:
         model = 'test'
-    p = os.path.join(get_root_folder(), f"results/{model}/lightning_logs/version_0/checkpoints/*.ckpt")
-    files = glob.glob(p)
-    if len(files) > 0:
-        p = files[0]
+
+    # get all checkpoints in the folder and select the latest one
+    p1 = os.path.join(get_root_folder(), f"results/{model}/lightning_logs/version_*/checkpoints/*.ckpt")
+    p2 = os.path.join(get_root_folder(), f"results/{model}/*.ckpt")
+
+    patterns = (p1, p2)
+    files_grabbed = []
+    for pattern in patterns:
+        files_grabbed.extend(glob.glob(pattern))
+    if len(files_grabbed) > 0:
+        p = max(files_grabbed, key=os.path.getctime)
     else:
         raise FileNotFoundError('No ckpt file available')
 
