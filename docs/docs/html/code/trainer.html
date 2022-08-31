@@ -1,71 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Trainer class &mdash; multimodal-vae-comparison 1.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>MultimodalVAE class &mdash; multimodal-vae-comparison 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="VAE class" href="vae.html" />
+    <link rel="next" title="Config class" href="config_cls.html" />
     <link rel="prev" title="Add a new dataset" href="../tutorials/adddataset.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,267 +37,137 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Tutorials</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Trainer class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MultimodalVAE class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-      <li>Trainer class</li>
-    
-    
+      <li>MultimodalVAE class</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/code/trainer.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="module-multimodal_compare.main">
-<span id="trainer-class"></span><span id="trainer"></span><h1>Trainer class<a class="headerlink" href="#module-multimodal_compare.main" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="multimodal_compare.main.Trainer">
-<em class="property">class </em><code class="sig-prename descclassname">multimodal_compare.main.</code><code class="sig-name descname">Trainer</code><span class="sig-paren">(</span><em class="sig-param">cfg</em>, <em class="sig-param">device</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.</p>
+             
+  <section id="multimodalvae-class">
+<span id="trainer"></span><h1>MultimodalVAE class<a class="headerlink" href="#multimodalvae-class" title="Permalink to this heading"></a></h1>
+<span class="target" id="module-multimodal_compare.models.trainer"></span><dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.trainer.</span></span><span class="sig-name descname"><span class="pre">MultimodalVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningModule</span></code></p>
+<p>Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>cfg</strong> (<em>dict</em>) – parsed .yml config</p></li>
-<li><p><strong>device</strong> (<em>object</em>) – cuda/cpu</p></li>
-</ul>
+<dd class="field-odd"><p><strong>cfg</strong> (<a class="reference internal" href="config_cls.html#multimodal_compare.models.config_cls.Config" title="multimodal_compare.models.config_cls.Config"><em>Config</em></a>) – instance of Config class</p>
 </dd>
 </dl>
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.get_torch_mean">
-<code class="sig-name descname">get_torch_mean</code><span class="sig-paren">(</span><em class="sig-param">loss</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.get_torch_mean" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the mean of the list of torch tensors</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>loss</strong> (<em>list</em>) – list of loss tensors</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>mean of the losses</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.float32</p>
-</dd>
-</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.configure_optimizers">
+<span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.configure_optimizers" title="Permalink to this definition"></a></dt>
+<dd><p>Sets up the optimizer specified in the config</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.iterate_epochs">
-<code class="sig-name descname">iterate_epochs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.iterate_epochs" title="Permalink to this definition">¶</a></dt>
-<dd><p>The main training and testing iterator.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.get_model" title="Permalink to this definition"></a></dt>
+<dd><p>Sets up the model according to the config file</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.prepare_data">
-<code class="sig-name descname">prepare_data</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.prepare_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unpacks the data sent in the batch for training/testing</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>object</p>
-</dd>
-<dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>data</strong> – data coming from the DataLoader iterator</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>data prepared for training/testing, (int) length of the batch</p>
-</dd>
-</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_objective">
+<span class="sig-name descname"><span class="pre">get_objective</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.get_objective" title="Permalink to this definition"></a></dt>
+<dd><p>Find the selected objective</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.prepare_testset">
-<code class="sig-name descname">prepare_testset</code><span class="sig-paren">(</span><em class="sig-param">num_samples=None</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.prepare_testset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves the TestLoader and prepares it for visualization methods</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>num_samples</strong> (<em>int</em>) – how many samples to prepare</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>return data: (list)
-:return d_len: (int)</p>
-</dd>
-</dl>
-</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.setup">
-<code class="sig-name descname">setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.setup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initiates the model, get dataloaders, find the selected objective</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.test">
-<code class="sig-name descname">test</code><span class="sig-paren">(</span><em class="sig-param">epoch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterates over the test loader</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – current epoch</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.train">
-<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param">epoch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.train" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.training_step">
+<span class="sig-name descname"><span class="pre">training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.training_step" title="Permalink to this definition"></a></dt>
 <dd><p>Iterates over the train loader</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – current epoch</p>
-</dd>
-</dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="multimodal_compare.main.Trainer.visualize_latents">
-<code class="sig-name descname">visualize_latents</code><span class="sig-paren">(</span><em class="sig-param">epoch</em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.Trainer.visualize_latents" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs the model analysis, saves T-SNE and KL-Divergences</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – current epoch</p>
-</dd>
-</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.validation_step">
+<span class="sig-name descname"><span class="pre">validation_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.validation_step" title="Permalink to this definition"></a></dt>
+<dd><p>Iterates over the test loader</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="multimodal_compare.main.parse_args">
-<code class="sig-prename descclassname">multimodal_compare.main.</code><code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.main.parse_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads the .yml config specified in the –cfg argument. Any additional arguments override the values in the config.
-:return: dict; config
-:rtype: dict</p>
-</dd></dl>
-
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="vae.html" class="btn btn-neutral float-right" title="VAE class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../tutorials/adddataset.html" class="btn btn-neutral float-left" title="Add a new dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config_cls.html" class="btn btn-neutral float-right" title="Config class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, Gabriela Sejnova.
-
-    </p>
+    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

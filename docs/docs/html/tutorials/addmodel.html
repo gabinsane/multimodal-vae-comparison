@@ -1,71 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Add a new model &mdash; multimodal-vae-comparison 1.0 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Add a new dataset" href="adddataset.html" />
     <link rel="prev" title="Multimodal VAE Comparison Toolkit" href="../index.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -73,19 +37,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Tutorials</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Add a new model</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#general-requirements">General requirements</a></li>
@@ -94,246 +47,220 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="adddataset.html">Add a new dataset</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code documentation</span></p>
+<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../code/trainer.html">Trainer class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/trainer.html">MultimodalVAE class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/config_cls.html">Config class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/decoders.html">Decoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/objectives.html">Objectives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/dataloader.html">DataLoader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/eval_gebid.html">Evaluate on GeBiD dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/infer.html">Inference module</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">multimodal-vae-comparison</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Add a new model</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/tutorials/addmodel.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="add-a-new-model">
-<span id="addmodel"></span><h1>Add a new model<a class="headerlink" href="#add-a-new-model" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="add-a-new-model">
+<span id="addmodel"></span><h1>Add a new model<a class="headerlink" href="#add-a-new-model" title="Permalink to this heading"></a></h1>
 <p>We encourage the authors to implement their own multimodal VAE models into our toolkit. Here we describe how to do it.</p>
-<div class="section" id="general-requirements">
-<h2>General requirements<a class="headerlink" href="#general-requirements" title="Permalink to this headline">¶</a></h2>
+<section id="general-requirements">
+<h2>General requirements<a class="headerlink" href="#general-requirements" title="Permalink to this heading"></a></h2>
 <p>The toolkit is written using PyTorch and we expect new models to use this framework as well. Currently, it is
 possible to implement unimodal VAEs and any multimodal VAEs which use dedicated VAE instances for each modality.
 You can add a new objective, encoder/decoder networks and of course other support modules that are needed.</p>
-<p>Below we show a step-by-step tutorial in which we add the DMVAE model. You can find the original implementation
-in their <a class="reference external" href="https://github.com/seqam-lab/DMVAE">GitHub repository</a>.</p>
-</div>
-<div class="section" id="adding-a-new-model">
-<h2>Adding a new model<a class="headerlink" href="#adding-a-new-model" title="Permalink to this headline">¶</a></h2>
-<p>First, we start by defining the model in <code class="docutils literal notranslate"><span class="pre">mmvae_models.py</span></code>. Our model will need a name and should inherit the MMVAE
-class defined in <code class="docutils literal notranslate"><span class="pre">mmvae_base.py</span></code>. This class handles some common functions for dataset loading, sample visualisation etc.
-The init parameters are passed from the config file and should have this fixed structure.
+<p>Below we show a step-by-step tutorial on how to add a new model.</p>
+</section>
+<section id="adding-a-new-model">
+<h2>Adding a new model<a class="headerlink" href="#adding-a-new-model" title="Permalink to this heading"></a></h2>
+<p>First, we start by defining the model in <code class="docutils literal notranslate"><span class="pre">mmvae_models.py</span></code>. Our model will need a name and should inherit the TorchMMVAE
+class defined in <code class="docutils literal notranslate"><span class="pre">mmvae_base.py</span></code>.
 <code class="docutils literal notranslate"><span class="pre">self.modelName</span></code> will be used for model selection from the config file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DMVAE</span><span class="p">(</span><span class="n">MMVAE</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoders</span><span class="p">,</span> <span class="n">decoders</span><span class="p">,</span> <span class="n">data_paths</span><span class="p">,</span> <span class="n">feature_dims</span><span class="p">,</span> <span class="n">mod_types</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">,</span> <span class="n">test_split</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">modelName</span> <span class="o">=</span> <span class="s1">&#39;dmvae&#39;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">DMVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span> <span class="n">encoders</span><span class="p">,</span> <span class="n">decoders</span><span class="p">,</span> <span class="n">data_paths</span><span class="p">,</span> <span class="n">feature_dims</span><span class="p">,</span> <span class="n">mod_types</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">,</span> <span class="n">test_split</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_latents</span> <span class="o">=</span> <span class="n">n_latents</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">qz_x</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">POE</span><span class="p">(</span><span class="n">TorchMMVAE</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vaes</span><span class="p">,</span> <span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public</span>
+<span class="sd">        :param vaes: list of modality-specific vae objects</span>
+<span class="sd">        :type encoders: list</span>
+<span class="sd">        :param model_cofig: config with model-specific parameters</span>
+<span class="sd">        :type model_config: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span><span class="n">vaes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span> <span class="o">=</span> <span class="n">model_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modelName</span> <span class="o">=</span> <span class="s1">&#39;poe&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pz</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_dist</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span>
 </pre></div>
 </div>
-<p>Now we need to add the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> pass and all methods necessary for the multimodal data integration. The first input parameter
-will be the multimodal data concatenated in a list, possible missing modalities are replaced with <code class="docutils literal notranslate"><span class="pre">None</span></code>. You can add
-other input parameters in case you only want to use this model with your custom objective which you will define later.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"> <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span>     <span class="n">qz_xs_shared</span><span class="p">,</span> <span class="n">px_zs</span><span class="o">=</span> <span class="p">[],</span> <span class="p">[[</span><span class="bp">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">))]</span>
-     <span class="n">qz_xs_private</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">))]</span>
-     <span class="c1"># initialise cross-modal matrix</span>
-     <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">vae</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">):</span>
-         <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-             <span class="n">mod_mu</span><span class="p">,</span> <span class="n">mod_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">enc</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">])</span>
-             <span class="n">qz_xs_private</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">qz_x</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">mod_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mod_std</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-             <span class="n">qz_xs_shared</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">qz_x</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">mod_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mod_std</span><span class="p">[</span><span class="mi">1</span><span class="p">]]))</span>
-     <span class="n">mu_joint</span><span class="p">,</span> <span class="n">std_joint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_poe</span><span class="p">(</span><span class="n">qz_xs_shared</span><span class="p">)</span>
-     <span class="n">joint_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qz_x</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">mu_joint</span><span class="p">,</span> <span class="n">std_joint</span><span class="p">])</span>
-     <span class="n">all_shared</span> <span class="o">=</span> <span class="n">qz_xs_shared</span> <span class="o">+</span> <span class="p">[</span><span class="n">joint_d</span><span class="p">]</span>
-     <span class="n">zss</span> <span class="o">=</span> <span class="p">[]</span>
-     <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">vae</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">):</span>
-         <span class="k">for</span> <span class="n">e</span><span class="p">,</span> <span class="n">dist</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_shared</span><span class="p">):</span>
-                 <span class="n">zs_shared</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">rsample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="n">K</span><span class="p">]))</span>
-                 <span class="n">zs_private</span> <span class="o">=</span> <span class="n">qz_xs_private</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="o">.</span><span class="n">rsample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="n">K</span><span class="p">]))</span>
-                 <span class="n">zs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">zs_private</span><span class="p">,</span> <span class="n">zs_shared</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                 <span class="n">zss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zs</span><span class="p">)</span>
-                 <span class="k">if</span> <span class="s2">&quot;transformer&quot;</span> <span class="ow">in</span> <span class="n">vae</span><span class="o">.</span><span class="n">dec_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                     <span class="n">px_zs</span><span class="p">[</span><span class="n">d</span><span class="p">][</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">vae</span><span class="o">.</span><span class="n">px_z</span><span class="p">(</span><span class="o">*</span><span class="n">vae</span><span class="o">.</span><span class="n">dec</span><span class="p">([</span><span class="n">zs</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">d</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="p">[</span><span class="n">zs</span><span class="p">,</span> <span class="bp">None</span><span class="p">]))</span>
-                 <span class="k">else</span><span class="p">:</span>
-                     <span class="n">px_zs</span><span class="p">[</span><span class="n">d</span><span class="p">][</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">vae</span><span class="o">.</span><span class="n">px_z</span><span class="p">(</span><span class="o">*</span><span class="n">vae</span><span class="o">.</span><span class="n">dec</span><span class="p">(</span><span class="n">zs</span><span class="p">))</span>
-     <span class="k">return</span> <span class="n">qz_xs_private</span> <span class="o">+</span> <span class="n">all_shared</span><span class="p">,</span> <span class="n">px_zs</span><span class="p">,</span> <span class="n">zss</span>
+<p>The TorchMMVAE class includes the bare functional minimum for a multimodal VAE, i.e. the forward pass and multimodal_mixing function.
+The newly added model can override both these methods or keep the forward function as it is. Here we add the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> pass and all methods necessary for the multimodal data integration. The first input parameter
+will be the multimodal data specified in a config where the keys label the modalities and values contain the data (and possibly masks where applicable).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"> <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+</span>     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Forward pass that takes input data and outputs a dict iwth  posteriors, reconstructions and latent samples</span>
+<span class="sd">     :param inputs: input data, a dict of modalities where missing modalities are replaced with None</span>
+<span class="sd">     :type inputs: dict</span>
+<span class="sd">     :param K: sample K samples from the posterior</span>
+<span class="sd">     :type K: int</span>
+<span class="sd">     :return: dict where keys are modalities and values are a named tuple</span>
+<span class="sd">     :rtype: dict</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">,</span> <span class="n">single_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+     <span class="n">qz_x</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">])</span>
+     <span class="n">z</span> <span class="o">=</span> <span class="n">qz_x</span><span class="o">.</span><span class="n">rsample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">1</span><span class="p">]))</span>
+     <span class="n">qz_d</span><span class="p">,</span> <span class="n">px_d</span><span class="p">,</span> <span class="n">z_d</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">{}</span>
+     <span class="n">z_d</span><span class="p">[</span><span class="s2">&quot;joint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;latents&quot;</span><span class="p">:</span> <span class="n">z</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+     <span class="k">for</span> <span class="n">mod</span><span class="p">,</span> <span class="n">vae</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+         <span class="n">px_d</span><span class="p">[</span><span class="n">mod</span><span class="p">]</span> <span class="o">=</span> <span class="n">vae</span><span class="o">.</span><span class="n">px_z</span><span class="p">(</span><span class="o">*</span><span class="n">vae</span><span class="o">.</span><span class="n">dec</span><span class="p">(</span><span class="n">z_d</span><span class="p">[</span><span class="s2">&quot;joint&quot;</span><span class="p">]))</span>
+     <span class="n">output_dict</span> <span class="o">=</span> <span class="p">{}</span>
+     <span class="n">qz_d</span><span class="p">[</span><span class="s2">&quot;joint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">qz_x</span>
+     <span class="k">for</span> <span class="n">modality</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+         <span class="n">output_dict</span><span class="p">[</span><span class="n">modality</span><span class="p">]</span> <span class="o">=</span> <span class="n">VaeOutput</span><span class="p">(</span><span class="n">encoder_dists</span><span class="o">=</span><span class="n">qz_d</span><span class="p">[</span><span class="s2">&quot;joint&quot;</span><span class="p">],</span> <span class="n">decoder_dists</span><span class="o">=</span><span class="p">[</span><span class="n">px_d</span><span class="p">[</span><span class="n">modality</span><span class="p">]],</span>
+                                             <span class="n">latent_samples</span><span class="o">=</span><span class="n">z_d</span><span class="p">[</span><span class="s2">&quot;joint&quot;</span><span class="p">])</span>
+     <span class="k">return</span> <span class="n">output_dict</span>
+
+ <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Inference module, calculates the joint posterior</span>
+<span class="sd">     :param inputs: input data, a dict of modalities where missing modalities are replaced with None</span>
+<span class="sd">     :type inputs: dict</span>
+<span class="sd">     :param K: sample K samples from the posterior</span>
+<span class="sd">     :type K: int</span>
+<span class="sd">     :return: joint posterior and individual posteriors</span>
+<span class="sd">     :rtype: tuple(torch.tensor, torch.tensor, list, list)</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+         <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+             <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+             <span class="k">break</span>
+     <span class="c1"># initialize the universal prior expert</span>
+     <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prior_expert</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="s2">&quot;mod_1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">n_latents</span><span class="p">),</span> <span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+     <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">vae</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vaes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+         <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+             <span class="n">mod_mu</span><span class="p">,</span> <span class="n">mod_logvar</span> <span class="o">=</span> <span class="n">vae</span><span class="o">.</span><span class="n">enc</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">m</span><span class="p">])</span>
+             <span class="n">mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">mu</span><span class="p">,</span> <span class="n">mod_mu</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+             <span class="n">logvar</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">logvar</span><span class="p">,</span> <span class="n">mod_logvar</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+     <span class="n">mu_before</span><span class="p">,</span> <span class="n">logvar_before</span> <span class="o">=</span> <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span>
+     <span class="c1"># product of experts to combine gaussians</span>
+     <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">product_of_experts</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">,</span> <span class="p">[</span><span class="n">mu_before</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">logvar_before</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+
+ <span class="k">def</span> <span class="nf">product_of_experts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span><span class="p">):</span>
+     <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     Calculated the product of experts for input data</span>
+<span class="sd">     :param mu: list of means</span>
+<span class="sd">     :type mu: list</span>
+<span class="sd">     :param logvar: list of logvars</span>
+<span class="sd">     :type logvar: list</span>
+<span class="sd">     :return: joint posterior</span>
+<span class="sd">     :rtype: tuple(torch.tensor, torch.tensor)</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-8</span>
+     <span class="n">var</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logvar</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span>
+     <span class="c1"># precision of i-th Gaussian expert at point x</span>
+     <span class="n">T</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">var</span>
+     <span class="n">pd_mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mu</span> <span class="o">*</span> <span class="n">T</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+     <span class="n">pd_var</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+     <span class="n">pd_logvar</span> <span class="o">=</span> <span class="n">pd_var</span>
+     <span class="k">return</span> <span class="n">pd_mu</span><span class="p">,</span> <span class="n">pd_logvar</span>
+
+ <span class="k">def</span> <span class="nf">prior_expert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+     <span class="sd">&quot;&quot;&quot;Universal prior expert. Here we use a spherical</span>
+<span class="sd">     Gaussian: N(0, 1).</span>
+<span class="sd">     @param size: integer</span>
+<span class="sd">                  dimensionality of Gaussian</span>
+<span class="sd">     @param use_cuda: boolean [default: False]</span>
+<span class="sd">                      cast CUDA on variables</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+     <span class="n">mu</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
+     <span class="n">logvar</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size</span><span class="p">)))</span>
+     <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
+         <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">logvar</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">mu</span><span class="p">,</span> <span class="n">logvar</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method should return a tuple of 3 lists:
-* a list of posteriors (parametrized torch.dist objects)
-* a list of output likelihood distributions (parametrized torch.dist objects)
-* a list of sampled latent vectors <code class="docutils literal notranslate"><span class="pre">z</span></code> (will be used for log-likelihood calculation)</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method should return a dictionary with keys denoting individual modalities (“mod_1”, …, “mod_n”). Each
+key contains the named tuple VaeOutput which has the following keys
+* encoder_dists - a list of posteriors (parametrized torch.dist objects)
+* decoder_dists - a list of output likelihood distributions (parametrized torch.dist objects)
+* latent_samples - sampled latent vectors <code class="docutils literal notranslate"><span class="pre">z</span></code> (will be used for log-likelihood calculation)</p>
 <p>If you defined the forward function, it is the minimal scenario you need for a functional model.</p>
 <p>Next, we need to add our model to the list of all models in <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> located in the <code class="docutils literal notranslate"><span class="pre">models</span></code> directory:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">MOE</span> <span class="k">as</span> <span class="n">moe</span>
- <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">POE</span> <span class="k">as</span> <span class="n">poe</span>
- <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">MoPOE</span> <span class="k">as</span> <span class="n">mopoe</span>
-<span class="hll"> <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">DMVAE</span> <span class="k">as</span> <span class="n">dmvae</span>
-</span> <span class="kn">from</span> <span class="nn">.vae</span> <span class="kn">import</span> <span class="n">VAE</span>
+<span class="hll"> <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">POE</span> <span class="k">as</span> <span class="n">poe</span>
+</span> <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">MoPOE</span> <span class="k">as</span> <span class="n">mopoe</span>
+ <span class="kn">from</span> <span class="nn">.mmvae_models</span> <span class="kn">import</span> <span class="n">DMVAE</span> <span class="k">as</span> <span class="n">dmvae</span>
+ <span class="kn">from</span> <span class="nn">.vae</span> <span class="kn">import</span> <span class="n">VAE</span>
 <span class="hll"> <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="n">dmvae</span><span class="p">,</span> <span class="n">moe</span><span class="p">,</span> <span class="n">poe</span><span class="p">,</span> <span class="n">mopoe</span><span class="p">,</span> <span class="n">VAE</span><span class="p">]</span>
 </span></pre></div>
 </div>
-<p>If we need to, we can define specific encoder and decoder networks (although we can also re-use the existing ones).
-Here we define a new encoder network for the MNIST dataset. This can be added into <code class="docutils literal notranslate"><span class="pre">encoders.py</span></code></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Enc_MNIST_DMVAE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">data_dim</span><span class="p">,</span> <span class="n">num_pixels</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">num_hidden</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">zPrivate_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Enc_MNIST_DMVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net_type</span> <span class="o">=</span> <span class="s2">&quot;FNN&quot;</span>
-        <span class="n">temp</span> <span class="o">=</span> <span class="mf">0.66</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">digit_temp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span> <span class="o">=</span> <span class="n">zPrivate_dim</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">zShared_dim</span> <span class="o">=</span> <span class="n">latent_dim</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">enc_hidden</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_pixels</span><span class="p">,</span> <span class="n">num_hidden</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_hidden</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">zPrivate_dim</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">latent_dim</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">hiddens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enc_hidden</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
-        <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">hiddens</span><span class="p">)</span>
-        <span class="n">muPrivate</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span><span class="p">]</span>
-        <span class="n">logvarPrivate</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[:,</span> <span class="p">:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span><span class="p">:(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span><span class="p">)]</span>
-        <span class="n">stdPrivate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logvarPrivate</span><span class="p">)</span> <span class="o">+</span> <span class="n">Constants</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
-        <span class="n">muShared</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span><span class="p">):(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">zShared_dim</span><span class="p">)]</span>
-        <span class="n">logvarShared</span> <span class="o">=</span> <span class="n">stats</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zPrivate_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">zShared_dim</span><span class="p">):]</span>
-        <span class="n">stdShared</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logvarShared</span><span class="p">)</span> <span class="o">+</span> <span class="n">Constants</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">muPrivate</span><span class="p">,</span> <span class="n">muShared</span><span class="p">],</span> <span class="p">[</span><span class="n">stdPrivate</span><span class="p">,</span> <span class="n">stdShared</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Again, we need to intialize the class with training parameters like <code class="docutils literal notranslate"><span class="pre">latent_dim</span></code> (size of the latent space) and
-<code class="docutils literal notranslate"><span class="pre">data_dim</span></code> (the expected dimensionality of the data defined in config).</p>
-<p>The name of the encoder will be the class name after the underscore, i.e. “MNIST_DMVAE” in this case. You can use this
-in the config to select this network.</p>
-<p>Normally, the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method would return a tuple of means and standard deviations (torch.tensors). However, in this case
-we have two types of means and stds (private and shared) and thus adjust the output as needed.</p>
-<p>Now we need to also add a decoder in <code class="docutils literal notranslate"><span class="pre">decoders.py</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">class</span> <span class="nc">Dec_MNIST_DMVAE</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">data_dim</span><span class="p">,</span> <span class="n">num_pixels</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">num_hidden</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">zPrivate_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-         <span class="nb">super</span><span class="p">(</span><span class="n">Dec_MNIST_DMVAE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-<span class="hll">         <span class="bp">self</span><span class="o">.</span><span class="n">net_type</span> <span class="o">=</span> <span class="s2">&quot;FNN&quot;</span>
-</span>         <span class="bp">self</span><span class="o">.</span><span class="n">style_mean</span> <span class="o">=</span> <span class="n">zPrivate_dim</span>
-<span class="hll">         <span class="bp">self</span><span class="o">.</span><span class="n">style_std</span> <span class="o">=</span> <span class="n">zPrivate_dim</span>
-</span>         <span class="bp">self</span><span class="o">.</span><span class="n">num_digits</span> <span class="o">=</span> <span class="n">latent_dim</span>
-
-         <span class="bp">self</span><span class="o">.</span><span class="n">dec_hidden</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-             <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">zPrivate_dim</span> <span class="o">+</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">num_hidden</span><span class="p">),</span>
-             <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
-         <span class="bp">self</span><span class="o">.</span><span class="n">dec_image</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-             <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_hidden</span><span class="p">,</span> <span class="n">num_pixels</span><span class="p">),</span>
-             <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">())</span>
-
-     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
-         <span class="n">hiddens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec_hidden</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec_image</span><span class="p">(</span><span class="n">hiddens</span><span class="p">)</span>
-         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The process is similar to the encoder. The output here are the modality reconstructions. Here we could also add other
-encoders and decoder for different modalities, perhaps SVHN in this scenario.</p>
+<p>If we need to, we can define specific encoder and decoder networks (although we can also re-use the existing ones).</p>
 <p>The last thing we need to do is to add the objective function into <code class="docutils literal notranslate"><span class="pre">objectives.py</span></code>. The name should be in the form
 “multimodal_&lt;objectivename&gt;_&lt;modelname&gt;” so that the toolkit knows when to use it. “objectivename” will be defined in the config
 as the <code class="docutils literal notranslate"><span class="pre">obj</span></code> key, modelname will be the <code class="docutils literal notranslate"><span class="pre">mixing</span></code> method.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">multimodal_elbo_dmvae</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ltype</span><span class="o">=</span><span class="s2">&quot;lprob&quot;</span><span class="p">):</span>
-    <span class="s2">&quot;Objective for the DMVAE model. Source: https://github.com/seqam-lab/DMVAE&quot;</span>
-    <span class="n">qz_xs</span><span class="p">,</span> <span class="n">px_zs</span><span class="p">,</span> <span class="n">zss</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">recons</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">kls</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">ind_losses</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">px_zs</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
-            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-                <span class="n">recons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ltype</span><span class="o">=</span><span class="n">ltype</span><span class="p">,</span> <span class="n">mod_type</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dec_name</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">llik_scaling</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">recons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">idxs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="o">+</span><span class="n">n</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
-            <span class="n">log_pz</span> <span class="o">=</span> <span class="n">log_joint</span><span class="p">([</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">n</span><span class="p">],</span> <span class="n">px_zs</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">zss</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">zss</span><span class="p">[</span><span class="n">idxs</span><span class="p">[</span><span class="n">n</span><span class="p">]]])</span>
-            <span class="n">log_q_zCx</span> <span class="o">=</span> <span class="n">log_joint</span><span class="p">([</span><span class="n">qz_xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qz_xs</span><span class="p">[</span><span class="n">idxs</span><span class="p">[</span><span class="n">n</span><span class="p">]]],</span> <span class="p">[</span><span class="n">zss</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">zss</span><span class="p">[</span><span class="n">idxs</span><span class="p">[</span><span class="n">n</span><span class="p">]]])</span>
-            <span class="n">log_qz</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">log_prod_qzi</span> <span class="o">=</span> <span class="n">log_batch_marginal</span><span class="p">([</span><span class="n">qz_xs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">qz_xs</span><span class="p">[</span><span class="n">idxs</span><span class="p">[</span><span class="n">n</span><span class="p">]]])</span>
-            <span class="n">kl</span> <span class="o">=</span> <span class="p">((</span><span class="n">log_q_zCx</span> <span class="o">-</span> <span class="n">log_qz</span><span class="p">)</span> <span class="o">*</span><span class="p">(</span><span class="n">log_qz</span> <span class="o">-</span> <span class="n">log_prod_qzi</span><span class="p">)</span><span class="o">*</span> <span class="p">(</span><span class="n">log_prod_qzi</span> <span class="o">-</span> <span class="n">log_pz</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-            <span class="n">kls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kl</span><span class="p">)</span>
-    <span class="c1"># cross sampling</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">get_all_pairs</span><span class="p">(</span><span class="n">px_zs</span><span class="p">):</span>
-        <span class="n">recons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">ltype</span><span class="o">=</span><span class="n">ltype</span><span class="p">,</span> <span class="n">mod_type</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dec_name</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span>
-            <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">llik_scaling</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-        <span class="n">log_pz</span> <span class="o">=</span> <span class="n">log_joint</span><span class="p">([</span><span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">],</span> <span class="n">px_zs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]])</span>
-        <span class="n">log_q_zCx</span> <span class="o">=</span> <span class="n">log_joint</span><span class="p">([</span><span class="n">qz_xs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">],</span> <span class="n">qz_xs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]])</span>
-        <span class="n">log_qz</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">log_prod_qzi</span> <span class="o">=</span> <span class="n">log_batch_marginal</span><span class="p">([</span><span class="n">qz_xs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">],</span> <span class="n">qz_xs</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]])</span>
-        <span class="n">kl</span> <span class="o">=</span>  <span class="p">((</span><span class="n">log_q_zCx</span> <span class="o">-</span> <span class="n">log_qz</span><span class="p">)</span> <span class="o">*</span><span class="p">(</span><span class="n">log_qz</span> <span class="o">-</span> <span class="n">log_prod_qzi</span><span class="p">)</span><span class="o">*</span> <span class="p">(</span><span class="n">log_prod_qzi</span> <span class="o">-</span> <span class="n">log_pz</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-        <span class="n">kls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kl</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">rec</span><span class="p">,</span> <span class="n">kl</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="n">kls</span><span class="p">):</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">rec</span> <span class="o">-</span> <span class="n">kl</span>
-        <span class="n">ind_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">ind_losses</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">loss</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">kls</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">ind_losses</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">multimodal_elbo_poe</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span>  <span class="n">ltype</span><span class="o">=</span><span class="s2">&quot;lprob&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subsampled ELBO with the POE approach as used in https://github.com/mhw32/multimodal-vae-public</span>
+
+<span class="sd">    :param model: model object</span>
+<span class="sd">    :type model: object</span>
+<span class="sd">    :param x: input batch</span>
+<span class="sd">    :type x: torch.tensor</span>
+<span class="sd">    :param ltype: reconstruction loss term</span>
+<span class="sd">    :type ltype: str</span>
+<span class="sd">    :return: loss, kl divergence, reconstruction loss</span>
+<span class="sd">    :rtype: tuple(torch.tensor, torch.tensor, list)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lpx_zs</span><span class="p">,</span> <span class="n">klds</span><span class="p">,</span> <span class="n">elbos</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">mods</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">mods</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">mods</span><span class="p">[</span><span class="n">d</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">mods</span><span class="p">[</span><span class="n">d</span><span class="p">][</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="n">mods</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mods</span><span class="p">[</span><span class="s2">&quot;mod_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;mod_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">output_dic</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">mods</span><span class="p">)</span>
+        <span class="n">kld</span> <span class="o">=</span> <span class="n">kl_divergence</span><span class="p">(</span><span class="n">output_dic</span><span class="p">[</span><span class="s2">&quot;mod_1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">encoder_dists</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">pz</span><span class="p">(</span><span class="o">*</span><span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="s2">&quot;mod_1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">_pz_params</span><span class="p">))</span>
+        <span class="n">klds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kld</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">loc_lpx_z</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">mod</span> <span class="ow">in</span> <span class="n">output_dic</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">px_z</span> <span class="o">=</span> <span class="n">output_dic</span><span class="p">[</span><span class="n">mod</span><span class="p">]</span><span class="o">.</span><span class="n">decoder_dists</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">lpx_z</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">px_z</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">mod</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="n">ltype</span><span class="o">=</span><span class="n">ltype</span><span class="p">,</span> <span class="n">categorical</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">mod</span><span class="p">][</span><span class="s2">&quot;categorical&quot;</span><span class="p">])</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="o">.</span><span class="n">llik_scaling</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">loc_lpx_z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lpx_z</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mod</span> <span class="o">==</span> <span class="s2">&quot;mod_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">lpx_zs</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lpx_z</span><span class="p">)</span>
+        <span class="n">elbo</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">loc_lpx_z</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">kld</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">elbos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elbo</span><span class="p">)</span>
+    <span class="n">individual_losses</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">model</span><span class="o">.</span><span class="n">vaes</span><span class="p">[</span><span class="s2">&quot;mod_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span><span class="o">.</span><span class="n">llik_scaling</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lpx_zs</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">elbos</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">klds</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">individual_losses</span>
 </pre></div>
 </div>
 <p>The objective function receives the model object on the inpt as well as the training/testing data, number of K samples
@@ -341,93 +268,71 @@ if used and type of the reconstruction loss term (we use it as a param to the <c
 loss). We want the objective to return the final loss (<code class="docutils literal notranslate"><span class="pre">torch.float32</span></code>) and optionally KLD loss (<code class="docutils literal notranslate"><span class="pre">torch.float32</span></code>) and
 modality-specific losses (a list with <code class="docutils literal notranslate"><span class="pre">torch.float32</span></code>).</p>
 <p>Now we should be able to train using this model. We need to create a <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> file as follows:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">batch_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32</span>
-<span class="nt">epochs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">700</span>
-<span class="nt">exp_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dmvae_exp</span>
-<span class="nt">labels</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/labels.pkl</span>
-<span class="nt">loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">lprob</span>
-<span class="nt">lr</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1e-3</span>
-<span class="hll"><span class="nt">mixing</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dmvae</span>
-</span><span class="nt">n_latents</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
-<span class="nt">obj</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">elbo</span>
-<span class="nt">optimizer</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">adam</span>
-<span class="nt">pre_trained</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">null</span>
-<span class="nt">seed</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="nt">viz_freq</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">20</span>
-<span class="nt">test_split</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
-<span class="nt">modality_1</span><span class="p">:</span>
-<span class="hll">   <span class="nt">decoder</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MNIST_DMVAE</span>
-</span><span class="hll">   <span class="nt">encoder</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MNIST_DMVAE</span>
-</span>   <span class="nt">feature_dim</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">28</span><span class="p p-Indicator">,</span><span class="nv">28</span><span class="p p-Indicator">,</span><span class="nv">1</span><span class="p p-Indicator">]</span>
-   <span class="nt">mod_type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">image</span>
-   <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/mnist</span>
-<span class="nt">modality_2</span><span class="p">:</span>
-<span class="hll">   <span class="nt">decoder</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SVHN_DMVAE</span>
-</span><span class="hll">   <span class="nt">encoder</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">SVHN_DMVAE</span>
-</span>   <span class="nt">feature_dim</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">32</span><span class="p p-Indicator">,</span><span class="nv">32</span><span class="p p-Indicator">,</span><span class="nv">3</span><span class="p p-Indicator">]</span>
-   <span class="nt">mod_type</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">image</span>
-   <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/svhn</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w"></span>
+<span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">700</span><span class="w"></span>
+<span class="nt">exp_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">poe_exp</span><span class="w"></span>
+<span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/labels.pkl</span><span class="w"></span>
+<span class="nt">loss</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lprob</span><span class="w"></span>
+<span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span><span class="w"></span>
+<span class="hll"><span class="nt">mixing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">poe</span><span class="w"></span>
+</span><span class="nt">n_latents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
+<span class="nt">obj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elbo</span><span class="w"></span>
+<span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adam</span><span class="w"></span>
+<span class="nt">pre_trained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
+<span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
+<span class="nt">viz_freq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
+<span class="nt">test_split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w"></span>
+<span class="nt">modality_1</span><span class="p">:</span><span class="w"></span>
+<span class="hll"><span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MNIST</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MNIST</span><span class="w"></span>
+</span><span class="w">   </span><span class="nt">feature_dim</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">28</span><span class="p p-Indicator">,</span><span class="nv">28</span><span class="p p-Indicator">,</span><span class="nv">1</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
+<span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/mnist</span><span class="w"></span>
+<span class="nt">modality_2</span><span class="p">:</span><span class="w"></span>
+<span class="hll"><span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SVHN</span><span class="w"></span>
+</span><span class="hll"><span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SVHN</span><span class="w"></span>
+</span><span class="w">   </span><span class="nt">feature_dim</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">32</span><span class="p p-Indicator">,</span><span class="nv">32</span><span class="p p-Indicator">,</span><span class="nv">3</span><span class="p p-Indicator">]</span><span class="w"></span>
+<span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
+<span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/svhn</span><span class="w"></span>
 </pre></div>
 </div>
-<p>You can see that we specified “dmvae” as our multimodal mixing model and selected the previously defined encoder and
-decoder networks. After configuring the experiment, we can run the training:</p>
+<p>You can see that we specified “poe” as our multimodal mixing model. After configuring the experiment, we can run the training:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">multimodal</span><span class="o">-</span><span class="n">compare</span>
 <span class="n">python</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">cfg</span> <span class="o">./</span><span class="n">configs</span><span class="o">/</span><span class="n">config</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<p>After training, you can calculate the GeBiD acciracy metrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="nb">eval</span><span class="o">/</span><span class="n">eval_gebid</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">m</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">directory</span> <span class="o">--</span><span class="n">level</span> <span class="mi">4</span>  <span class="c1"># specify the level on which the model was trained</span>
-</pre></div>
-</div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="adddataset.html" class="btn btn-neutral float-right" title="Add a new dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../index.html" class="btn btn-neutral float-left" title="Multimodal VAE Comparison Toolkit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="adddataset.html" class="btn btn-neutral float-right" title="Add a new dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, Gabriela Sejnova.
-
-    </p>
+    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

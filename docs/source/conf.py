@@ -33,6 +33,8 @@ release = '1.0'
 # ones.
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon"
 ]
+autodoc_default_options = {"members": True, "undoc-members": True, "private-members": True}
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

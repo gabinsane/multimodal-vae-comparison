@@ -1,8 +1,10 @@
 .. _trainer:
 
-Trainer class
+MultimodalVAE class
 ===============
 
 
-.. automodule:: multimodal_compare.main
+.. automodule:: multimodal_compare.models.trainer
   :members:
+  :show-inheritance:
+  :private-members:

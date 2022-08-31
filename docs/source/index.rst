@@ -18,6 +18,8 @@ paper (link will be added soon). This dataset offers 5 levels of difficulty (bas
 to find the minimal functioning scenario for each model. Moreover, its rigid structure enables automatic qualitative
 evaluation of the generated samples. For more info, see below.
 
+The toolkit is using the `PyTorch Lightning <https://www.pytorchlightning.ai/>`_ framework.
+
 .. note::
    This page is currently a work in progress
 
@@ -37,11 +39,14 @@ evaluation of the generated samples. For more info, see below.
    :caption: Code documentation
 
    code/trainer
-   code/vae
    code/mmvae_base
    code/mmvae_models
    code/encoders
    code/decoders
+   code/vae
    code/objectives
-   code/eval_gebid
+   code/dataloader
+   code/datasets
    code/infer
+   code/eval_gebid
+   code/config_cls
