@@ -47,13 +47,11 @@ class DataModule(LightningDataModule):
         Makes masks for sequential data
 
         :param batch: data batch
-        :type batch: list
+        :type batch: torch.tensor
         :return: dictionary with data and masks
         :rtype: dict
         """
-        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in batch])))
-        data = list(torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.0))
-        dic = {"data": torch.stack(data), "masks": masks}
+        dic = {"data": batch[:,:,:-1], "masks": batch[:,:,-1].bool()}
         return dic
 
     def prepare_singlemodal(self, batch, mod_index):
