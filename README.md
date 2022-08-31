@@ -139,7 +139,7 @@ Furthermore, to calculate the joint- and cross-generation accuracy, you can run:
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
 export PYTHONPATH=${PWD}
-python eval/eval_gebid.py --m model_dir_name --level 4  # specify the level on which the model was trained
+python eval/eval_gebid.py --model model_dir_name --level 4  # specify the level on which the model was trained
 ```
 
 The trained model is expected to be placed in the results folder. The script will print the statistics in the terminal 
