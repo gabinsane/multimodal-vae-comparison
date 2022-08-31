@@ -50,7 +50,7 @@ class MMVAEExperiment():
                 'No data is specified. You can load the test data with exp.set_data(exp.get_model_train_test_data()[1])')
         return self.data
 
-    def set_model_test_data(self, batch_size=None):
+    def get_model_test_data(self, batch_size=None):
         datamodule = DataModule(self.get_config())
         datamodule.setup()
         if batch_size:
