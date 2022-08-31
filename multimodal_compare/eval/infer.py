@@ -28,7 +28,8 @@ class MMVAEExperiment():
         """
         assert os.path.exists(path), f"{path} does not exist."
 
-        self.base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
+        self.base_path = None
+        self.base_path = self.get_base_path(path)
         assert os.path.isfile(os.path.join(self.base_path,
                                            'config.yml')), f"Directory {path} does not contain a config."
         self.path = path
@@ -79,6 +80,12 @@ class MMVAEExperiment():
             datamodule.batch_size = batch_size
         self.test_loader = datamodule.val_dataloader()
         return self.test_loader
+
+    def get_model_test_data(self):
+        if isinstance(self.test_loader, object):
+            return self.test_loader
+        else:
+            return self.set_model_test_data()
 
     def get_test_data_sample(self):
         data_sample = next(iter(self.test_loader))
@@ -414,6 +421,6 @@ if __name__ == "__main__":
         raise FileNotFoundError('No ckpt file available')
 
     exp = MMVAEExperiment(path=p)
-    data = exp.get_model_test_data()
+    data = exp.set_model_test_data(batch_size=32)
     exp.set_data(data)
     exp.make_evals()
