@@ -77,9 +77,10 @@ class GEBID(BaseDataset):
         data = [" ".join(x) for x in self.get_data_raw()]
         data = [one_hot_encode(len(f), f) for f in data]
         data = [torch.from_numpy(np.asarray(x)) for x in data]
-        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data])))
+        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
         data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
-        return data
+        data_masks = torch.cat((data, masks), dim=-1)
+        return data_masks
 
 
 class MNIST_SVHN(BaseDataset):

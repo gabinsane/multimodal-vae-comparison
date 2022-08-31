@@ -28,8 +28,7 @@ class MMVAEExperiment():
         """
         assert os.path.exists(path), f"{path} does not exist."
 
-        self.base_path = None
-        self.base_path = self.get_base_path(path)
+        self.base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
         assert os.path.isfile(os.path.join(self.base_path,
                                            'config.yml')), f"Directory {path} does not contain a config."
         self.path = path
@@ -73,11 +72,17 @@ class MMVAEExperiment():
                 'No data is specified. You can load the test data with exp.set_data(exp.get_model_train_test_data()[1])')
         return self.data
 
-    def get_model_test_data(self):
+    def set_model_test_data(self, batch_size=None):
         datamodule = DataModule(self.get_config())
         datamodule.setup()
+        if batch_size:
+            datamodule.batch_size = batch_size
         self.test_loader = datamodule.val_dataloader()
         return self.test_loader
+
+    def get_test_data_sample(self):
+        data_sample = next(iter(self.test_loader))
+        return data_sample
 
     def get_model(self):
         if self.model is not None:
