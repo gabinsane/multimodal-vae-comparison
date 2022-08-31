@@ -12,6 +12,7 @@ pre_trained: null
 seed: 2
 viz_freq: 10
 test_split: 0.1
+dataset_name: cub
 modality_1:
   decoder: CNN
   encoder: CNN

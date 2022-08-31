@@ -1,7 +1,6 @@
 batch_size: 32
 epochs: 600
 exp_name: mnistsvhn
-dataset_name: mnist_svhn
 labels: ./data/mnist_svhn/labels.pkl
 loss: bce
 lr: 1e-3
@@ -13,6 +12,7 @@ pre_trained: null
 seed: 2
 viz_freq: 10
 test_split: 0.1
+dataset_name: mnist_svhn
 modality_1:
   decoder: MNIST
   encoder: MNIST

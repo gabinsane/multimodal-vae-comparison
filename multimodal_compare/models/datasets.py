@@ -83,6 +83,30 @@ class GEBID(BaseDataset):
         return data_masks
 
 
+class CUB(BaseDataset):
+    def __init__(self, pth, mod_type):
+        super().__init__(pth, mod_type)
+        self.mod_type = mod_type
+        self.path = pth
+
+    def _mod_specific_fns(self):
+        return {"image": self._process_images, "text": self._process_text}
+
+    def _process_images(self):
+        data = [torch.from_numpy(np.asarray(x.reshape(3, 64,64)).astype(np.float)) for x in self.get_data_raw()]
+        return torch.stack(data)
+
+    def _process_text(self):
+        self.has_masks = True
+        self.categorical = True
+        data = [" ".join(x) for x in self.get_data_raw()]
+        data = [one_hot_encode(len(f), f) for f in data]
+        data = [torch.from_numpy(np.asarray(x)) for x in data]
+        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
+        data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
+        data_masks = torch.cat((data, masks), dim=-1)
+        return data_masks
+
 class MNIST_SVHN(BaseDataset):
     def __init__(self, pth, mod_type):
         super().__init__(pth, mod_type)
