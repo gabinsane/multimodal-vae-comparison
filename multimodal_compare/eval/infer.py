@@ -1,24 +1,17 @@
-import csv
+import argparse
 import glob
-import json
 from abc import ABC, abstractmethod
-
-import yaml
-from glob import glob
-
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 import torch
-from models.trainer import ModelLoader
-from models.config import Config
-import models
 import pickle
-from models import objectives
+from models.trainer import MultimodalVAE
+from models.config_cls import Config
 from models.mmvae_base import TorchMMVAE
-from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data
+from utils import unpack_data, one_hot_encode, output_onehot2text, pad_seq_data, get_root_folder
 from models.dataloader import DataModule
 
 
@@ -30,23 +23,46 @@ class MMVAEExperiment():
     def __init__(self, path):
         """
         Initialize MMVAEExperiment class
-
         :param path: path to the model checkpoint .ckpt file
         :type path: str
         """
         assert os.path.exists(path), f"{path} does not exist."
-        assert os.path.isfile(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))),
+
+        self.base_path = None
+        self.base_path = self.get_base_path(path)
+        assert os.path.isfile(os.path.join(self.base_path,
                                            'config.yml')), f"Directory {path} does not contain a config."
-        self.base_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(path)))))
         self.path = path
         self.config = None
         self.mods = None
-        self.model = None
         self.data = None
         self.test_loader = None
+        self.model = self.load_model_ckpt()
 
-    def get_base_path(self):
-        return self.base_path
+    def get_base_path(self, path_within_exp_folder=None):
+        if self.base_path is not None:
+            return self.base_path
+        else:
+            if not os.path.exists(path_within_exp_folder):
+                raise ValueError(f"Path is not valid: {path_within_exp_folder}")
+            base_path = None
+            if os.path.isdir(path_within_exp_folder):
+                base_path = path_within_exp_folder
+            else:
+                base_path = os.path.dirname(path_within_exp_folder)
+
+            # base path should contain a file config.yml and be under the results folder
+            while 'results' in base_path:
+                if os.path.exists(os.path.join(base_path, 'config.yml')):
+                    self.base_path = base_path
+                    break
+                else:
+                    base_path = os.path.dirname(base_path)
+
+            if self.base_path is None:
+                raise ValueError(f"{path_within_exp_folder} is not within an exp folder")
+            return self.base_path
+
 
     def set_data(self, dataloader):
         self.data = dataloader
@@ -57,31 +73,50 @@ class MMVAEExperiment():
                 'No data is specified. You can load the test data with exp.set_data(exp.get_model_train_test_data()[1])')
         return self.data
 
-    def get_model_test_data(self):
+    def get_test_data_bs(self, batch_size=None):
         datamodule = DataModule(self.get_config())
         datamodule.setup()
+        if batch_size:
+            datamodule.batch_size = batch_size
         self.test_loader = datamodule.val_dataloader()
         return self.test_loader
 
-    def get_model(self):
-        """
-            Loads the model from the experiment directory
+    def get_test_data(self):
+        if isinstance(self.test_loader, object):
+            return self.test_loader
+        else:
+            return self.get_test_data_bs()
 
-            :return: model object
-            :rtype: object
-            """
+    def get_test_data_sample(self):
+        data_sample = next(iter(self.test_loader))
+        return data_sample
+
+    def get_model(self):
         if self.model is not None:
             return self.model
-        loader = ModelLoader()
-        model = loader.load_model(self.config, self.path)
-        model.eval()
-        self.model = model
-        return model
+        self.model = self.load_model_ckpt()
+        return self.model
+
+    def load_model_ckpt(self):
+        """
+        Loads a model from checkpoint
+
+        :param pth: path to checkpoint directory
+        :type pth: str
+        :return: returns model object
+        :rtype: MMVAE/VAE
+        """
+        config = self.get_config()
+        model = MultimodalVAE(config)
+        model_loaded = model.load_from_checkpoint(self.path, cfg=config)
+        model_loaded.eval()
+        self.model = model_loaded
+        self.model.config.mPath = self.base_path
+        return self.model
 
     def get_config(self):
         """
         Parses the YAML config provided in the file path
-
         :param pth: Path to config
         :type pth: str
         :return: returns the config dict
@@ -89,8 +124,8 @@ class MMVAEExperiment():
         """
         if self.config is not None:
             return self.config
-        pth = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(self.path)))), 'config.yml')
-        self.config = Config(pth)
+        pth = os.path.join(self.get_base_path(), 'config.yml')
+        self.config = Config(pth, eval_only=True)
         return self.config
 
     def make_evals(self):
@@ -101,7 +136,6 @@ class MMVAEExperiment():
     def eval_sample(self):
         """
         Generates random samples from the learned posterior and saves them in the model directory
-
         :param path: path to the model
         :type path: str
         """
@@ -110,9 +144,9 @@ class MMVAEExperiment():
         N = 36
         samples = [s.cpu() for s in model.generate_samples(N)]
 
-        with open(os.path.join(path, "visuals/latent_samples.pkl"), 'wb') as handle:
+        with open(os.path.join(self.path, "visuals/latent_samples.pkl"), 'wb') as handle:
             pickle.dump(np.asarray(samples), handle)
-        print("Saved samples for {}".format(path))
+        print("Saved samples for {}".format(self.path))
 
     def get_device(self):
         return 'cuda'
@@ -120,7 +154,6 @@ class MMVAEExperiment():
     def get_traversal_samples(self, latent_dim=None, n_samples_per_dim=1):
         """
         Generates random sample traversals across the whole latent space.
-
         :param latent_dim: dimensionality of the latent space
         :type latent_dim: int
         :param n_samples_per_dim: how many samples to make per dimension (they will be equally distributed)
@@ -144,7 +177,6 @@ class MMVAEExperiment():
     def image_to_text(self, imgs):
         """
         Reconstructs image from the text input using the provided model
-
         :param imgs: list of images to reconstruct
         :type imgs: list
         :param model: model object
@@ -170,7 +202,6 @@ class MMVAEExperiment():
     def text_to_image(self, text):
         """
         Reconstructs text from the image input using the provided model
-
         :param text: list of strings to reconstruct
         :type text: list
         :param model: model object
@@ -232,7 +263,6 @@ class EstimateLogMarginal(Evaluations):
     def evaluation(self, exp: MMVAEExperiment):
         """
         Estimate of the log-marginal likelihood of test data.
-
         :param exp: Experiment object that specifies model, data, config, device etc.
         :type exp: MMVAEExperiment
         :return: marginal log-likelihood
@@ -244,12 +274,13 @@ class EstimateLogMarginal(Evaluations):
         objective = model.objective
         with torch.no_grad():
             for dataTs in test_data:
-                for mod, dataT in dataTs.items():
-                    data, masks = dataT['data'], dataT['masks']
-                    xo = [o[0].clone().detach() for o in data[1][0]]
-                    data = pad_seq_data(data, masks)
-                    marginal_loglik += objective(model, data, ltype="lprob")[0]
+                # for mod, dataT in dataTs.items():
+                #     data, masks = dataT['data'], dataT['masks']
+                #     xo = [o[0].clone().detach() for o in data[1][0]]
+                #     data = pad_seq_data(data, masks)
+                marginal_loglik += objective(model.model, dataTs, ltype="lprob")[0]
         marginal_loglik /= len(test_data.dataset)
+        print(f'The marginal loglikelihood is: {marginal_loglik}')
         return marginal_loglik
 
     @classmethod
@@ -257,44 +288,11 @@ class EstimateLogMarginal(Evaluations):
         return True
 
 
-# class GeBiDCrossGeneration(Evaluations):
-#     @classmethod
-#     def evaluation(self, exp:MMVAEExperiment):
-#         self.model = exp.get_model()
-#         self.path = exp.path
-#
-#     def text_to_image(self, text):
-#         """
-#         Reconstructs text from the image input using the provided model
-#
-#         :param text: list of strings to reconstruct
-#         :type text: list
-#         :param model: model object
-#         :type model: object
-#         :param path: where to save the outputs
-#         :type path: str
-#         :return: returns reconstructed images and also texts
-#         :rtype: tuple(list, list)
-#         """
-#         img_outputs, txtoutputs = [], []
-#         for i, w in enumerate(text):
-#             txt_inp = one_hot_encode(len(w), w.lower())
-#             self.model.eval()
-#             recons = self.model.forward([None, [txt_inp.unsqueeze(0), None]])[1]
-#             if self.model.modelName == 'moe':
-#                 recons = recons[0]
-#             image, recon_text = _process_recons(recons)
-#             txtoutputs.append(recon_text[0][0])
-#             img_outputs.append(image * 255)
-#             image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
-#             cv2.imwrite(os.path.join(self.path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)], i)), image)
-#         return img_outputs, txtoutputs
-
 class EvalReconstruct(Evaluations):
+    @classmethod
     def evaluation(cls, exp: MMVAEExperiment):
         """
         Makes reconstructions from the testloader for the given model and dumps them into pickle
-
         :param path: path to the model directory
         :type path: str
         :param testloader: Testloader (torch.utils.data.DataLoader)
@@ -305,18 +303,21 @@ class EvalReconstruct(Evaluations):
         device = torch.device("cuda")
         recons = []
         for i, data in enumerate(testloader):
-            d = unpack_data(data[0], device=device)
-            recon = model.reconstruct_data(d)
-            recons.append(np.asarray(d[0].detach().cpu()))
-            recons.append(np.asarray(recon[0].detach().cpu())[0])
-            if i == 10:
+            #d = unpack_data(data['mod_1'], device=device)
+            #recon = model.reconstruct_data(d)
+            recon = model.model.forward(data)
+            recons.append([np.asarray(data[mod]['data'].detach().cpu()) for mod in data.keys()])
+            recons.append([recon[mod].decoder_dists for mod in data.keys()])
+            # recons.append(np.asarray(recon[0].detach().cpu())[0])
+            if i == 2:
                 break
         config = exp.get_config()
-        path = exp.get_base_dir()
+        path = exp.get_base_path()
         with open(os.path.join(path, "visuals/reconstructions.pkl"), 'wb') as handle:
             pickle.dump(recons, handle)
         print("Saved reconstructions for {}".format(path))
 
+    @classmethod
     def isApplicable(cls, exp):
         return True
 
@@ -324,7 +325,6 @@ class EvalReconstruct(Evaluations):
 def _plot_setup(xname, yname, pth, figname):
     """
     General plot set up functions
-
     :param xname: Name of x axis
     :type xname: str
     :param yname: Name of y axis
@@ -344,7 +344,6 @@ def _plot_setup(xname, yname, pth, figname):
 def compare_loss(exps, label_tag):
     """
     Compares losses for several models in one plot.
-
     :param exps: list of experiment objects
     :type exps: list[MMVAEExperiment]
     :param label_tag: list of strings to label the models in the legend
@@ -370,7 +369,6 @@ def compare_loss(exps, label_tag):
 def _process_recons(recons):
     """
     Processes the reconstructions from the model so that they can be visualized
-
     :param recons: list of the model outputs
     :type recons: list
     :return: image and text
@@ -388,7 +386,6 @@ def _process_recons(recons):
 def _listdirs(rootdir):
     """
     Lists all subdirectories within a directory
-
     :param rootdir: root directory path
     :type rootdir: str
     :return: list of subdirectories
@@ -403,18 +400,28 @@ def _listdirs(rootdir):
 
 
 if __name__ == "__main__":
-    p = "../results/test"
-    p = '../results/test/lightning_logs/version_1/checkpoints/epoch=1-step=564.ckpt'
-    exp = MMVAEExperiment(path=p)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--exp", type=str, help="name of the experiment directory")
+    args = parser.parse_args()
+    if args.exp:
+        model = args.exp
+    else:
+        model = 'test'
 
-    # model = exp.get_model()
-    data = exp.get_model_test_data()
+    # get all checkpoints in the folder and select the latest one
+    p1 = os.path.join(get_root_folder(), f"results/{model}/lightning_logs/version_*/checkpoints/*.ckpt")
+    p2 = os.path.join(get_root_folder(), f"results/{model}/*.ckpt")
+
+    patterns = (p1, p2)
+    files_grabbed = []
+    for pattern in patterns:
+        files_grabbed.extend(glob.glob(pattern))
+    if len(files_grabbed) > 0:
+        p = max(files_grabbed, key=os.path.getctime)
+    else:
+        raise FileNotFoundError('No ckpt file available')
+
+    exp = MMVAEExperiment(path=p)
+    data = exp.get_test_data_bs(32)
     exp.set_data(data)
     exp.make_evals()
-
-    # model = load_model(p)
-    # t = ["pieslice", "circle", "spiral", "line", "square", "semicircle", "pieslice", "circle", "spiral", "line",
-    #      "square", "semicircle", "pieslice", "circle", "spiral", "line", "square", "semicircle"]
-    # text_to_image(t, model, p)
-
-    print('still here')

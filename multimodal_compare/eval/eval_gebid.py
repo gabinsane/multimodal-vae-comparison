@@ -10,9 +10,8 @@ import numpy as np
 import pickle
 import torch
 
-from main import Trainer
 from utils import output_onehot2text
-from .infer import load_model, text_to_image, get_traversal_samples, image_to_text
+from eval.infer import MMVAEExperiment
 
 shapetemplates = glob.glob('./eval/templates/*.png')
 colors = {"yellow": [255, 255, 0], "red": [255, 0, 0], "green": [0, 255, 0], "blue": [0, 0, 255],
@@ -511,18 +510,18 @@ def prepare_labels(labels):
     :return: labels for T-SNE
     :rtype: list
     """
-    l = output_onehot2text(torch.stack(labels[0]))
+    l = output_onehot2text(labels["data"])
     labels_cropped = []
     for v_i, v in enumerate(l[0]):
-        o = [s for n, s in enumerate(v) if labels[1][v_i][n]]
+        o = [s for n, s in enumerate(v) if labels["masks"][v_i][n]]
         labels_cropped.append("".join(o))
     labels_sep = []
-    for i in range(difflevel):
-        if difflevel == 1:
+    for i in range(args.level):
+        if args.level == 1:
             ls = labels_cropped
-        elif difflevel in [2, 3]:
+        elif args.level in [2, 3]:
             ls = [x.split(" ")[i] for x in labels_cropped]
-        elif difflevel == 4:
+        elif args.level == 4:
             if i < 3:
                 ls = [x.split(" ")[i] for x in labels_cropped]
             else:
@@ -538,18 +537,19 @@ def prepare_labels(labels):
     return labels_sep
 
 
-def labelled_tsne(model):
+def labelled_tsne(model_exp):
     """
     Plots the T-SNE visualizations with the GeBiD text labels (one T-SNE per each feature)
 
     :param model: multimodal VAE
     :type model: object
     """
-    testset, testset_len = trainer.prepare_testset(num_samples=250)
-    labels = prepare_labels(testset[1])
+    model_exp.get_test_data_bs(batch_size=250)
+    testset = model_exp.get_test_data_sample()
+    labels = prepare_labels(testset["mod_2"])
     for i, label in enumerate(labels):
-        model.analyse(testset, m, "eval_model_{}_{}".format(i, 1), label)
-    print("Saved labelled T-SNEs in {}".format(os.path.join(trainer.mPath, "visuals")))
+        model_exp.model.analyse_data(testset, label, path_label="eval_{}".format(i))
+    print("Saved labelled T-SNEs in {}".format(os.path.join(model_exp.get_base_path(), "visuals")))
 
 
 def listdirs(rootdir):
@@ -573,53 +573,79 @@ def last_letter(word):
     return word[::-1]
 
 
+def eval_all(model_exp):
+    labelled_tsne(model_exp)
+    output_cross = calculate_cross_coherency(model_exp)
+    output_joint = calculate_joint_coherency(model_exp)
+    return output_cross, output_joint
+
+def print_save_stats(stats_dict, path):
+    with open(os.path.join(path,'gebid_stats.txt'), 'w') as f:
+        for key, value_dict in stats_dict.items():
+            if value_dict["stdev"]:
+                stat = "{}: {:.2f} ({:. 2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
+            else:
+                stat = "{}: {:.2f}".format(key, round(value_dict["value"], 2))
+            print(stat)
+            f.write(stat)
+            f.write('\n')
+
+
+def eval_single_model(dir):
+    pth = os.path.join(dir, "last.ckpt")
+    m_exp = MMVAEExperiment(path=pth)
+    m_exp.model.to(torch.device("cuda"))
+    output_cross, output_joint = eval_all(m_exp)
+    output_dict = {"Text-Image Strict":{"value":output_cross["text_image"][0], "stdev":None},
+                   "Text-Image Features":{"value":output_cross["text_image"][1], "stdev":None},
+                   "Image-Text Strict":{"value":output_cross["image_text"][0], "stdev":None},
+                   "Image-Text Features":{"value":output_cross["image_text"][1], "stdev":None},
+                   "Image-Text Letters":{"value":output_cross["image_text"][2], "stdev":None},
+                   "Joint Strict":{"value":output_joint["joint"][0], "stdev":None},
+                   "Joint Featres":{"value":output_joint["joint"][1], "stdev":None}}
+    print_save_stats(output_dict, dir)
+
+
+
+def eval_over_seeds(parent_dir):
+    all_models = listdirs(parent_dir)
+    all_models = sorted(all_models, key=last_letter)
+    text_image = [[], []]
+    image_text = [[], [], []]
+    joint = [[], []]
+    for m in all_models:
+        pth = os.path.join(m, "last.ckpt")
+        m_exp = MMVAEExperiment(path=pth)
+        m_exp.model.to(torch.device("cuda"))
+        output_cross, output_joint = eval_all(m_exp)
+        for i, x in enumerate(output_cross["text_image"]):
+              text_image[i].append(x)
+        for i, x in enumerate(output_cross["image_text"]):
+                 image_text[i].append(x)
+        for i, x in enumerate(output_joint["joint"]):
+                 joint[i].append(x)
+    output_dict = {"Text-Image Strict":{"value":stat.mean(text_image[0]), "stdev":stat.stdev(text_image[0])},
+                   "Text-Image Features":{"value":stat.mean(text_image[1]), "stdev":stat.stdev(text_image[1])},
+                   "Image-Text Strict":{"value":stat.mean(image_text[0]), "stdev":stat.stdev(image_text[0])},
+                   "Image-Text Features":{"value":stat.mean(image_text[1]), "stdev":stat.stdev(image_text[1])},
+                   "Image-Text Letters":{"value":stat.mean(image_text[2]), "stdev":stat.stdev(image_text[2])},
+                   "Joint Strict":{"value":stat.mean(joint[0]), "stdev":stat.stdev(joint[0])},
+                   "Joint Featres":{"value":stat.mean(joint[1]), "stdev":stat.stdev(joint[1])}}
+    print_save_stats(output_dict, parent_dir)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--model", type=str, help="path to the model directory")
-    parser.add_argument("-l", "--level", type=int, help="difficulty level: 1-5")
+    parser.add_argument("-multi", "--model_multi", type=str, help="path to a directory containing multiple trained models. will eval all and produce mean statistics" )
+    parser.add_argument("-l", "--level", type=int, help="difficulty level: 1-5", required=True)
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_args()
-    with torch.no_grad():
-        for ll in ["1", "2", "3", "4", "5"]:
-            difflevel = int(ll)
-            print("LEVEL {}".format(ll))
-            for dim in ["32", "64", "128"]:
-                print("DIM {}".format(dim))
-                for name in ["poe", "moe"]:
-                    print("MODEL {}".format(name))
-                    all_models = listdirs(
-                        "/home/gabi/multimodal-vae-comparison/multimodal_compare/results/results_alllevels/{}/{}/{}".format(
-                            ll, dim, name))
-                    all_models = sorted(all_models, key=last_letter)
-                    text_image = [[], []]
-                    image_text = [[], [], []]
-                    joint = [[], []]
-                    for m in all_models:
-                        model = load_model(m)
-                        model, config = load_model(m, modelname="model.rar")
-                        trainer = Trainer(config, dev)
-                        labelled_tsne(model)
-                    #     output = calculate_cross_coherency(model)
-                    #     #print(output)
-                    #     for i, x in enumerate(output["text_image"]):
-                    #         text_image[i].append(x)
-                    #     for i, x in enumerate(output["image_text"]):
-                    #         image_text[i].append(x)
-                    #     output = calculate_joint_coherency(model)
-                    #     #print(output)
-                    #     for i, x in enumerate(output["joint"]):
-                    #          joint[i].append(x)
-                    # print("Text-Image Whole")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(text_image[0]),2), round(stat.stdev(text_image[0]),2)))
-                    # print("Text-Image Features")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(text_image[1]),2), round(stat.stdev(text_image[1]),2)))
-                    # print("Image-Text Whole")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(image_text[0]),2), round(stat.stdev(image_text[0]),2)))
-                    # print("Image-Text Features")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(image_text[1]),2), round(stat.stdev(image_text[1]),2)))
-                    # print("Image-Text Letters")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(image_text[2]),2), round(stat.stdev(image_text[2]),2)))
-                    # print("Joint Whole")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(joint[0]),2), round(stat.stdev(joint[0]),2)))
-                    # print("Joint Features")
-                    # print("{:.2f} ({:.2f})".format(round(stat.mean(joint[1]),2), round(stat.stdev(joint[1]),2)))
+    assert args.model or args.model_multi, "Provide either path to a single model directory or a parent directory " \
+                                           "containing multiple models"
+    if args.model:
+        assert os.path.exists(args.model) and os.path.isdir(args.model)
+        eval_single_model(args.model)
+    elif args.model_multi:
+        assert os.path.exists(args.model_multi) and os.path.isdir(args.model_multi)
+        eval_over_seeds(args.model_multi)

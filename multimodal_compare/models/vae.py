@@ -31,7 +31,22 @@ class DencoderFactory(object):
 
 
 class BaseVae(nn.Module):
+    """
+    Base VAE class for all implementations.
+    """
     def __init__(self, enc, dec, prior_dist=dist.Normal, likelihood_dist=dist.Normal, post_dist=dist.Normal):
+        """
+        :param enc: encoder class instance
+        :type enc: VaeEncoder
+        :param dec: decoder class instance
+        :type dec: VaeDecoder
+        :param prior_dist: prior distribution
+        :type prior_dist: torch.distributions
+        :param likelihood_dist: likelihood distribution
+        :type likelihood_dist: torch.distributions
+        :param post_dist: posterior distribution
+        :type post_dist: torch.distributions
+        """
         super().__init__()
         assert isinstance(enc, VaeEncoder) and isinstance(dec, VaeDecoder)
         self.device = None
@@ -44,9 +59,25 @@ class BaseVae(nn.Module):
         self.qz_x = post_dist
 
     def encode(self, inp):
+        """
+        Encodes the inputs
+
+        :param inp: Inputs dictionary
+        :type inp: dict
+        :return: encoded distribution parameters (means and logvars)
+        :rtype: tuple
+        """
         return self.enc(inp)
 
     def decode(self, inp):
+        """
+        Decodes the latent samples
+
+        :param inp: Samples dictionary
+        :type inp: dict
+        :return: decoded distribution parameters (means and logvars)
+        :rtype: tuple
+        """
         return self.dec(inp)
 
     def forward(self, x, K=1):

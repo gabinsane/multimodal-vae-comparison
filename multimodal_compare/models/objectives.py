@@ -164,7 +164,7 @@ def multimodal_elbo_moe(model, x, ltype="lprob"):
         px_zs[ind][pos]  = output_dict[mod].decoder_dists[1]
     lpx_zs, klds = [], []
     for r, qz_x in enumerate(qz_xs):
-        kld = kl_divergence(qz_x, model.pz(*model.vaes["mod_{}".format(r+1)]._pz_params))
+        kld = kl_divergence(qz_x, model.pz(*model.vaes["mod_{}".format(r+1)]._pz_params.cuda()))
         klds.append(kld.sum(-1))
         for d in range(len(px_zs)):
             lpx_z = loss_fn(px_zs[d][d], x["mod_{}".format(d+1)]["data"], ltype=ltype, categorical= x["mod_{}".format(d+1)]["categorical"]).view(*px_zs[d][d].batch_shape[:1], -1)
