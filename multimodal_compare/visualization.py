@@ -20,7 +20,7 @@ def custom_cmap(n):
     return cmap, cmap_array
 
 
-def t_sne(data, path, labels):
+def t_sne(data, path, labels, K=1):
     tsne = TSNE(n_components=2, verbose=0, random_state=123)
     z = tsne.fit_transform(np.concatenate([x.detach().cpu().numpy() for x in data]))
     df = pd.DataFrame()
@@ -37,12 +37,13 @@ def t_sne(data, path, labels):
                 l = ["Class {} Mod {}".format(str(i), ind +1) for i in list(labels)]
             else:
                 l = ["Class {}".format(str(i)) for i in list(labels)]
+            data_labels.append([val for val in l for _ in range(K)])
     if data_labels:
         labels = np.concatenate(data_labels)
     df["y"] = labels
     ax = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = palette, data = df)
     ax.set(title="T-SNE projection")
-    cols = len(data) if labels else 1
+    cols = len(data) if labels is not None else 1
     sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=cols)
     plt.savefig(path, bbox_inches='tight')
     plt.clf()
