@@ -611,7 +611,7 @@ def eval_single_model(pth):
                    "Image-Text Features":{"value":output_cross["image_text"][1], "stdev":None},
                    "Image-Text Letters":{"value":output_cross["image_text"][2], "stdev":None},
                    "Joint Strict":{"value":output_joint["joint"][0], "stdev":None},
-                   "Joint Featres":{"value":output_joint["joint"][1], "stdev":None}}
+                   "Joint Features":{"value":output_joint["joint"][1], "stdev":None}}
     print_save_stats(output_dict, pth)
 
 
