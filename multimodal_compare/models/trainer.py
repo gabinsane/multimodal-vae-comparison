@@ -71,9 +71,6 @@ class MultimodalVAE(pl.LightningModule):
             self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
         return self.model
 
-        assert isinstance(self.model, TorchMMVAE)
-        return self.model
-
     def training_step(self, train_batch, batch_idx):
         """
         Iterates over the train loader
@@ -95,7 +92,7 @@ class MultimodalVAE(pl.LightningModule):
         for i, p_l in enumerate(partial_l):
             self.log("Mod_{}_ValLoss".format(i), p_l, batch_size=self.config.batch_size)
         if self.trainer.is_last_batch and (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
-            self.visualize_latents()
+            self.analyse_data()
         return loss
 
     def analyse_data(self, data=None, labels=None):
