@@ -39,7 +39,7 @@ dependencies:
   - pyyaml
   - pytest
   - pip:
-#    - adabelief-pytorch
+    - adabelief-pytorch
     - colorthief
     - opencv-python
     - pixyz
