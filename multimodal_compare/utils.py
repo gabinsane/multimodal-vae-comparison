@@ -6,9 +6,27 @@ import glob, imageio
 import numpy as np
 import torch
 import pickle
+from visualization import t_sne, tensors_to_df
+from itertools import combinations
 
 def get_root_folder():
     return os.path.dirname(__file__)
+
+def make_kl_df(qz_xs, pz):
+    if isinstance(qz_xs, list):
+        kls_df = tensors_to_df(
+            [*[kl_divergence(qz_x, pz).cpu().numpy() for qz_x in qz_xs],
+             *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p)).cpu().numpy()
+               for p, q in combinations(qz_xs, 2)]],
+            head='KL',
+            keys=[*[r'KL$(q(z|x_{})\,||\,p(z))$'.format(i) for i in range(len(qz_xs))],
+                  *[r'J$(q(z|x_{})\,||\,q(z|x_{}))$'.format(i, j)
+                    for i, j in combinations(range(len(qz_xs)), 2)]],
+            ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
+    else:
+        kls_df = tensors_to_df([kl_divergence(qz_xs, pz).cpu().numpy()], head='KL',
+                               keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
+    return kls_df
 
 
 def get_path_type(path):
