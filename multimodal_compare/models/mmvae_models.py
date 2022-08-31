@@ -8,6 +8,7 @@ from utils import combinatorial, Constants
 from torch.autograd import Variable
 from models.NetworkTypes import VaeOutput
 
+
 class MOE(TorchMMVAE):
     def __init__(self, vaes, model_config=None):
         """
@@ -63,7 +64,7 @@ class MOE(TorchMMVAE):
         for modality, qz_x in qz_xs.items():
             qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
             z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
-            zs[modality] = {"latents":z, "masks":None}
+            zs[modality] = {"latents": z, "masks": None}
         # decode the samples
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
@@ -79,7 +80,7 @@ class MOE(TorchMMVAE):
         output_dict = {}
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
-                                                latent_samples=zs[modality])
+                                              latent_samples=zs[modality])
         return output_dict
 
     def reconstruct(self, data, runPath, epoch, N=8):
@@ -157,10 +158,10 @@ class POE(TorchMMVAE):
         qz_d["joint"] = qz_x
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
-                                                latent_samples=z_d["joint"])
+                                              latent_samples=z_d["joint"])
         return output_dict
 
-    def infer(self,x, K=1):
+    def infer(self, x, K=1):
         """
         Inference module, calculates the joint posterior
         :param inputs: input data, a dict of modalities where missing modalities are replaced with None
@@ -265,13 +266,13 @@ class MoPOE(TorchMMVAE):
         qz_d["joint"] = qz_x
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
-                                                latent_samples=z_d["joint"])
+                                              latent_samples=z_d["joint"])
         return output_dict
 
     def infer(self, x, num_samples=None):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
         for m, vae in enumerate(self.vaes):
-            tag = "mod_{}".format(m+1)
+            tag = "mod_{}".format(m + 1)
             if x[tag]["data"] is not None:
                 mod_mu, mod_logvar = vae.enc(x[tag])
                 mu[m] = mod_mu.unsqueeze(0)
@@ -334,7 +335,8 @@ class MoPOE(TorchMMVAE):
     def poe_fusion(self, mus, logvars):
         if mus.shape[0] == len(self.vaes):
             mus = torch.cat((mus.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()), dim=0)
-            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()), dim=0)
+            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()),
+                                dim=0)
         mu_poe, logvar_poe = self.product_of_experts(mus, logvars)
         if len(mu_poe.shape) < 3:
             mu_poe = mu_poe.unsqueeze(0)
@@ -374,7 +376,6 @@ class DMVAE(TorchMMVAE):
         self.pz = dist.Normal
         self.qz_x = dist.Normal
 
-
     def pz_params(self):
         """
         :return: returns parameters of the prior distribution
@@ -392,7 +393,7 @@ class DMVAE(TorchMMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        qz_xs_shared, px_zs= [], [[None for _ in range(len(self.vaes)+1)] for _ in range(len(self.vaes))]
+        qz_xs_shared, px_zs = [], [[None for _ in range(len(self.vaes) + 1)] for _ in range(len(self.vaes))]
         qz_xs_private = [None for _ in range(len(self.vaes))]
         # initialise cross-modal matrix
         for m, vae in enumerate(self.vaes):
@@ -406,13 +407,12 @@ class DMVAE(TorchMMVAE):
         zss = []
         for d, vae in enumerate(self.vaes):
             for e, dist in enumerate(all_shared):
-                    zs_shared = dist.rsample(torch.Size([K]))
-                    zs_private = qz_xs_private[d].rsample(torch.Size([K]))
-                    zs = torch.cat([zs_private, zs_shared], -1)[0]
-                    zss.append(zs)
-                    px_zs[d][e] = vae.px_z(*vae.dec({"latents": zs, "masks": None}))
+                zs_shared = dist.rsample(torch.Size([K]))
+                zs_private = qz_xs_private[d].rsample(torch.Size([K]))
+                zs = torch.cat([zs_private, zs_shared], -1)[0]
+                zss.append(zs)
+                px_zs[d][e] = vae.px_z(*vae.dec({"latents": zs, "masks": None}))
         return qz_xs_private + all_shared, px_zs, zss
-
 
     def apply_poe(self, qz_xs_shared):
         """
@@ -432,7 +432,6 @@ class DMVAE(TorchMMVAE):
             muS += dist.loc / (dist.scale ** 2 + Constants.eps)
         muS = muS * (stdS ** 2)
         return muS, stdS
-
 
     def logsumexp(self, x, dim=None, keepdim=False):
         """
