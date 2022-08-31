@@ -73,7 +73,7 @@ class MMVAEExperiment():
                 'No data is specified. You can load the test data with exp.set_data(exp.get_model_train_test_data()[1])')
         return self.data
 
-    def get_model_test_data(self, batch_size=None):
+    def get_test_data_bs(self, batch_size=None):
         datamodule = DataModule(self.get_config())
         datamodule.setup()
         if batch_size:
@@ -81,11 +81,11 @@ class MMVAEExperiment():
         self.test_loader = datamodule.val_dataloader()
         return self.test_loader
 
-    def get_model_test_data(self):
+    def get_test_data(self):
         if isinstance(self.test_loader, object):
             return self.test_loader
         else:
-            return self.set_model_test_data()
+            return self.get_test_data_bs()
 
     def get_test_data_sample(self):
         data_sample = next(iter(self.test_loader))
@@ -111,6 +111,7 @@ class MMVAEExperiment():
         model_loaded = model.load_from_checkpoint(self.path, cfg=config)
         model_loaded.eval()
         self.model = model_loaded
+        self.model.config.mPath = self.base_path
         return self.model
 
     def get_config(self):
@@ -421,6 +422,6 @@ if __name__ == "__main__":
         raise FileNotFoundError('No ckpt file available')
 
     exp = MMVAEExperiment(path=p)
-    data = exp.set_model_test_data(batch_size=32)
+    data = exp.get_test_data_bs(32)
     exp.set_data(data)
     exp.make_evals()
