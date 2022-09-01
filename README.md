@@ -354,8 +354,7 @@ use only the part of the class name following after the underscore (e.g. CNN for
 
 ## Unit tests
 
-We provide a set of unit tests to check whether any newly-added implementations meet the requirements and did not disrupt
-any of the existing functions. To verify that everything is implemented correctly, run:
+We provide a set of unit tests to check whether any newly-added implementations disrupt any of the existing functions. To run the unit test proceed as follows:
 
 ```
 cd ~/multimodal-vae-comparison/
