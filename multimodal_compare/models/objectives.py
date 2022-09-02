@@ -275,6 +275,8 @@ def iwae(model, x,  ltype="lprob", beta=1, K=20):
     lw = lpz + lpx_z.sum(-1).mean(-1) - lqz_x
     return -log_mean_exp(lw).sum(), torch.zeros(1), [torch.zeros(1)]
 
+def multimodal_elbo_poe2(model, x,  ltype="lprob"):
+    return multimodal_elbo_poe(model, x, ltype=ltype)
 
 def multimodal_iwae_moe(model, x, K=1, ltype="lprob"):
     """IWAE estimate for log p_\theta(x) for multi-modal vae -- fully vectorised  Source: https://github.com/iffsid/mmvae
