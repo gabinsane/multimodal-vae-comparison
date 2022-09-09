@@ -2,7 +2,6 @@
 import argparse
 import glob
 import imageio
-import os
 import statistics as stat
 
 import cv2
@@ -584,7 +583,7 @@ def last_letter(word):
 
 
 def eval_all(model_exp):
-    #labelled_tsne(model_exp)
+    labelled_tsne(model_exp)
     output_cross = calculate_cross_coherency(model_exp)
     output_joint = calculate_joint_coherency(model_exp)
     return output_cross, output_joint
