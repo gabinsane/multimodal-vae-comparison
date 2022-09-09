@@ -21,7 +21,7 @@ def custom_cmap(n):
 
 
 def t_sne(data, path, labels, K=1):
-    tsne = TSNE(n_components=2, verbose=0, random_state=123)
+    tsne = TSNE(n_components=2, verbose=0, random_state=123, init='random', learning_rate="auto")
     z = tsne.fit_transform(np.concatenate([x.detach().cpu().numpy() for x in data]))
     df = pd.DataFrame()
     df["comp-1"] = z[:, 0]
