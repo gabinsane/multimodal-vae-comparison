@@ -6,8 +6,15 @@ import glob, imageio
 import numpy as np
 import torch
 import pickle
-from visualization import t_sne, tensors_to_df
+from visualization import tensors_to_df
 from itertools import combinations
+
+
+def unpack_vae_outputs(output):
+    qz_xs = [output[m].encoder_dists for m in output.keys()]
+    zss = [output[m].latent_samples for m in output.keys()]
+    px_zs = [output[m].decoder_dists for m in output.keys()]
+    return qz_xs, zss, px_zs
 
 def get_root_folder():
     return os.path.dirname(__file__)

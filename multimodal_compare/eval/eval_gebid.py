@@ -557,7 +557,7 @@ def labelled_tsne(model_exp):
     testset = model_exp.get_test_data_sample()
     labels = prepare_labels(testset["mod_2"])
     for i, label in enumerate(labels):
-        model_exp.model.analyse_data(testset, label, path_label="eval_{}".format(i))
+        model_exp.model.analyse_data(testset, label, len(label), path_label="eval_{}".format(i))
     print("Saved labelled T-SNEs in {}".format(os.path.join(model_exp.get_base_path(), "visuals")))
 
 
