@@ -127,20 +127,6 @@ class POE(TorchMMVAE):
         """
         return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
-    def reparameterize(self, mu, logvar):
-        """
-        General reparametrization trick during training
-        :param mu: vector of means
-        :type mu: torch.tensor
-        :param logvar: vector of log variances
-        :type logvar: torch.tensor
-        :return: reparametrized samples
-        :rtype: torch.tensor
-        """
-
-        std = logvar.mul(0.5).exp_()
-        eps = Variable(std.data.new(std.size()).normal_())
-        return eps.mul(std).add_(mu)
 
     def forward(self, inputs, K=1):
         """

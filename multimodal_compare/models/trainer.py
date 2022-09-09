@@ -92,9 +92,17 @@ class MultimodalVAE(pl.LightningModule):
         self.log('val_kld', kld, batch_size=self.config.batch_size)
         for i, p_l in enumerate(partial_l):
             self.log("Mod_{}_ValLoss".format(i), p_l, batch_size=self.config.batch_size)
-        if self.trainer.is_last_batch and (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
-            self.analyse_data()
         return loss
+
+    def validation_epoch_end(self, outputs):
+        """
+        Save visualizations
+
+        :param outputs: Loss that comes from validation_step
+        :type outputs: torch.tensor
+        """
+        if (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
+            self.analyse_data()
 
     def analyse_data(self, data=None, labels=None, num_samples=250, path_label=None):
         """

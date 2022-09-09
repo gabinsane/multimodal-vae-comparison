@@ -21,7 +21,7 @@ class TorchMMVAE(nn.Module):
         self.prior_dist = dist.Normal
         self.pz = dist.Normal
 
-    def _pz_params(self, modality=None):
+    def pz_params(self, modality=None):
         if not modality:
             modality = "mod_1"
         return nn.ParameterList([
