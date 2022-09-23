@@ -367,6 +367,21 @@ py.test .
 This code is published under the [CC BY-NC-SA 4.0 license](https://creativecommons.org/licenses/by-nc-sa/4.0/).  
 
 
+If you use our toolkit or dataset in your work, please, give us an attribution using the following citation:
+```
+@misc{https://doi.org/10.48550/arxiv.2209.03048,
+  doi = {10.48550/ARXIV.2209.03048},
+  url = {https://arxiv.org/abs/2209.03048},  
+  author = {Sejnova, Gabriela and Vavrecka, Michal and Stepanova, Karla},  
+  keywords = {Machine Learning (cs.LG), FOS: Computer and information sciences, FOS: Computer and information sciences},  
+  title = {Benchmarking Multimodal Variational Autoencoders: GeBiD Dataset and Toolkit},  
+  publisher = {arXiv},  
+  year = {2022},  
+  copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
+}
+```
+
+
 ## Acknowledgment
 
 The toolkit features models and functions from the official implementations of [MVAE](https://github.com/mhw32/multimodal-vae-public) ([paper](https://arxiv.org/abs/1802.05335)), [MMVAE](https://github.com/iffsid/mmvae) ([paper](https://arxiv.org/pdf/1911.03393.pdf)) and [MoPoE](https://github.com/thomassutter/MoPoE) ([paper](https://openreview.net/forum?id=5Y21V0RDBV)).
