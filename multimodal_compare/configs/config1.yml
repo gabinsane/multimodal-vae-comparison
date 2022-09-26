@@ -16,13 +16,11 @@ dataset_name: gebid
 modality_1:
   decoder: CNN
   encoder: CNN
-  feature_dim: [64, 64, 3]
   mod_type: image
   path: ./data/level2/image
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
-  feature_dim: [52, 27, 1]
   mod_type: text
   path: ./data/level2/attrs.pkl
 

@@ -4,28 +4,31 @@ import pytorch_lightning as pl
 import models
 from models.vae import VAE
 import os
-from utils import make_kl_df
+from utils import make_kl_df, unpack_vae_outputs, data_to_device
 from models import objectives
 from models.config_cls import Config
-from models.mmvae_base import TorchMMVAE, BaseVae
+from models.mmvae_base import TorchMMVAE
 from visualization import plot_kls_df
-from utils import t_sne
+from visualization import t_sne
 
 
 class MultimodalVAE(pl.LightningModule):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
 
+    :param feature_dims: dictionary with feature dimensions of raining data
+    :type feature_dims: dict
     :param cfg: instance of Config class
     :type cfg: Config
     """
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, feature_dims: dict):
         super().__init__()
         self.config = cfg
         self.optimizer = None
         self.objective = None
         self.model = TorchMMVAE()
+        self.feature_dims = feature_dims
         self.get_model()
         self.get_objective()
 
@@ -59,7 +62,8 @@ class MultimodalVAE(pl.LightningModule):
         """
         vaes = {}
         for i, m in enumerate(self.config.mods):
-                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents)
+                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], self.feature_dims[m["mod_type"]],
+                                                   self.config.n_latents)
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
             self.model = getattr(models, self.config.mixing.lower())(vaes)
@@ -104,39 +108,30 @@ class MultimodalVAE(pl.LightningModule):
         if (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
             self.analyse_data()
 
-    def analyse_data(self, data=None, labels=None, num_samples=250, path_label=None):
+    def analyse_data(self, data=None, labels=None, num_samples=250, path_label=""):
         """
         Encodes data and plots T-SNE.
         :param data: test data
         :type data: torch.tensor
         :param labels: labels for the data for labelled T-SNE (optional) - list of strings
         :type labels: list
+        :param num_samples: number of samples to use for visualization
+        :type num_samples: int
+        :param path_label: label under which to save the visualizations
+        :type path_label: str
         :return: returns K latent samples for each input
         :rtype: list
         """
-        if not data:
-            data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
-        else:
-            num_samples = len(data["mod_1"]["data"])
+        data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples))) if not data else data
         for key in data.keys():
-            data[key]["data"] = data[key]["data"].to(self.device)
-            if data[key]["masks"] is not None:
-                data[key]["masks"] = data[key]["masks"].to(self.device)
+            data[key] = {k: v.to(device=self.device, non_blocking=True) if hasattr(v, 'to') else v for k, v in data[key].items()}
         output = self.model.forward(data)
-        qz_xs = [output[m].encoder_dists for m in output.keys()]
-        zss = [output[m].latent_samples for m in output.keys()]
+        qz_xs, zss, _ = unpack_vae_outputs(output)
         pz = self.model.pz(*[x for x in self.model.pz_params()])
         zss_sampled = [pz.sample(torch.Size([1, num_samples])).view(-1, pz.batch_shape[-1]),
                *[zs["latents"].view(-1, zs["latents"].size(-1)) for zs in zss]]
         kl_df = make_kl_df(qz_xs, pz)
-        if not path_label and self.config.eval_only:
-            p1 = 'visuals/kl_distance.png'
-            p2 = 'visuals/t_sne.png'
-        else:
-            if path_label is None:
-                path_label = self.trainer.current_epoch
-            p1 = 'visuals/kl_distance_e_{}.png'.format(path_label)
-            p2 = 'visuals/t_sne_e_{}.png'.format(path_label)
-        plot_kls_df(kl_df, os.path.join(self.config.mPath, p1))
-        t_sne([x for x in zss_sampled[1:]],
-              os.path.join(self.config.mPath, p2), labels)
+        if path_label == "" and not self.config.eval_only:
+                path_label = "_e_{}".format(self.trainer.current_epoch)
+        plot_kls_df(kl_df, os.path.join(self.config.mPath, 'visuals/kl_distance{}.png'.format(path_label)))
+        t_sne([x for x in zss_sampled[1:]], os.path.join(self.config.mPath, 'visuals/t_sne{}.png'.format(path_label)), labels)

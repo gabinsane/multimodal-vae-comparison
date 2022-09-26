@@ -24,11 +24,20 @@ class DataModule(LightningDataModule):
         self.datasets = []
         self.batch_size = self.config.batch_size
 
+    def get_dataset_class(self):
+        """
+        Get the dataset class object according to the dataset name
+
+        :return: dataset class object
+        :rtype: object
+        """
+        assert hasattr(datasets, self.dataset_name.upper()), "Did not find dataset with name {}".format(self.dataset_name)
+        return getattr(datasets, self.dataset_name.upper())
+
     def setup(self, stage: Optional[str] = None) -> None:
         """ Loads appropriate dataset classes and makes data splits """
         for i, p in enumerate(self.pths):
-                 assert hasattr(datasets, self.dataset_name.upper()), "Did not find dataset with name {}".format(self.dataset_name)
-                 self.datasets.append(getattr(datasets, self.dataset_name.upper())(p, self.mod_types[i]))
+            self.datasets.append(self.get_dataset_class()(p, self.mod_types[i]))
         for dataset in self.datasets:
             d = dataset.get_data()
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
