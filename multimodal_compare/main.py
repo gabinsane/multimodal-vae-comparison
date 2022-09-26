@@ -33,12 +33,12 @@ def main():
     torch.manual_seed(config.seed)
     torch.cuda.manual_seed(config.seed)
     np.random.seed(config.seed)
-    model_wrapped = MultimodalVAE(config)
+    data_module = DataModule(config)
+    model_wrapped = MultimodalVAE(config, data_module.get_dataset_class().feature_dims)
     #checkpoint_callback = ModelCheckpoint(dirpath=config.mPath, save_on_train_epoch_end=True, save_last=True)
     pl_trainer = pl.Trainer(accelerator='gpu', default_root_dir=config.mPath, max_epochs=config.epochs,
                             check_val_every_n_epoch=1)
-    data_module = DataModule(config)
-    pl_trainer.fit(model_wrapped, data_module)
+    pl_trainer.fit(model_wrapped, datamodule=data_module)
 
 if __name__ == '__main__':
     main()

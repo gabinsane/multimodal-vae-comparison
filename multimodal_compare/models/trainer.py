@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 import models
 from models.vae import VAE
 import os
-from utils import make_kl_df, unpack_vae_outputs
+from utils import make_kl_df, unpack_vae_outputs, data_to_device
 from models import objectives
 from models.config_cls import Config
 from models.mmvae_base import TorchMMVAE
@@ -16,16 +16,19 @@ class MultimodalVAE(pl.LightningModule):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
 
+    :param feature_dims: dictionary with feature dimensions of raining data
+    :type feature_dims: dict
     :param cfg: instance of Config class
     :type cfg: Config
     """
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, feature_dims: dict):
         super().__init__()
         self.config = cfg
         self.optimizer = None
         self.objective = None
         self.model = TorchMMVAE()
+        self.feature_dims = feature_dims
         self.get_model()
         self.get_objective()
 
@@ -59,7 +62,8 @@ class MultimodalVAE(pl.LightningModule):
         """
         vaes = {}
         for i, m in enumerate(self.config.mods):
-                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], m["feature_dim"], self.config.n_latents)
+                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], self.feature_dims[m["mod_type"]],
+                                                   self.config.n_latents)
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
             self.model = getattr(models, self.config.mixing.lower())(vaes)

@@ -16,12 +16,10 @@ dataset_name: cub
 modality_1:
   decoder: CNN
   encoder: CNN
-  feature_dim: [64, 64, 3]
   mod_type: image
   path: ./data/cub/images
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
-  feature_dim: [256,27,1]
   mod_type: text
   path: ./data/cub/cub_captions.pkl

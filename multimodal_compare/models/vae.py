@@ -113,7 +113,7 @@ class VAE(BaseVae):
         :type enc: str
         :param dec: decoder name
         :type dec: str
-        :param feature_dim: data dimensionality as stated in config
+        :param feature_dim: data dimensionality as stated in dataset class
         :type feature_dim: list
         :param n_latents: latent space dimensionality
         :type n_latents: int

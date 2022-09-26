@@ -10,6 +10,12 @@ from visualization import tensors_to_df
 from itertools import combinations
 
 
+def data_to_device(data, device):
+    for key in data.keys():
+        data[key] = {k: v.to(device=device, non_blocking=True) if hasattr(v, 'to') else v for k, v in
+                     data[key].items()}
+    return data
+
 def unpack_vae_outputs(output):
     qz_xs = [output[m].encoder_dists for m in output.keys()]
     zss = [output[m].latent_samples for m in output.keys()]
