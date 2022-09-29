@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inference module &mdash; multimodal-vae-comparison 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Evaluate on GeBiD dataset" href="eval_gebid.html" />
+    <link rel="prev" title="Dataset Classes" href="datasets.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/addmodel.html">Add a new model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/adddataset.html">Add a new dataset</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Code documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Inference module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">multimodal-vae-comparison</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Inference module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/code/infer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-multimodal_compare.eval.infer">
+<span id="inference-module"></span><span id="infer"></span><h1>Inference module<a class="headerlink" href="#module-multimodal_compare.eval.infer" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">EstimateLogMarginal</span></span><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal._abc_cache">
+<span class="sig-name descname"><span class="pre">_abc_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal._abc_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal._abc_negative_cache">
+<span class="sig-name descname"><span class="pre">_abc_negative_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal._abc_negative_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal._abc_negative_cache_version">
+<span class="sig-name descname"><span class="pre">_abc_negative_cache_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">57</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal._abc_negative_cache_version" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal._abc_registry">
+<span class="sig-name descname"><span class="pre">_abc_registry</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal._abc_registry" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal.evaluation">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="multimodal_compare.eval.infer.MMVAEExperiment"><span class="pre">MMVAEExperiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal.evaluation" title="Permalink to this definition"></a></dt>
+<dd><p>Estimate of the log-marginal likelihood of test data.
+:param exp: Experiment object that specifies model, data, config, device etc.
+:type exp: MMVAEExperiment
+:return: marginal log-likelihood
+:rtype: float32</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EstimateLogMarginal.isApplicable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isApplicable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EstimateLogMarginal.isApplicable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">EvalReconstruct</span></span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct" title="Permalink to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct._abc_cache">
+<span class="sig-name descname"><span class="pre">_abc_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct._abc_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct._abc_negative_cache">
+<span class="sig-name descname"><span class="pre">_abc_negative_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct._abc_negative_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct._abc_negative_cache_version">
+<span class="sig-name descname"><span class="pre">_abc_negative_cache_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">57</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct._abc_negative_cache_version" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct._abc_registry">
+<span class="sig-name descname"><span class="pre">_abc_registry</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct._abc_registry" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct.evaluation">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="multimodal_compare.eval.infer.MMVAEExperiment"><span class="pre">MMVAEExperiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct.evaluation" title="Permalink to this definition"></a></dt>
+<dd><p>Makes reconstructions from the testloader for the given model and dumps them into pickle
+:param path: path to the model directory
+:type path: str
+:param testloader: Testloader (torch.utils.data.DataLoader)
+:type testloader: object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.EvalReconstruct.isApplicable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isApplicable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.EvalReconstruct.isApplicable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">Evaluations</span></span><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations" title="Permalink to this definition"></a></dt>
+<dd><p>Base class to register all evaluation methods with the experiment class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations._abc_cache">
+<span class="sig-name descname"><span class="pre">_abc_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations._abc_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations._abc_negative_cache">
+<span class="sig-name descname"><span class="pre">_abc_negative_cache</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations._abc_negative_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations._abc_negative_cache_version">
+<span class="sig-name descname"><span class="pre">_abc_negative_cache_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">57</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations._abc_negative_cache_version" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations._abc_registry">
+<span class="sig-name descname"><span class="pre">_abc_registry</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_weakrefset.WeakSet</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations._abc_registry" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations.evaluation">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="multimodal_compare.eval.infer.MMVAEExperiment"><span class="pre">MMVAEExperiment</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations.evaluation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.Evaluations.isApplicable">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">isApplicable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.Evaluations.isApplicable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">MMVAEExperiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment" title="Permalink to this definition"></a></dt>
+<dd><p>This class provides unified access to all assets of MMVAE eval experiments, i.e., trained models, training stats, config.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.decode_latents">
+<span class="sig-name descname"><span class="pre">decode_latents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.decode_latents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.eval_sample">
+<span class="sig-name descname"><span class="pre">eval_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.eval_sample" title="Permalink to this definition"></a></dt>
+<dd><p>Generates random samples from the learned posterior and saves them in the model directory
+:param path: path to the model
+:type path: str</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_base_path">
+<span class="sig-name descname"><span class="pre">get_base_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_within_exp_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_base_path" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_config" title="Permalink to this definition"></a></dt>
+<dd><p>Parses the YAML config provided in the file path
+:param pth: Path to config
+:type pth: str
+:return: returns the config dict
+:rtype: dict</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_device">
+<span class="sig-name descname"><span class="pre">get_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_model">
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_test_data">
+<span class="sig-name descname"><span class="pre">get_test_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_bs">
+<span class="sig-name descname"><span class="pre">get_test_data_bs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_bs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_sample">
+<span class="sig-name descname"><span class="pre">get_test_data_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.get_traversal_samples">
+<span class="sig-name descname"><span class="pre">get_traversal_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples_per_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.get_traversal_samples" title="Permalink to this definition"></a></dt>
+<dd><p>Generates random sample traversals across the whole latent space.
+:param latent_dim: dimensionality of the latent space
+:type latent_dim: int
+:param n_samples_per_dim: how many samples to make per dimension (they will be equally distributed)
+:type n_samples_per_dim: int
+:return: torch tensor samples
+:rtype: torch.tensor</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.image_to_text">
+<span class="sig-name descname"><span class="pre">image_to_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.image_to_text" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstructs image from the text input using the provided model
+:param imgs: list of images to reconstruct
+:type imgs: list
+:param model: model object
+:type model: object
+:param path: where to save the outputs
+:type path: str
+:return: returns reconstructed images and texts
+:rtype: tuple(list, list)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.load_model_ckpt">
+<span class="sig-name descname"><span class="pre">load_model_ckpt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.load_model_ckpt" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a model from checkpoint</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pth</strong> (<em>str</em>) – path to checkpoint directory</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns model object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>MMVAE/VAE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.make_evals">
+<span class="sig-name descname"><span class="pre">make_evals</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.make_evals" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.plot_loss">
+<span class="sig-name descname"><span class="pre">plot_loss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.plot_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the Test loss saved in loss.csv in the provided model directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.set_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.MMVAEExperiment.text_to_image">
+<span class="sig-name descname"><span class="pre">text_to_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.MMVAEExperiment.text_to_image" title="Permalink to this definition"></a></dt>
+<dd><p>Reconstructs text from the image input using the provided model
+:param text: list of strings to reconstruct
+:type text: list
+:param model: model object
+:type model: object
+:param path: where to save the outputs
+:type path: str
+:return: returns reconstructed images and also texts
+:rtype: tuple(list, list)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer._listdirs">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">_listdirs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rootdir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer._listdirs" title="Permalink to this definition"></a></dt>
+<dd><p>Lists all subdirectories within a directory
+:param rootdir: root directory path
+:type rootdir: str
+:return: list of subdirectories
+:rtype: list</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer._plot_setup">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">_plot_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer._plot_setup" title="Permalink to this definition"></a></dt>
+<dd><p>General plot set up functions
+:param xname: Name of x axis
+:type xname: str
+:param yname: Name of y axis
+:type yname: str
+:param pth: path to save the plot to
+:type pth: str
+:param figname: name of the figure
+:type figname: str</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer._process_recons">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">_process_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer._process_recons" title="Permalink to this definition"></a></dt>
+<dd><p>Processes the reconstructions from the model so that they can be visualized
+:param recons: list of the model outputs
+:type recons: list
+:return: image and text
+:rtype: tuple(ndarray, string)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.compare_loss">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">compare_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.compare_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Compares losses for several models in one plot.
+:param exps: list of experiment objects
+:type exps: list[MMVAEExperiment]
+:param label_tag: list of strings to label the models in the legend
+:type label_tag: list</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="multimodal_compare.eval.infer.define_path">
+<span class="sig-prename descclassname"><span class="pre">multimodal_compare.eval.infer.</span></span><span class="sig-name descname"><span class="pre">define_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.eval.infer.define_path" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="datasets.html" class="btn btn-neutral float-left" title="Dataset Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="eval_gebid.html" class="btn btn-neutral float-right" title="Evaluate on GeBiD dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Gabriela Sejnova.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
