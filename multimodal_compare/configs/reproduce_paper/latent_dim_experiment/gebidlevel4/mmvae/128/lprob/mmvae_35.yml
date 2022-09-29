@@ -1,0 +1,24 @@
+batch_size: 32
+epochs: 600
+exp_name: gebidlevel4_mmvae_35
+labels: null
+loss: lprob
+lr: 1e-4
+mixing: moe
+modality_1:
+  decoder: CNN
+  encoder: CNN
+  mod_type: image
+  path: ./data/level4/image
+modality_2:
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  mod_type: text
+  path: ./data/level4/attrs.pkl
+n_latents: 128
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 1
+test_split: 0.1
+viz_freq: 20

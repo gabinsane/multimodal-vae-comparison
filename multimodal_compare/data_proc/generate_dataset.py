@@ -5,13 +5,11 @@ import argparse
 from math import cos, sin, pi
 
 parser = argparse.ArgumentParser(description='GeBiD data generator')
-parser.add_argument('--dir', type=str, default="../data/level3res", help='where to save the dataset the dataset')
-parser.add_argument('--level', type=int, default=3, help='difficulty level: 1-5')
-parser.add_argument('--size', type=int, default=15000, help='size of the dataset')
+parser.add_argument('--dir', type=str, default="../data/level5", help='where to save the dataset the dataset')
+parser.add_argument('--level', type=int, default=5, help='difficulty level: 1-5')
+parser.add_argument('--size', type=int, default=10000, help='size of the dataset')
 parser.add_argument('--noisycol', action='store_true', default=False,
                     help='add noise to image colors')
-parser.add_argument('--restricted', action='store_true', default=False,
-                    help='restrict shapes only to certain colors')
 args = parser.parse_args()
 
 shapes = ["line", "circle", "square", "semicircle", "pieslice", "spiral"]
@@ -22,19 +20,20 @@ sizes = ["small", "large"]
 locations1 = ["at the top", "at the bottom"]
 locations2 = ["left", "right"]
 backgrounds = ["on white", "on black"]
-colors_restricted = {"line":["yellow", "red", "green"], "circle":["blue", "grey", "brown"], "square":["purple", "teal", "navy"],
-                     "semicircle":["orange", "beige", "pink"], "pieslice":["teal", "green", "navy"], "spiral":["yellow", "orange", "brown"]}
+shape_central_pos = {"line":{"small":[23,22],"large":[18,18]}, "circle":{"small":[23,23],"large":[17,19]}, "square":{"small":[23,23],"large":[17,17]},
+                     "semicircle":{"small":[25,24],"large":[20,17]}, "pieslice":{"small":[23,23],"large":[16,16]}, "spiral":{"small":[20,20],"large":[20,20]}}
 
 def randomize_rgb(rgb):
     new_rgb = [0,0,0]
     for ix, c in enumerate(rgb):
          if c == 255:
-             new_rgb[ix] = c - random.randint(0,70)
+             new_rgb[ix] = c - random.randint(0,60)
          elif c == 0:
-             new_rgb[ix] = c + random.randint(0,70)
+             new_rgb[ix] = c + random.randint(0,60)
          else:
-             new_rgb[ix] = c + random.randrange(-40, 40)
+             new_rgb[ix] = c + random.randrange(-30, 30)
     return new_rgb
+
 
 def draw_spiral(x_l, y_l, a, b, img, colour, step=0.5, loops=5):
     """
@@ -66,13 +65,13 @@ def make_attrs(path):
     print("Making ../data/attrs.pkl")
     attrs = []
     for x in range(args.size):
-        shape = random.choice(shapes)
-        size = random.choice(sizes)
-        if args.restricted:
-            collist = colors_restricted[shape]
-        else:
-            collist = list(colors.keys())
-        color = random.choice(collist)
+        size, color, shape, loc1, loc2, bkgr = "", "", "", "", "", ""
+        if sizes:
+            size = random.choice(sizes)
+        if colors:
+            color = random.choice(list(colors.keys()))
+        if shapes:
+            shape = random.choice(shapes)
         loc1 = random.choice(locations1)
         loc2 = random.choice(locations2)
         bkgr = random.choice(backgrounds)
@@ -101,6 +100,7 @@ def make_shape_imgs(pth, target_pth, imglevel=5, txtlevel=5):
     target = unpickle(pth)
     target_modified = text_to_level(target, txtlevel)
     pickle_dump(pth, target_modified)
+    images = []
     for idx, text in enumerate(target):
         size = text[0]
         colname = text[1]
@@ -120,11 +120,13 @@ def make_shape_imgs(pth, target_pth, imglevel=5, txtlevel=5):
             size_add = 30 if size == "large" else 16
         else:
             size_add = 30
+            size = "large"
         if imglevel == 5:
             x1 = random.randint(5,10) if "left" in text[4] else random.randint(30,35)
             x2 = random.randint(5,10) if "top" in text[3] else random.randint(30,35)
         else:
-            x1, x2 = 20 + random.randint(-1,1), 20 + random.randint(-1,1)
+            x1, x2 = shape_central_pos[shapename][size][0] + random.randint(-3,3), \
+                     shape_central_pos[shapename][size][1] + random.randint(-3,3)
         shapes = {"circle": draw.ellipse, "line":draw.line, "square":draw.rectangle, "semicircle":draw.chord, "pieslice":draw.pieslice,  "polygon":draw.polygon, "spiral":draw_spiral}
         shape = shapes[shapename]
         if shape not in [draw.chord, draw.pieslice, draw.polygon, draw_spiral]:

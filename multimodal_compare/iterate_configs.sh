@@ -2,9 +2,11 @@
 FILES=$@
 COUNTER=0
 cd ~/multimodal-vae-comparison/multimodal_compare
-for f in $FILES
+allfiles=$(find $FILES -name "*.yml")
+for f in $allfiles;
 do
-  COUNTER=$(( COUNTER + 1 ))
-  echo "$f"
-  python main.py --cfg "$f"
+  COUNTER=$(( COUNTER + 1 ));
+  echo "Config $f";
+  python main.py --cfg "$f";
 done
+echo "Finished all $COUNTER experiments"

@@ -1,0 +1,24 @@
+batch_size: 32
+epochs: 700
+exp_name: mnistsvhnelbo
+labels: ./data/mnist_svhn/labels.pkl
+loss: lprob
+lr: 1e-3
+mixing: dmvae
+n_latents: 10
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+viz_freq: 20
+test_split: 0.1
+modality_1:
+  decoder: MNIST_DMVAE
+  encoder: MNIST_DMVAE
+  mod_type: image
+  path: ./data/mnist_svhn/mnist
+modality_2:
+  decoder: SVHN_DMVAE
+  encoder: SVHN_DMVAE
+  mod_type: image
+  path: ./data/mnist_svhn/svhn

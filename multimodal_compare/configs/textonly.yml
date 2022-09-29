@@ -1,0 +1,20 @@
+batch_size: 64                # batch size
+n_latents: 32               # latent space dimensionality
+epochs: 200                 # number of trainin epochs
+exp_name: textepochwiselevel3noisy2              # folder name to save results
+labels: null                  # (optional) path to data labels for t-SNE
+loss: lprob                     # reconstruction loss (bce/l1/mse/lprob/category)
+lr: 1e-4                      # learning rate
+mixing: htvae                 # multimodal mixing (poe/moe/mopoe)
+obj: iwae                     # objective (currently only elbo)
+optimizer: adam               # optimizer (adam/adabelief)
+pre_trained: null             # (optional) path to pre-trained weights
+seed: 2                       # seed number
+test_split: 0.1               # proportion of data to use for testset
+viz_freq: 5                  # visualize results after each N epochs
+modality_1:                   # define second modality
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  feature_dim: [52, 27, 1]
+  mod_type: text
+  path: ./data/level3/attrs.pkl

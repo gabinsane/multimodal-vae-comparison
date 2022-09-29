@@ -1,4 +1,4 @@
-batch_size: 32
+batch_size: 16
 epochs: 600
 exp_name: cub
 labels:
@@ -10,17 +10,16 @@ obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
-viz_freq: 10
+viz_freq: 1
 test_split: 0.1
+dataset_name: cub
 modality_1:
   decoder: CNN
   encoder: CNN
-  feature_dim: [64, 64, 3]
   mod_type: image
   path: ./data/cub/images
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
-  feature_dim: [256,27,1]
   mod_type: text
   path: ./data/cub/cub_captions.pkl

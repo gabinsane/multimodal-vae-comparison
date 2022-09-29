@@ -1,0 +1,20 @@
+batch_size: 32
+n_latents: 24
+epochs: 600
+exp_name: videogpt
+labels: /home/gabi/kubecova-action-representationvae/imgs_armonly/labels.pkl
+loss: l1
+lr: 1e-3
+mixing: poe
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+test_split: 0.1
+viz_freq: 1
+modality_1:
+  encoder: VideoGPT
+  decoder: VideoGPT
+  feature_dim: [3, 64, 64, 3]
+  mod_type: image
+  path: /home/gabi/kubecova-action-representationvae/imgs_armonly/images.pkl

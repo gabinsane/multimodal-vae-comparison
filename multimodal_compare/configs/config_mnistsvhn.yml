@@ -12,15 +12,14 @@ pre_trained: null
 seed: 2
 viz_freq: 10
 test_split: 0.1
+dataset_name: mnist_svhn
 modality_1:
   decoder: MNIST
   encoder: MNIST
-  feature_dim: [28,28,1]
-  mod_type: image
+  mod_type: mnist
   path: ./data/mnist_svhn/mnist
 modality_2:
   decoder: SVHN
   encoder: SVHN
-  feature_dim: [32,32,3]
-  mod_type: image
+  mod_type: svhn
   path: ./data/mnist_svhn/svhn

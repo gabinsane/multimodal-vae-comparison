@@ -1,0 +1,24 @@
+batch_size: 64
+epochs: 600
+exp_name: gebidlevel1_mvae_20
+labels: null
+loss: bce
+lr: 1e-4
+mixing: poe
+modality_1:
+  decoder: CNN
+  encoder: CNN
+  mod_type: image
+  path: ./data/level1/image
+modality_2:
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  mod_type: text
+  path: ./data/level1/attrs.pkl
+n_latents: 64
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 1
+test_split: 0.1
+viz_freq: 20

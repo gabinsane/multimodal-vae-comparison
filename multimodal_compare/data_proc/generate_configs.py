@@ -29,8 +29,6 @@ parser.add_argument('--loss', type=str, metavar='O',  nargs="+", default=None,
                     help='loss to use (lprob/bce)')
 parser.add_argument('--n-latents', type=int,  nargs="+", default=None,
                     help='latent vector dimensionality')
-parser.add_argument('--beta', type=float,  nargs="+", default=None,
-                    help='disentangling parameter beta')
 parser.add_argument('--pre-trained', type=str,  nargs="+", default=None,
                     help='path to pre-trained model (train from scratch if empty)')
 parser.add_argument('--seed', type=int, metavar='S',  nargs="+", default=None,
