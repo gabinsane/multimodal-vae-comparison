@@ -3,7 +3,7 @@ import torch
 import pytorch_lightning as pl
 import models
 from models.vae import VAE
-import os
+import os, copy
 from utils import make_kl_df, unpack_vae_outputs, data_to_device
 from models import objectives
 from models.config_cls import Config
@@ -27,10 +27,17 @@ class MultimodalVAE(pl.LightningModule):
         self.config = cfg
         self.optimizer = None
         self.objective = None
+        self.mod_names = self.get_mod_names()
         self.model = TorchMMVAE()
         self.feature_dims = feature_dims
         self.get_model()
         self.get_objective()
+
+    def get_mod_names(self):
+        mod_names = {}
+        for i, m in enumerate(self.config.mods):
+            mod_names["mod_{}".format(i+1)] = m["mod_type"]
+        return mod_names
 
     def get_objective(self):
         """
@@ -106,9 +113,58 @@ class MultimodalVAE(pl.LightningModule):
         :type outputs: torch.tensor
         """
         if (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
-            self.analyse_data()
+            savepath = os.path.join(self.config.mPath, "visuals/epoch_{}/".format(self.trainer.current_epoch))
+            os.makedirs(savepath, exist_ok=True)
+            self.analyse_data(savedir=savepath)
+            self.save_reconstructions(savedir=savepath)
+            self.save_traversals(savedir=savepath)
 
-    def analyse_data(self, data=None, labels=None, num_samples=250, path_label=""):
+    def save_reconstructions(self, num_samples=24, savedir=None):
+        """
+        Save reconstructed data
+
+        :param num_samples: number of samples to take for reconstruction
+        :type num_samples: int
+        """
+        def save(output, mods, name=None):
+            for k in data.keys():
+                if mods[k]["data"] is None:
+                    mods.pop(k)
+            for key in output.keys():
+                recon_list = [x.loc for x in output[key].decoder_dists][0]
+                data_class = self.trainer.datamodule.datasets[int(key.split("_")[-1])-1]
+                p = os.path.join(savedir, "recon_{}_to_{}.png".format(name, data_class.mod_type))
+                data_class.save_recons(mods, recon_list, p, self.mod_names)
+
+        data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
+        data = data_to_device(data, self.device)
+        save(self.model.forward(data), data, "all")
+        for m in range(len(data.keys())):
+            mods = copy.deepcopy(data)
+            for d in mods.keys():
+                mods[d]["data"], mods[d]["masks"] = None, None
+            mods["mod_{}".format(m + 1)] = data["mod_{}".format(m + 1)]
+            mod_name = self.config.mods[m]["mod_type"]
+            output = self.model.forward(mods)
+            save(output, copy.deepcopy(mods), mod_name)
+
+
+    def save_traversals(self, num_samples=36, savedir=None):
+        """
+        Generate and save traversals for each modality
+
+        :param num_samples: number of samples to generate
+        :type num_samples: int
+        """
+        for i, vae in enumerate(self.model.vaes):
+            samples = self.model.vaes[vae].generate_samples(num_samples)
+            recons = self.model.vaes[vae].decode({"latents": samples, "masks": None})[0]
+            data_class = self.trainer.datamodule.datasets[i]
+            p = os.path.join(savedir, "traversals_{}.png".format( data_class.mod_type))
+            data_class.save_traversals(recons, p)
+
+
+    def analyse_data(self, data=None, labels=None, num_samples=250, path_label="", savedir=None):
         """
         Encodes data and plots T-SNE.
         :param data: test data
@@ -123,8 +179,7 @@ class MultimodalVAE(pl.LightningModule):
         :rtype: list
         """
         data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples))) if not data else data
-        for key in data.keys():
-            data[key] = {k: v.to(device=self.device, non_blocking=True) if hasattr(v, 'to') else v for k, v in data[key].items()}
+        data = data_to_device(data, self.device)
         output = self.model.forward(data)
         qz_xs, zss, _ = unpack_vae_outputs(output)
         pz = self.model.pz(*[x for x in self.model.pz_params()])
@@ -133,5 +188,5 @@ class MultimodalVAE(pl.LightningModule):
         kl_df = make_kl_df(qz_xs, pz)
         if path_label == "" and not self.config.eval_only:
                 path_label = "_e_{}".format(self.trainer.current_epoch)
-        plot_kls_df(kl_df, os.path.join(self.config.mPath, 'visuals/kl_distance{}.png'.format(path_label)))
-        t_sne([x for x in zss_sampled[1:]], os.path.join(self.config.mPath, 'visuals/t_sne{}.png'.format(path_label)), labels)
+        plot_kls_df(kl_df, os.path.join(savedir, 'kl_distance{}.png'.format(path_label)))
+        t_sne([x for x in zss_sampled[1:]], os.path.join(savedir, 't_sne{}.png'.format(path_label)), labels)

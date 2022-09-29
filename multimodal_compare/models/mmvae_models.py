@@ -25,13 +25,6 @@ class MOE(TorchMMVAE):
         self.prior_dist = dist.Normal
         self.pz = dist.Normal
 
-    def pz_params(self):
-        """
-        :return: returns parameters of the prior distribution
-        :rtype: tuple(nn.Parameter, nn.Parameter)
-        """
-        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
-
     def get_missing_modalities(self, mods):
         """
         Get indices of modalities that are missing
@@ -119,13 +112,6 @@ class POE(TorchMMVAE):
         self.modelName = 'poe'
         self.pz = dist.Normal
         self.prior_dist = dist.Normal
-
-    def pz_params(self):
-        """
-        :return: returns parameters of the prior distribution
-        :rtype: tuple(nn.Parameter, nn.Parameter)
-        """
-        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
 
     def forward(self, inputs, K=1):
@@ -228,13 +214,6 @@ class MoPOE(TorchMMVAE):
         self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
         self.prior_dist = dist.Normal
-
-    def pz_params(self):
-        """
-        :return: returns parameters of the prior distribution
-        :rtype: tuple(nn.Parameter, nn.Parameter)
-        """
-        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
     def forward(self, inputs, K=1):
         """
@@ -367,12 +346,6 @@ class DMVAE(TorchMMVAE):
         self.pz = dist.Normal
         self.qz_x = dist.Normal
 
-    def pz_params(self):
-        """
-        :return: returns parameters of the prior distribution
-        :rtype: tuple(nn.Parameter, nn.Parameter)
-        """
-        return self._pz_params()[0], F.softmax(self._pz_params()[1], dim=1) * self._pz_params()[1].size(-1)
 
     def forward(self, x, K=1):
         """

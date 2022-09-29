@@ -2,8 +2,10 @@ import math
 import os, csv
 import shutil
 import pathlib
+import cv2
 import glob, imageio
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont
 import torch
 import pickle
 from visualization import tensors_to_df
@@ -273,6 +275,32 @@ def tensor_to_text(gen_t):
         decoded_samples.append(decoded)
     return decoded_samples
 
+def add_recon_title(recon_list, title, colour=(0,0,0)):
+    images = [np.asarray(add_text_in_image(np.ones((40, recon_list[0].shape[1], 3)) * 255, title, (2, 0), 12, colour)),
+              np.vstack(img_separators(recon_list, horizontal=True))]
+    images = img_separators(images, horizontal=True)
+    return images
+
+def turn_text2image(string_list, img_size=(64,192,3)):
+        return [np.asarray(add_text_in_image(np.ones(img_size)*255, t, (5,8),12)) for t in string_list]
+
+def img_separators(imgs, thickness=2, horizontal=True):
+    images = []
+    for im in imgs:
+        if horizontal:
+            images.append(np.ones((thickness, im.shape[1], 3))*125)
+        else:  # vertical64
+            images.append(np.ones((im.shape[0], thickness, 3))*125)
+        images.append(im)
+    return images
+
+def add_text_in_image(img, text, position, size, colour=(0, 0, 0)):
+    img = Image.fromarray(img.astype('uint8'), 'RGB')
+    font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
+    font = ImageFont.truetype(font_path, size=size)
+    draw = ImageDraw.Draw(img)
+    draw.text(position, text, font=font, fill=colour)
+    return img
 
 def output_onehot2text(recon=None, original=None):
     recon_decoded, orig_decoded = None, None
@@ -286,7 +314,8 @@ def output_onehot2text(recon=None, original=None):
     if original is not None:
         orig_decoded = tensor_to_text(torch.stack(original).squeeze().int())
         orig_decoded = ["".join(x) for x in orig_decoded]
-    return recon_decoded, orig_decoded
+        return recon_decoded, orig_decoded
+    return recon_decoded
 
 
 def combinatorial(lst):

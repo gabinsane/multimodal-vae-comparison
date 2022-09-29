@@ -167,9 +167,4 @@ class VAE(BaseVae):
         with torch.no_grad():
             pz = self.pz(*self.pz_params)
             latents = pz.rsample(torch.Size([N]))
-            if "transformer" in self.enc_name.lower():
-                px_z = self.px_z(*self.dec([latents, None]))
-            else:
-                px_z = self.px_z(*self.dec(latents))
-            data = get_mean(px_z)
-        return data
+        return latents

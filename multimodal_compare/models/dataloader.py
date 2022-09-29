@@ -31,7 +31,7 @@ class DataModule(LightningDataModule):
         :return: dataset class object
         :rtype: object
         """
-        assert hasattr(datasets, self.dataset_name.upper()), "Did not find dataset with name {}".format(self.dataset_name)
+        assert hasattr(datasets, self.dataset_name.upper()), "Did not find dataset with name {}".format(self.dataset_name.upper())
         return getattr(datasets, self.dataset_name.upper())
 
     def setup(self, stage: Optional[str] = None) -> None:
@@ -102,14 +102,14 @@ class DataModule(LightningDataModule):
     def train_dataloader(self) -> DataLoader:
         """Return Train DataLoader"""
         return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=4)
+                          num_workers=0)
 
     def val_dataloader(self) -> DataLoader:
         """Return Val DataLoader"""
         return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=4)
+                          num_workers=0)
 
     def predict_dataloader(self, batch_size) -> DataLoader:
         """Return Val DataLoader with custom batch size"""
         return DataLoader(self.dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=4)
+                          num_workers=0)
