@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import pickle
 import torch
-
+import warnings
 import os
 import sys
 
@@ -496,7 +496,7 @@ def calculate_joint_coherency(model_exp):
     txt_recons = recons["mod_2"][0][0]
     correct_pairs, corr_feats = [], []
     for ind, txt in enumerate(txt_recons):
-        text = output_onehot2text(recon=txt.unsqueeze(0))[0][0]
+        text = output_onehot2text(recon=txt.unsqueeze(0))[0]
         atts = try_retrieve_atts(text)
         if atts is not None:
             img = np.asarray(img_recons[ind].detach().cpu() * 255, dtype="uint8")
@@ -521,7 +521,7 @@ def prepare_labels(labels):
     """
     l = output_onehot2text(labels["data"])
     labels_cropped = []
-    for v_i, v in enumerate(l[0]):
+    for v_i, v in enumerate(l):
         o = [s for n, s in enumerate(v) if labels["masks"][v_i][n]]
         labels_cropped.append("".join(o))
     labels_sep = []
