@@ -35,9 +35,6 @@ class TorchMMVAE(nn.Module):
         Args:
             vae_dict: A dictionary with the modality names as keys and BaseVAEs as values
             type vae_dict: nn.ModuleDict
-
-        Returns:
-
         """
         if not all(isinstance(key, str) for key in vae_dict.keys()):
             raise ValueError(f'Expected modality name as str, but got {list(vae_dict.keys())}.')

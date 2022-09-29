@@ -225,13 +225,11 @@ Now we should be able to train using this model. We need to create a ``config.ym
    modality_1:
       decoder: MNIST
       encoder: MNIST
-      feature_dim: [28,28,1]
       mod_type: image
       path: ./data/mnist_svhn/mnist
    modality_2:
       decoder: SVHN
       encoder: SVHN
-      feature_dim: [32,32,3]
       mod_type: image
       path: ./data/mnist_svhn/svhn
 
