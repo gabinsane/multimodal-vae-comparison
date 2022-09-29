@@ -1,7 +1,7 @@
 import torch
 
 from models.trainer import MultimodalVAE
-
+from models.dataloader import DataModule
 
 def test_make_trainer():
     from eval.infer import Config
@@ -9,8 +9,9 @@ def test_make_trainer():
     config = Config(path)
     assert config.epochs == 2
 
+    data_module = DataModule(config)
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    trainer = MultimodalVAE(config)
+    trainer = MultimodalVAE(config, data_module.get_dataset_class().feature_dims)
 
     assert isinstance(trainer.model, torch.nn.Module)
 

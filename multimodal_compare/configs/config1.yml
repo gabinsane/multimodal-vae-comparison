@@ -1,6 +1,6 @@
 batch_size: 32
 epochs: 2
-exp_name: contrib_model
+exp_name: test
 labels: null
 loss: bce
 lr: 1e-4
