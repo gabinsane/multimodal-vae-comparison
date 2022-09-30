@@ -115,7 +115,7 @@ class MultimodalVAE(pl.LightningModule):
         if (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
             savepath = os.path.join(self.config.mPath, "visuals/epoch_{}/".format(self.trainer.current_epoch))
             os.makedirs(savepath, exist_ok=True)
-            self.analyse_data(savedir=savepath)
+            self.analyse_data(savedir=savepath, labels=self.config.labels)
             self.save_reconstructions(savedir=savepath)
             self.save_traversals(savedir=savepath)
 
@@ -178,7 +178,10 @@ class MultimodalVAE(pl.LightningModule):
         :return: returns K latent samples for each input
         :rtype: list
         """
-        data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples))) if not data else data
+        if not data:
+            data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
+            if labels is not None:
+                labels = [labels[x] for x in (iter(self.trainer.datamodule.predict_dataloader(num_samples)))._next_index()]
         data = data_to_device(data, self.device)
         output = self.model.forward(data)
         qz_xs, zss, _ = unpack_vae_outputs(output)

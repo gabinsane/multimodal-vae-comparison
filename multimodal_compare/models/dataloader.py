@@ -22,6 +22,7 @@ class DataModule(LightningDataModule):
         self.dataset_train = []
         self.dataset_val = []
         self.datasets = []
+        self.labels = self.config.labels
         self.batch_size = self.config.batch_size
 
     def get_dataset_class(self):
