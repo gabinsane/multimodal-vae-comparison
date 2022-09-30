@@ -106,6 +106,11 @@ class BaseDataset():
         data_and_masks = torch.cat((data, masks), dim=-1)
         return data_and_masks
 
+    def save_traversals(self, recons, path):
+        output_processed = torch.tensor(self._postprocess(recons)).transpose(1, 3)
+        grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
+        cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
+
 
 # ----- Multimodal Datasets ---------
 
@@ -169,11 +174,6 @@ class GEBID(BaseDataset):
         inputs = np.hstack(input_processed).astype("uint8")
         final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
         cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
-
-    def save_traversals(self, recons, path):
-        output_processed = torch.tensor(self._postprocess_all2img(recons)).transpose(1, 3)
-        grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
-        cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
 
 class CUB(GEBID):
     feature_dims = {"image": [64, 64, 3],
@@ -239,12 +239,23 @@ class MNIST_SVHN(BaseDataset):
         return {"mnist": self._process_mnist, "svhn": self._process_svhn}
 
     def _mod_specific_savers(self):
-        return {"mnist": self._postprocess_uni, "svhn": self._postprocess_svhn}
+        return {"mnist": self._postprocess_mnist, "svhn": self._postprocess_svhn}
 
-    def _postprocess_uni(self, data):
+    def _postprocess_svhn(self, data):
         if isinstance(data, dict):
             data = data["data"]
-        return np.asarray(data.detach().cpu())*255
+        images = np.asarray(data.detach().cpu()).reshape(-1, *self.feature_dims["svhn"]) * 255
+        images_res = []
+        for i in images:
+            images_res.append(cv2.resize(i, (28,28)))
+        return np.asarray(images_res)
+
+    def _postprocess_mnist(self, data):
+        if isinstance(data, dict):
+            data = data["data"]
+        images = np.asarray(data.detach().cpu()).reshape(-1,*self.feature_dims["mnist"])*255
+        images_3chan = cv2.merge((images, images, images)).squeeze(-2)
+        return images_3chan
 
     def _process_mnist(self):
         return super(MNIST_SVHN, self)._preprocess_images([self.feature_dims["mnist"][i] for i in [2,0,1]])
@@ -258,15 +269,9 @@ class MNIST_SVHN(BaseDataset):
         input_processed = []
         for key, d in data.items():
             output = self._mod_specific_savers()[mod_names[key]](d)
-            images = np.reshape(output,(-1,*self.feature_dims[mod_names[key]]))
-            images = add_recon_title(images, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            images = add_recon_title(output, "input\n{}".format(mod_names[key]), (0, 0, 255))
             input_processed.append(np.vstack(images))
             input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
         inputs = np.hstack(input_processed).astype("uint8")
         final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
         cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
-
-    def save_traversals(self, recons, path):
-        output_processed = torch.tensor(self._postprocess(recons)).transpose(1, 3)
-        grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
-        cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
