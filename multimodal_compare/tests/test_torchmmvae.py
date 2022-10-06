@@ -4,11 +4,11 @@ from models.vae import VAE
 
 
 class ExampleModel(TorchMMVAE):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, obj):
+        super().__init__(obj)
         self.n_latents = 64
-        self.vaes["mod_1"] = VAE(enc = "CNN", dec= "CNN", feature_dim=[3,64,64], n_latents = self.n_latents)
-        self.vaes["mod_2"] = VAE(enc = "CNN", dec= "CNN", feature_dim=[3,64,64], n_latents = self.n_latents)
+        self.vaes["mod_1"] = VAE(enc = "CNN", dec= "CNN", feature_dim=[3,64,64], n_latents = self.n_latents, ltype="bce")
+        self.vaes["mod_2"] = VAE(enc = "CNN", dec= "CNN", feature_dim=[3,64,64], n_latents = self.n_latents, ltype="bce")
 
     def modality_mixing(self, mods):
         for key, mod in mods.items():
@@ -17,7 +17,7 @@ class ExampleModel(TorchMMVAE):
 
 def test_torch_mmvae_encode():
     bsize = 32
-    mmvae = ExampleModel()
+    mmvae = ExampleModel(obj="elbo")
     inputs = {"mod_1": {"data":torch.rand((bsize, 3,64,64))}, "mod_2":{"data":torch.rand((bsize, 3,64,64))}}
     qz_xs = mmvae.encode(inputs)
     assert isinstance(qz_xs, dict)
@@ -28,7 +28,7 @@ def test_torch_mmvae_encode():
 
 def test_torch__mmvae_decode():
     bsize = 32
-    mmvae = ExampleModel()
+    mmvae = ExampleModel(obj="elbo")
     qz_xs = {"mod_1": {"latents":torch.rand((bsize, mmvae.n_latents)).unsqueeze(0), "masks":None},
             "mod_2": {"latents":torch.rand((bsize, mmvae.n_latents)).unsqueeze(0), "masks":None}}
     px_zs = mmvae.decode(qz_xs)
@@ -41,7 +41,7 @@ def test_torch__mmvae_decode():
 
 def test_torch_mmvae_forward():
     bsize = 32
-    mmvae = ExampleModel()
+    mmvae = ExampleModel(obj="elbo")
     inputs = {"mod_1": {"data": torch.rand((32, 3, 64, 64))}, "mod_2": {"data": torch.rand((32, 3, 64, 64))}}
     output = mmvae.forward(inputs, 1)
     assert isinstance(output, dict)

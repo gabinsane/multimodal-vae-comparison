@@ -2,7 +2,6 @@ batch_size: 32
 epochs: 600
 exp_name: mnistsvhn
 labels: ./data/mnist_svhn/labels.pkl
-loss: bce
 lr: 1e-3
 mixing: moe
 n_latents: 16
@@ -10,6 +9,7 @@ obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
+beta: 1
 viz_freq: 10
 test_split: 0.1
 dataset_name: mnist_svhn
@@ -17,9 +17,11 @@ modality_1:
   decoder: MNIST
   encoder: MNIST
   mod_type: mnist
+  recon_loss:  bce
   path: ./data/mnist_svhn/mnist
 modality_2:
   decoder: SVHN
   encoder: SVHN
   mod_type: svhn
+  recon_loss:  bce
   path: ./data/mnist_svhn/svhn

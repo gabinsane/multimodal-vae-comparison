@@ -146,7 +146,7 @@ class Dec_MNISTMoE(VaeDecoder):
         :param num_hidden_layers: how many hidden layers to add
         :type num_hidden_layers: int
         """
-        super(Dec_MNISTMoE, self).__init__()
+        super(Dec_MNISTMoE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         modules = []
         self.data_dim = data_dim
         hidden_dim = 400
@@ -229,7 +229,7 @@ class Dec_MNIST_DMVAE(VaeDecoder):
         :param zPrivate_dim: dimensionality of the private latent space
         :type zPrivate_dim: int
         """
-        super(Dec_MNIST_DMVAE, self).__init__()
+        super(Dec_MNIST_DMVAE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "FNN"
         self.digit_temp = 0.66
         self.style_mean = zPrivate_dim
@@ -270,7 +270,7 @@ class Dec_SVHN_DMVAE(VaeDecoder):
         :param zPrivate_dim: dimensionality of the private latent space
         :type zPrivate_dim: int
         """
-        super(Dec_SVHN_DMVAE, self).__init__()
+        super(Dec_SVHN_DMVAE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         self.net_type = "CNN"
         self.digit_temp = 0.66
         self.num_digits = latent_dim
@@ -313,7 +313,7 @@ class Dec_SVHNMoE(VaeDecoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_SVHNMoE, self).__init__()
+        super(Dec_SVHNMoE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         fBase = 32
         imgChans = 3
         self.net_type = "CNN"
@@ -359,7 +359,7 @@ class Dec_FNN(VaeDecoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_FNN, self).__init__()
+        super(Dec_FNN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "FNN"
         self.hidden_dim = 30
         self.data_dim = data_dim
@@ -396,7 +396,7 @@ class Dec_Audio(VaeDecoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Dec_Audio, self).__init__()
+        super(Dec_Audio, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "AudioConv"
         self.latent_dim = latent_dim
         self.reshape = (64, 3)
@@ -442,7 +442,7 @@ class Dec_TransformerIMG(VaeDecoder):
         :param activation: activation function
         :type activation: str
         """
-        super(Dec_TransformerIMG, self).__init__()
+        super(Dec_TransformerIMG, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.TRANSFORMER)
         self.net_type = "Transformer"
         self.latent_dim = latent_dim
         self.ff_size = ff_size
@@ -512,7 +512,7 @@ class Dec_VideoGPT(VaeDecoder):
         (e.g. [10, 64, 64, 3] for 64x64x3 image sequences with max length 10 images) :type data_dim: list :param
         n_res_layers: number of ResNet layers :type n_res_layers: int
         """
-        super(Dec_VideoGPT, self).__init__()
+        super(Dec_VideoGPT, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.DCNN)
         self.net_type = "3DCNN"
         self.upsample = (1, 4, 4)
         self.res_stack = nn.Sequential(
@@ -572,7 +572,7 @@ class Dec_Transformer(VaeDecoder):
         :param activation: activation function
         :type activation: str
         """
-        super(Dec_Transformer, self).__init__()
+        super(Dec_Transformer, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.TRANSFORMER)
         self.net_type = "Transformer"
         self.njoints = data_dim[1]
         if len(data_dim) > 2:

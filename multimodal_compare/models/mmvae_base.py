@@ -4,7 +4,7 @@ import torch, os
 import torch.nn as nn
 from models.NetworkTypes import VaeOutput
 import torch.distributions as dist
-
+from models.objectives import MultimodalObjective
 from models.vae import BaseVae
 
 
@@ -13,20 +13,20 @@ class TorchMMVAE(nn.Module):
     Base class for all PyTorch based MMVAE implementations.
     """
 
-    def __init__(self):
+    def __init__(self, obj:str, beta=1):
         super().__init__()
         self.vaes = nn.ModuleDict()
-
         self.modelName = 'TorchMMVAE'
-        self.prior_dist = dist.Normal
+        self.qz_x = dist.Normal
+        self.px_z = dist.Normal
         self.pz = dist.Normal
+        self.obj_fn = MultimodalObjective(obj, beta)
 
-    def pz_params(self, modality=None):
-        if not modality:
-            modality = "mod_1"
+    @property
+    def pz_params(self):
         return nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.vaes[modality].n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.vaes[modality].n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.zeros(1, self.vaes["mod_1"].n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.ones(1, self.vaes["mod_1"].n_latents), requires_grad=False)  # logvar
         ])
 
     def add_vaes(self, vae_dict: nn.ModuleDict):
@@ -108,6 +108,18 @@ class TorchMMVAE(nn.Module):
         """
         pass
 
+    @abc.abstractmethod
+    def objective(self, mods):
+        """
+        Includes the forward pass and calculates the loss
+
+        :param mods: dictionary with input data with modalities as keys
+        :type mods: dict
+        :return: loss
+        :rtype: dict
+        """
+        pass
+
     def decode(self, samples):
         """
         Make reconstructions for the input samples
@@ -127,3 +139,23 @@ class TorchMMVAE(nn.Module):
             elif modality in samples and samples[modality]["latents"] is None:
                 pz_xs[modality] = [None]
         return pz_xs
+
+    @staticmethod
+    def product_of_experts(mu, logvar):
+        """
+        Calculated the product of experts for input data
+        :param mu: list of means
+        :type mu: list
+        :param logvar: list of logvars
+        :type logvar: list
+        :return: joint posterior
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
+        eps = 1e-8
+        var = torch.exp(logvar) + eps
+        # precision of i-th Gaussian expert at point x
+        T = 1. / var
+        pd_mu = torch.sum(mu * T, dim=0) / torch.sum(T, dim=0)
+        pd_var = 1. / torch.sum(T, dim=0)
+        pd_logvar = pd_var
+        return pd_mu, pd_logvar

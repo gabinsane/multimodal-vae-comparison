@@ -2,7 +2,7 @@ batch_size: 32
 epochs: 600
 exp_name: cub
 labels:
-loss: bce
+beta: 1
 lr: 1e-3
 mixing: moe
 n_latents: 16
@@ -17,9 +17,11 @@ modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
+  recon_loss:  bce
   path: ./data/cub/images
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  recon_loss: category_ce
   path: ./data/cub/cub_captions.pkl

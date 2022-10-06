@@ -1,16 +1,15 @@
 # Multi-modal model specification
 from models.mmvae_base import TorchMMVAE
-import torch
+import torch, copy
 import torch.distributions as dist
 import torch.nn as nn
-import torch.nn.functional as F
-from utils import combinatorial, Constants
+from utils import combinatorial, Constants, unpack_vae_outputs, log_joint, log_batch_marginal, get_all_pairs
 from torch.autograd import Variable
 from models.NetworkTypes import VaeOutput
 
 
 class MOE(TorchMMVAE):
-    def __init__(self, vaes, model_config=None):
+    def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae
         :param vaes: list of modality-specific vae objects
@@ -18,7 +17,7 @@ class MOE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__()
+        super().__init__(**obj_config)
         self.model_config = model_config
         self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'moe'
@@ -41,6 +40,45 @@ class MOE(TorchMMVAE):
             else:
                 keys_with_val.append(modality)
         return keys, keys_with_val
+
+    def objective(self, data):
+        """
+        Objective function for MoE
+
+        :param data: input data with modalities as keys
+        :type data: dict
+        :return: loss calculated using self.obj_fn
+        :rtype: torch.tensor
+        """
+        output_dict = self.forward(data)
+        qz_xs, px_zs, zss = [], [[None for _ in range(len(data.keys()))] for _ in range(len(data.keys()))], []
+        for ind, mod in enumerate(output_dict.keys()):
+            qz_xs.append(output_dict[mod].encoder_dists)
+            zss.append(output_dict[mod].latent_samples)
+            px_zs[ind][ind] = output_dict[mod].decoder_dists[0]
+            pos = 0 if ind == 1 else 1
+            px_zs[ind][pos] = output_dict[mod].decoder_dists[1]
+        lpx_zs, klds = [], []
+        for r, qz_x in enumerate(qz_xs):
+            kld = self.obj_fn.calc_kld(qz_x, self.pz(*self.vaes["mod_{}".format(r + 1)]._pz_params.cuda()))
+            klds.append(kld.sum(-1))
+            for d in range(len(px_zs)):
+                self.obj_fn.set_ltype(self.vaes["mod_{}".format(d + 1)].ltype)
+                lpx_z = self.obj_fn.recon_loss_fn(px_zs[d][d], data["mod_{}".format(d + 1)]["data"]).view(*px_zs[d][d].batch_shape[:1],
+                                                                                           -1)
+                lpx_z = (lpx_z * self.vaes["mod_{}".format(d + 1)].llik_scaling).sum(-1)
+                if d == r:
+                    lwt = torch.tensor(0.0).cuda()
+                else:
+                    zs = zss[d]["latents"].detach()
+                    qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
+                    lwt = (qz_x.log_prob(zs) - qz_xs[d].log_prob(zs).detach()).sum(-1)[0][0]
+                lpx_zs.append((lwt.exp() * lpx_z))
+        d = {"lpx_z":torch.stack([lp for lp in lpx_zs if lp.sum() != 0]), "kld": torch.stack(klds), "qz_x":qz_xs, "zs": zss, "pz":self.pz, "pz_params":self.pz_params}
+        obj = self.obj_fn.calculate_loss(d)
+        if self.obj_fn.obj_name == "elbo":
+            obj["loss"] = (1 / len(self.vaes)) * obj["loss"]
+        return obj
 
     def forward(self, x, K=1):
         """
@@ -98,7 +136,7 @@ class MOE(TorchMMVAE):
 
 
 class POE(TorchMMVAE):
-    def __init__(self, vaes, model_config=None):
+    def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public
         :param vaes: list of modality-specific vae objects
@@ -106,12 +144,49 @@ class POE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__()
+        super().__init__(**obj_config)
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'poe'
         self.pz = dist.Normal
         self.prior_dist = dist.Normal
+
+    def objective(self, mods):
+        """
+        Objective function for PoE
+
+        :param data: input data with modalities as keys
+        :type data: dict
+        :return: loss calculated using self.obj_fn
+        :rtype: torch.tensor
+        """
+        lpx_zs, klds, losses = [[] for _ in range(len(mods.keys()))], [], []
+        for m in range(len(mods.keys()) + 1):
+            mods_input = copy.deepcopy(mods)
+            for d in mods.keys():
+                mods_input[d]["data"] = None
+                mods_input[d]["masks"] = None
+            if m == len(mods.keys()):
+                mods_input = mods
+            else:
+                mods_input["mod_{}".format(m + 1)] = mods["mod_{}".format(m + 1)]
+            output_dic = self.forward(mods_input)
+            qz_xs, zss, px_zs, _ = unpack_vae_outputs(output_dic)
+            kld = self.obj_fn.calc_kld(qz_xs[0], self.pz(*self.pz_params.to("cuda")))
+            klds.append(kld.sum(-1))
+            loc_lpx_z = []
+            for mod in output_dic.keys():
+                px_z = output_dic[mod].decoder_dists[0]
+                self.obj_fn.set_ltype(self.vaes[mod].ltype)
+                lpx_z = (self.obj_fn.recon_loss_fn(px_z, mods[mod]["data"]) * self.vaes[mod].llik_scaling).sum(-1)
+                loc_lpx_z.append(lpx_z)
+                if mod == "mod_{}".format(m + 1):
+                    lpx_zs[m].append(lpx_z)
+            d = {"lpx_z": torch.stack(loc_lpx_z).sum(0), "kld": kld.sum(-1), "qz_x": qz_xs, "zs": zss, "pz": self.pz, "pz_params": self.pz_params}
+            losses.append(self.obj_fn.calculate_loss(d)["loss"])
+        ind_losses = [-torch.stack(m).sum() / self.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs)]
+        obj = {"loss": torch.stack(losses).sum(), "reconstruction_loss": ind_losses, "kld": torch.stack(klds).mean(0).sum()}
+        return obj
 
 
     def forward(self, inputs, K=1):
@@ -161,27 +236,9 @@ class POE(TorchMMVAE):
                 logvar = torch.cat((logvar, mod_logvar.unsqueeze(0)), dim=0)
         mu_before, logvar_before = mu, logvar
         # product of experts to combine gaussians
-        mu, logvar = self.product_of_experts(mu, logvar)
+        mu, logvar = super(POE, POE).product_of_experts(mu, logvar)
         return mu, logvar, [mu_before[1:], logvar_before[1:]]
 
-    def product_of_experts(self, mu, logvar):
-        """
-        Calculated the product of experts for input data
-        :param mu: list of means
-        :type mu: list
-        :param logvar: list of logvars
-        :type logvar: list
-        :return: joint posterior
-        :rtype: tuple(torch.tensor, torch.tensor)
-        """
-        eps = 1e-8
-        var = torch.exp(logvar) + eps
-        # precision of i-th Gaussian expert at point x
-        T = 1. / var
-        pd_mu = torch.sum(mu * T, dim=0) / torch.sum(T, dim=0)
-        pd_var = 1. / torch.sum(T, dim=0)
-        pd_logvar = pd_var
-        return pd_mu, pd_logvar
 
     def prior_expert(self, size, use_cuda=False):
         """Universal prior expert. Here we use a spherical
@@ -199,7 +256,7 @@ class POE(TorchMMVAE):
 
 
 class MoPOE(TorchMMVAE):
-    def __init__(self, vaes, model_config=None):
+    def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variational Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE
         :param vaes: list of modality-specific vae objects
@@ -207,13 +264,42 @@ class MoPOE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__()
+        super().__init__(**obj_config)
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'mopoe'
         self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
         self.prior_dist = dist.Normal
+
+    def objective(self, mods):
+        """
+        Objective function for MoPoE. Computes GENERALIZED MULTIMODAL ELBO https://arxiv.org/pdf/2105.02470.pdf
+
+        :param data: input data with modalities as keys
+        :type data: dict
+        :return: loss calculated using self.obj_fn
+        :rtype: torch.tensor
+        """
+        qz_xs, zss, px_zs, single_latents = unpack_vae_outputs(self.forward(mods))
+        lpx_zs, klds = [], []
+        uni_mus, uni_logvars = list(torch.stack(single_latents[0][:-1]).squeeze(0)), list(torch.stack(single_latents[1][:-1]).squeeze(0))
+        uni_dists = [dist.Normal(*[mu, logvar]) for mu, logvar in zip(uni_mus, uni_logvars)]
+        for r, px_z in enumerate(px_zs):
+            tag = "mod_{}".format(r + 1)
+            self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
+            lpx_z = self.obj_fn.recon_loss_fn(px_z[0], mods[tag]["data"]).cuda() * self.vaes["mod_{}".format(r+1)].llik_scaling
+            lpx_zs.append(lpx_z.sum(-1))
+        rec_loss = torch.stack(lpx_zs).sum() / len(lpx_zs)
+        rec_loss = Variable(rec_loss, requires_grad=True)
+        group_divergence = self.obj_fn.calc_klds(qz_xs, self)
+        kld_mods = self.obj_fn.calc_klds(uni_dists, self)
+        kld_weighted = (torch.stack(kld_mods).sum(0) + torch.stack(group_divergence).sum(0)).sum()
+        d = {"lpx_z": rec_loss, "kld": kld_weighted, "qz_xs": qz_xs, "zs": zss, "pz": self.pz, "pz_params": self.pz_params}
+        obj = self.obj_fn.calculate_loss(d)
+        individual_losses = [-m.sum() / self.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs)]
+        obj["reconstruction_loss"] = individual_losses
+        return obj
 
     def forward(self, inputs, K=1):
         """
@@ -236,12 +322,12 @@ class MoPOE(TorchMMVAE):
         qz_d["joint"] = qz_x
         for modality in self.vaes.keys():
             output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
-                                              latent_samples=z_d["joint"])
+                                              latent_samples=z_d["joint"], single_latents=single_params)
         return output_dict
 
     def infer(self, x, num_samples=None):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
-        for m, vae in enumerate(self.vaes):
+        for m, vae in enumerate(self.vaes.values()):
             tag = "mod_{}".format(m + 1)
             if x[tag]["data"] is not None:
                 mod_mu, mod_logvar = vae.enc(x[tag])
@@ -266,31 +352,12 @@ class MoPOE(TorchMMVAE):
                 logvars = torch.cat((logvars, s_logvar), dim=0)
         weights = (1 / float(mus.shape[0])) * torch.ones(mus.shape[0]).cuda()
         joint_mu, joint_logvar = self.moe_fusion(mus, logvars, weights)
-        return joint_mu, joint_logvar, [mus, logvars]
+        return joint_mu, joint_logvar, [mus, torch.clamp(logvars, min=0.0001)]
 
     def reparameterize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
         eps = Variable(std.data.new(std.size()).normal_())
         return eps.mul(std).add_(mu)
-
-    def product_of_experts(self, mu, logvar):
-        """
-        Calculated the product of experts for input data
-        :param mu: list of means
-        :type mu: list
-        :param logvar: list of logvars
-        :type logvar: list
-        :return: joint posterior
-        :rtype: tuple(torch.tensor, torch.tensor)
-        """
-        eps = 1e-8
-        var = torch.exp(logvar) + eps
-        # precision of i-th Gaussian expert at point x
-        T = 1. / var
-        pd_mu = torch.sum(mu * T, dim=0) / torch.sum(T, dim=0)
-        pd_var = 1. / torch.sum(T, dim=0)
-        pd_logvar = pd_var
-        return pd_mu, pd_logvar
 
     def reweight_weights(self, w):
         return w / w.sum()
@@ -304,16 +371,16 @@ class MoPOE(TorchMMVAE):
 
     def poe_fusion(self, mus, logvars):
         if mus.shape[0] == len(self.vaes):
-            mus = torch.cat((mus.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()), dim=0)
-            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes[0].n_latents).cuda()),
+            mus = torch.cat((mus.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes['mod_1'].n_latents).cuda()), dim=0)
+            logvars = torch.cat((logvars.squeeze(1), torch.zeros(1, mus.shape[-2], self.vaes["mod_1"].n_latents).cuda()),
                                 dim=0)
-        mu_poe, logvar_poe = self.product_of_experts(mus, logvars)
+        mu_poe, logvar_poe = super(MoPOE, MoPOE).product_of_experts(mus, logvars)
         if len(mu_poe.shape) < 3:
             mu_poe = mu_poe.unsqueeze(0)
             logvar_poe = logvar_poe.unsqueeze(0)
         return [mu_poe, logvar_poe]
 
-    def mixture_component_selection(sellf, mus, logvars, w_modalities=None):
+    def mixture_component_selection(self, mus, logvars, w_modalities=None):
         num_components, num_samples = mus.shape[0], mus.shape[1]
         idx_start, idx_end = [], []
         for k in range(0, num_components):
@@ -331,7 +398,7 @@ class MoPOE(TorchMMVAE):
 
 
 class DMVAE(TorchMMVAE):
-    def __init__(self, vaes, model_config=None):
+    def __init__(self, vaes, obj_config, model_config=None):
         """
         Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE
         :param vaes: list of modality-specific vae objects
@@ -339,13 +406,56 @@ class DMVAE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__()
+        super().__init__(**obj_config)
         self.model_config = model_config
         self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'dmvae'
         self.pz = dist.Normal
         self.qz_x = dist.Normal
 
+
+    def objective(self, mods):
+        """
+        Objective for the DMVAE model. Source: https://github.com/seqam-lab/
+
+        :param data: input data with modalities as keys
+        :type data: dict
+        :return: loss calculated using self.obj_fn
+        :rtype: torch.tensor
+        """
+        qz_xs, zss, px_zs, _ = unpack_vae_outputs(self.forward(mods))
+        recons, kls, ind_losses = [], [], []
+        for i in range(len(px_zs)):
+            tag = "mod_{}".format(i + 1)
+            for j in range(len(px_zs[i])):
+                if j < len(px_zs[i]) - 1:
+                    self.obj_fn.set_ltype(self.vaes[tag].ltype)
+                    for p in px_zs[i][j]:
+                        recons.append(self.obj_fn.recon_loss_fn(p, mods[tag]["data"]).cuda() * self.vaes[tag].llik_scaling)
+                else:
+                    recons.append(torch.tensor(0))
+            for n in range(len(px_zs[i]) - 1):
+                idxs = [2 + n, 4]
+                log_pz = log_joint([px_zs[i][n], px_zs[n + 1]], [zss[i], zss[idxs[n]]])
+                log_q_zCx = log_joint([qz_xs[i], qz_xs[idxs[n]]], [zss[i], zss[idxs[n]]])
+                log_qz, _, log_prod_qzi = log_batch_marginal([qz_xs[i], qz_xs[idxs[n]]])
+                kl = ((log_q_zCx - log_qz) * (log_qz - log_prod_qzi) * (log_prod_qzi - log_pz)).mean()
+                kls.append(kl)
+        # cross sampling
+        for i in get_all_pairs(px_zs):
+            tag = "mod_{}".format(i + 1)
+            self.obj_fn.set_ltype(self.vaes[i].ltype)
+            recons.append(self.obj_fn.loss_fn(px_zs[i[0]][0], mods[tag]["data"]).cuda() * self.vaes[tag].llik_scaling.mean())
+            log_pz = log_joint([px_zs[i[0]][0], px_zs[i[0]][1]])
+            log_q_zCx = log_joint([qz_xs[i[0]][0], qz_xs[i[0]][1]])
+            log_qz, _, log_prod_qzi = log_batch_marginal([qz_xs[i[0]][0], qz_xs[i[0]][1]])
+            kl = ((log_q_zCx - log_qz) * (log_qz - log_prod_qzi) * (log_prod_qzi - log_pz)).mean()
+            kls.append(kl)
+        for rec, kl in zip(recons, kls):
+            d = {"lpx_z": rec, "kld": kl, "qz_xs": qz_xs, "zs": zss, "pz": self.pz, "pz_params": self.pz_params}
+            ind_losses.append(self.obj_fn.calculate_loss(d)["loss"])
+        obj = {"loss":torch.tensor(ind_losses).sum(), "reconstruction_loss": ind_losses, "kld": torch.stack(kls).mean(0).sum()}
+        return obj
 
     def forward(self, x, K=1):
         """
@@ -360,42 +470,28 @@ class DMVAE(TorchMMVAE):
         qz_xs_shared, px_zs = [], [[None for _ in range(len(self.vaes) + 1)] for _ in range(len(self.vaes))]
         qz_xs_private = [None for _ in range(len(self.vaes))]
         # initialise cross-modal matrix
-        for m, vae in enumerate(self.vaes):
-            if x[m] is not None:
-                mod_mu, mod_std = self.vaes[m].enc(x[m].to("cuda") if not isinstance(x[m], list) else x[m])
-                qz_xs_private[m] = self.vaes[m].qz_x(*[mod_mu[0], mod_std[0]])
-                qz_xs_shared.append(self.vaes[m].qz_x(*[mod_mu[1], mod_std[1]]))
-        mu_joint, std_joint = self.apply_poe(qz_xs_shared)
+        for m, vae in enumerate(self.vaes.values()):
+            if x["mod_{}".format(m+1)] is not None:
+                mod_mu, mod_std = vae.enc(x["mod_{}".format(m+1)])
+                qz_xs_private[m] = vae.qz_x(*[mod_mu[0], mod_std[0]])
+                qz_xs_shared.append(vae.qz_x(*[mod_mu[1], mod_std[1]]))
+        mu_joint, std_joint = self.product_of_experts(torch.stack([x.loc for x in qz_xs_shared]),
+                                                      torch.stack([x.scale for x in qz_xs_shared]))
         joint_d = self.qz_x(*[mu_joint, std_joint])
         all_shared = qz_xs_shared + [joint_d]
         zss = []
-        for d, vae in enumerate(self.vaes):
+        for d, vae in enumerate(self.vaes.values()):
             for e, dist in enumerate(all_shared):
                 zs_shared = dist.rsample(torch.Size([K]))
                 zs_private = qz_xs_private[d].rsample(torch.Size([K]))
                 zs = torch.cat([zs_private, zs_shared], -1)[0]
                 zss.append(zs)
                 px_zs[d][e] = vae.px_z(*vae.dec({"latents": zs, "masks": None}))
-        return qz_xs_private + all_shared, px_zs, zss
-
-    def apply_poe(self, qz_xs_shared):
-        """
-        Applies the product of experts to the shared posteriors
-        :param qz_xs_shared: list of posteriors for all modalities
-        :type qz_xs_shared: list
-        :return: joint means and standard deviations
-        :rtype: tuple(torch.tensor, torch.tensor)
-        """
-        zero = torch.zeros(qz_xs_shared[0].scale.shape).cuda()
-        logvars = [-torch.log(x.scale ** 2 + Constants.eps) for x in qz_xs_shared]
-        logvarShared = -self.logsumexp(torch.stack((zero, *logvars), dim=2), dim=2)
-        stdS = torch.sqrt(torch.exp(logvarShared))
-
-        muS = 0
-        for dist in qz_xs_shared:
-            muS += dist.loc / (dist.scale ** 2 + Constants.eps)
-        muS = muS * (stdS ** 2)
-        return muS, stdS
+        output_dict = {}
+        for modality in self.vaes.keys():
+            output_dict[modality] = VaeOutput(encoder_dists=[qz_xs_private,all_shared], decoder_dists=px_zs,
+                                              latent_samples=zss, single_latents=None)
+        return output_dict
 
     def logsumexp(self, x, dim=None, keepdim=False):
         """

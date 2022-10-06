@@ -1,26 +1,28 @@
 batch_size: 32
-epochs: 2
-exp_name: test
-labels: null
-loss: bce
+epochs: 20
+exp_name: dmvae
+labels:
+beta: 1
 lr: 1e-4
-mixing: moe
+mixing: dmvae
 n_latents: 64
 obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
-viz_freq: 20
+viz_freq: 1
 test_split: 0.1
-dataset_name: gebid
+dataset_name: mnist_svhn
 modality_1:
-  decoder: CNN
-  encoder: CNN
-  mod_type: image
-  path: ./data/level2/image
+  decoder: MNIST_DMVAE
+  encoder: MNIST_DMVAE
+  mod_type: mnist
+  recon_loss:  bce
+  path: ./data/mnist_svhn/mnist
 modality_2:
-  decoder: TxtTransformer
-  encoder: TxtTransformer
-  mod_type: text
-  path: ./data/level2/attrs.pkl
+  decoder: SVHN_DMVAE
+  encoder: SVHN_DMVAE
+  recon_loss: bce
+  mod_type: svhn
+  path: ./data/mnist_svhn/svhn
 

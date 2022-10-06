@@ -11,6 +11,11 @@ import pickle
 from visualization import tensors_to_df
 from itertools import combinations
 
+def check_input_unpacked(mods):
+    """Checks if the input is unpacked in case of a unimodal scenario"""
+    if len(mods.keys()) == 1:
+        mods = mods[list(mods.keys())[0]]
+    return mods
 
 def data_to_device(data, device):
     for key in data.keys():
@@ -22,7 +27,10 @@ def unpack_vae_outputs(output):
     qz_xs = [output[m].encoder_dists for m in output.keys()]
     zss = [output[m].latent_samples for m in output.keys()]
     px_zs = [output[m].decoder_dists for m in output.keys()]
-    return qz_xs, zss, px_zs
+    single_latents = None
+    if output["mod_1"].single_latents is not None:
+        single_latents = [[output[m].single_latents[0] for m in output.keys()],[output[m].single_latents[1] for m in output.keys()]]
+    return qz_xs, zss, px_zs, single_latents
 
 def get_root_folder():
     return os.path.dirname(__file__)

@@ -7,8 +7,7 @@ from models import encoders, decoders
 from models.decoders import VaeDecoder
 from models.encoders import VaeEncoder
 from models.NetworkTypes import VaeOutput
-from utils import get_mean, kl_divergence, load_images, lengths_to_mask
-
+from models.objectives import UnimodalObjective
 
 class DencoderFactory(object):
     @classmethod
@@ -98,14 +97,12 @@ class BaseVae(nn.Module):
         px_z = self.px_z(*px_z_params)
         output_dict = {}
         output_dict["mod_1"] = VaeOutput(encoder_dists=qz_x, decoder_dists=px_z,
-                                          latent_samples=zs)
+                                          latent_samples={"latents":zs})
         return output_dict
 
-
-
 class VAE(BaseVae):
-    def __init__(self, enc, dec, feature_dim, n_latents, prior_dist=dist.Normal,
-                 likelihood_dist=dist.Normal, post_dist=dist.Normal):
+    def __init__(self, enc, dec, feature_dim, n_latents, ltype, prior_dist=dist.Normal,
+                 likelihood_dist=dist.Normal, post_dist=dist.Normal, obj_fn=None, beta=1):
         """
         The general unimodal VAE module, can be used separately or in a multimodal VAE
 
@@ -130,11 +127,17 @@ class VAE(BaseVae):
         self.llik_scaling = 1.0
         self.data_dim = feature_dim
         self.n_latents = n_latents
+        self.post_dist = post_dist
+        self.likelihood_dist = likelihood_dist
+        self.prior_dist = prior_dist
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
             nn.Parameter(torch.ones(1, n_latents), requires_grad=False)  # logvar
         ])
         self.modelName = 'vae_{}'.format(enc)
+        self.ltype = ltype
+        self.obj_fn = self.set_objective_fn(obj_fn, beta)
+
 
     @property
     def pz_params(self):
@@ -154,6 +157,13 @@ class VAE(BaseVae):
             raise NameError("qz_x params not initalised yet!")
         return self._qz_x_params
 
+    def set_objective_fn(self, obj_fn, beta):
+        """Set up loss function in case of unimodal VAE"""
+        if obj_fn is not None:
+            obj = UnimodalObjective(obj_fn, beta)
+            obj.set_ltype(self.ltype)
+            return obj
+        return None
 
     def generate_samples(self, N):
         """
@@ -168,3 +178,20 @@ class VAE(BaseVae):
             pz = self.pz(*self.pz_params)
             latents = pz.rsample(torch.Size([N]))
         return latents
+
+    def objective(self, data):
+        """
+        Objective function for unimodal VAE scenario (not used with multimodal VAEs)
+
+        :param data: input data with modalities as keys
+        :type data: dict
+        :return: loss calculated using self.loss_fn
+        :rtype: torch.tensor
+        """
+        assert self.obj_fn is not None, "loss_fn not defined!"
+        output = self.forward(data["mod_1"])
+        qz_x = output["mod_1"].encoder_dists
+        px_z = output["mod_1"].decoder_dists
+        zs = output["mod_1"].latent_samples
+        loss = self.obj_fn.calculate_loss(px_z, data["mod_1"]["data"], qz_x, self.prior_dist, self._pz_params, zs)
+        return loss
