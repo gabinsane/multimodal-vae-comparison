@@ -2,18 +2,20 @@ batch_size: 32
 epochs: 600
 exp_name: gebidlevel4_mmvae_27
 labels: null
-loss: lprob
+beta: 1
 lr: 1e-4
 mixing: moe
 modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
+  recon_loss: lprob
   path: ./data/level4/image
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  recon_loss: category_ce
   path: ./data/level4/attrs.pkl
 n_latents: 32
 obj: elbo

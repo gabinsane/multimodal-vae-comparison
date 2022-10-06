@@ -4,8 +4,7 @@ import pytorch_lightning as pl
 import models
 from models.vae import VAE
 import os, copy
-from utils import make_kl_df, unpack_vae_outputs, data_to_device
-from models import objectives
+from utils import make_kl_df, unpack_vae_outputs, data_to_device, check_input_unpacked
 from models.config_cls import Config
 from models.mmvae_base import TorchMMVAE
 from visualization import plot_kls_df
@@ -28,24 +27,15 @@ class MultimodalVAE(pl.LightningModule):
         self.optimizer = None
         self.objective = None
         self.mod_names = self.get_mod_names()
-        self.model = TorchMMVAE()
+        self.model = TorchMMVAE(self.config.obj)
         self.feature_dims = feature_dims
         self.get_model()
-        self.get_objective()
 
     def get_mod_names(self):
         mod_names = {}
         for i, m in enumerate(self.config.mods):
             mod_names["mod_{}".format(i+1)] = m["mod_type"]
         return mod_names
-
-    def get_objective(self):
-        """
-        Find the selected objective
-        """
-        self.objective = getattr(objectives, ('multimodal_' if hasattr(self.model, 'vaes') else '')
-                                 + ("_".join((self.config.obj, self.config.mixing)) if hasattr(self.model, 'vaes')
-                                    else self.config.obj))
 
     def configure_optimizers(self):
         """
@@ -70,10 +60,12 @@ class MultimodalVAE(pl.LightningModule):
         vaes = {}
         for i, m in enumerate(self.config.mods):
                 vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], self.feature_dims[m["mod_type"]],
-                                                   self.config.n_latents)
+                                                   self.config.n_latents, m["recon_loss"], obj_fn=self.config.obj,
+                                                   beta=self.config.beta)
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
-            self.model = getattr(models, self.config.mixing.lower())(vaes)
+            obj_cfg = {"obj":self.config.obj, "beta":self.config.beta}
+            self.model = getattr(models, self.config.mixing.lower())(vaes, obj_cfg)
             assert isinstance(self.model, TorchMMVAE)
         else:
             self.model = vaes["mod_1"]  # unimodal VAE scenario
@@ -87,23 +79,27 @@ class MultimodalVAE(pl.LightningModule):
         """
         Iterates over the train loader
         """
-        loss, kld, partial_l = self.objective(self.model, train_batch, ltype=self.config.loss)
-        self.log('train_loss', loss, batch_size=self.config.batch_size)
-        self.log('train_kld', kld, batch_size=self.config.batch_size)
-        for i, p_l in enumerate(partial_l):
-            self.log("Mod_{}_TrainLoss".format(i), p_l, batch_size=self.config.batch_size)
-        return loss
+        loss_d = self.model.objective(train_batch)
+        for key in loss_d.keys():
+            if key != "reconstruction_loss":
+                self.log("train_{}".format(key), loss_d[key].sum(), batch_size=self.config.batch_size)
+            else:
+                for i, p_l in enumerate(loss_d[key]):
+                    self.log("Mod_{}_TrainLoss".format(i), p_l.sum(), batch_size=self.config.batch_size)
+        return loss_d["loss"]
 
     def validation_step(self, val_batch, batch_idx):
         """
         Iterates over the test loader
         """
-        loss, kld, partial_l = self.objective(self.model, val_batch, ltype=self.config.loss)
-        self.log('val_loss', loss, batch_size=self.config.batch_size)
-        self.log('val_kld', kld, batch_size=self.config.batch_size)
-        for i, p_l in enumerate(partial_l):
-            self.log("Mod_{}_ValLoss".format(i), p_l, batch_size=self.config.batch_size)
-        return loss
+        loss_d = self.model.objective(val_batch)
+        for key in loss_d.keys():
+            if key != "reconstruction_loss":
+                self.log("val_{}".format(key), loss_d[key].sum(), batch_size=self.config.batch_size)
+            else:
+                for i, p_l in enumerate(loss_d[key]):
+                    self.log("Mod_{}_ValLoss".format(i), p_l.sum(), batch_size=self.config.batch_size)
+        return loss_d["loss"]
 
     def validation_epoch_end(self, outputs):
         """
@@ -112,7 +108,7 @@ class MultimodalVAE(pl.LightningModule):
         :param outputs: Loss that comes from validation_step
         :type outputs: torch.tensor
         """
-        if (self.trainer.current_epoch + 1) % self.config.viz_freq == 0:
+        if (self.trainer.current_epoch) % self.config.viz_freq == 0:
             savepath = os.path.join(self.config.mPath, "visuals/epoch_{}/".format(self.trainer.current_epoch))
             os.makedirs(savepath, exist_ok=True)
             self.analyse_data(savedir=savepath, labels=self.config.labels)
@@ -131,21 +127,22 @@ class MultimodalVAE(pl.LightningModule):
                 if mods[k]["data"] is None:
                     mods.pop(k)
             for key in output.keys():
-                recon_list = [x.loc for x in output[key].decoder_dists][0]
+                recon_list = [x.loc for x in output[key].decoder_dists][0] if isinstance(output[key].decoder_dists, list)\
+                    else output[key].decoder_dists.loc
                 data_class = self.trainer.datamodule.datasets[int(key.split("_")[-1])-1]
                 p = os.path.join(savedir, "recon_{}_to_{}.png".format(name, data_class.mod_type))
                 data_class.save_recons(mods, recon_list, p, self.mod_names)
 
         data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
-        data = data_to_device(data, self.device)
-        save(self.model.forward(data), data, "all")
+        data_i = check_input_unpacked(data_to_device(data, self.device))
+        save(self.model.forward(data_i), data, "all")
         for m in range(len(data.keys())):
             mods = copy.deepcopy(data)
             for d in mods.keys():
                 mods[d]["data"], mods[d]["masks"] = None, None
             mods["mod_{}".format(m + 1)] = data["mod_{}".format(m + 1)]
             mod_name = self.config.mods[m]["mod_type"]
-            output = self.model.forward(mods)
+            output = self.model.forward(check_input_unpacked(mods))
             save(output, copy.deepcopy(mods), mod_name)
 
 
@@ -156,11 +153,18 @@ class MultimodalVAE(pl.LightningModule):
         :param num_samples: number of samples to generate
         :type num_samples: int
         """
-        for i, vae in enumerate(self.model.vaes):
-            samples = self.model.vaes[vae].generate_samples(num_samples)
-            recons = self.model.vaes[vae].decode({"latents": samples, "masks": None})[0]
-            data_class = self.trainer.datamodule.datasets[i]
-            p = os.path.join(savedir, "traversals_{}.png".format( data_class.mod_type))
+        if len(self.config.mods) > 1:
+            for i, vae in enumerate(self.model.vaes):
+                samples = self.model.vaes[vae].generate_samples(num_samples)
+                recons = self.model.vaes[vae].decode({"latents": samples, "masks": None})[0]
+                data_class = self.trainer.datamodule.datasets[i]
+                p = os.path.join(savedir, "traversals_{}.png".format( data_class.mod_type))
+                data_class.save_traversals(recons, p)
+        else:
+            samples = self.model.generate_samples(num_samples)
+            recons = self.model.decode({"latents": samples, "masks": None})[0]
+            data_class = self.trainer.datamodule.datasets[0]
+            p = os.path.join(savedir, "traversals_{}.png".format(data_class.mod_type))
             data_class.save_traversals(recons, p)
 
 
@@ -182,10 +186,10 @@ class MultimodalVAE(pl.LightningModule):
             data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
             if labels is not None:
                 labels = [labels[x] for x in (iter(self.trainer.datamodule.predict_dataloader(num_samples)))._next_index()]
-        data = data_to_device(data, self.device)
-        output = self.model.forward(data)
-        qz_xs, zss, _ = unpack_vae_outputs(output)
-        pz = self.model.pz(*[x for x in self.model.pz_params()])
+        data_i = check_input_unpacked(data_to_device(data, self.device))
+        output = self.model.forward(data_i)
+        qz_xs, zss, _, _ = unpack_vae_outputs(output)
+        pz = self.model.pz(*[x for x in self.model.pz_params])
         zss_sampled = [pz.sample(torch.Size([1, num_samples])).view(-1, pz.batch_shape[-1]),
                *[zs["latents"].view(-1, zs["latents"].size(-1)) for zs in zss]]
         kl_df = make_kl_df(qz_xs, pz)

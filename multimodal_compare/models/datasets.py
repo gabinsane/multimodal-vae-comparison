@@ -106,8 +106,14 @@ class BaseDataset():
         data_and_masks = torch.cat((data, masks), dim=-1)
         return data_and_masks
 
+    def _postprocess_all2img(self, data):
+        output_processed = self._postprocess(data)
+        output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
+            if self.mod_type == "text" else output_processed
+        return output_processed
+
     def save_traversals(self, recons, path):
-        output_processed = torch.tensor(self._postprocess(recons)).transpose(1, 3)
+        output_processed = torch.tensor(self._postprocess_all2img(recons)).transpose(1, 3)
         grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
         cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
 
@@ -153,12 +159,6 @@ class GEBID(BaseDataset):
 
     def _preprocess_text(self):
         return self._preprocess_text_onehot()
-
-    def _postprocess_all2img(self, data):
-        output_processed = self._postprocess(data)
-        output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
-            if self.mod_type == "text" else output_processed
-        return output_processed
 
     def save_recons(self, data, recons, path, mod_names):
         output_processed = self._postprocess_all2img(recons)

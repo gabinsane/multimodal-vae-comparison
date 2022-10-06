@@ -183,7 +183,7 @@ class Enc_MNISTMoE(VaeEncoder):
         :param num_hidden_layers: how many hidden layers to add
         :type num_hidden_layers: int
         """
-        super(Enc_MNISTMoE, self).__init__()
+        super(Enc_MNISTMoE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         modules = []
         hidden_dim = 400
         self.net_type = "FNN"
@@ -219,7 +219,7 @@ class Enc_SVHNMoE(VaeEncoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_SVHNMoE, self).__init__()
+        super(Enc_SVHNMoE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         imgChans = 3
         fBase = 32
         self.net_type = "CNN"
@@ -313,7 +313,7 @@ class Enc_MNIST_DMVAE(VaeEncoder):
         :param zPrivate_dim: dimensionality of the private latent space
         :type zPrivate_dim: int
         """
-        super(Enc_MNIST_DMVAE, self).__init__()
+        super(Enc_MNIST_DMVAE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "FNN"
         temp = 0.66
         self.digit_temp = torch.tensor(temp)
@@ -357,7 +357,7 @@ class Enc_SVHN_DMVAE(VaeEncoder):
         :param zPrivate_dim: dimensionality of the private latent space
         :type zPrivate_dim: int
         """
-        super(Enc_SVHN_DMVAE, self).__init__()
+        super(Enc_SVHN_DMVAE, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.CNN)
         self.net_type = "CNN"
         temp = 0.66
         self.digit_temp = torch.tensor(temp)
@@ -415,7 +415,7 @@ class Enc_FNN(VaeEncoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_FNN, self).__init__()
+        super(Enc_FNN, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "FNN"
         self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(Linear(np.prod(data_dim), self.hidden_dim))
@@ -453,7 +453,7 @@ class Enc_Audio(VaeEncoder):
         :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
         :type data_dim: list
         """
-        super(Enc_Audio, self).__init__()
+        super(Enc_Audio, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.FNN)
         self.net_type = "AudioConv"
         self.latent_dim = latent_dim
         self.TCN = ConvNet(data_dim[0], [128, 128, 96, 96, 64], dropout=0)
@@ -499,7 +499,7 @@ class Enc_TransformerIMG(VaeEncoder):
         :param activation: activation function
         :type activation: str
         """
-        super(Enc_TransformerIMG, self).__init__()
+        super(Enc_TransformerIMG, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.TRANSFORMER)
         self.net_type = "Transformer"
         self.latent_dim = latent_dim
         self.ff_size = ff_size
@@ -576,7 +576,7 @@ class Enc_VideoGPT(VaeEncoder):
         :param n_res_layers: number of ResNet layers
         :type n_res_layers: int
         """
-        super(Enc_VideoGPT, self).__init__()
+        super(Enc_VideoGPT, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.DCNN)
         self.net_type = "3DCNN"
         n_times_downsample = np.array([int(math.log2(d)) for d in downsample])
         self.convs = ModuleList()
@@ -639,7 +639,7 @@ class Enc_Transformer(VaeEncoder):
         :param activation: activation function
         :type activation: str
         """
-        super(Enc_Transformer, self).__init__()
+        super(Enc_Transformer, self).__init__(latent_dim, data_dim, net_type=NetworkTypes.TRANSFORMER)
         self.net_type = "Transformer"
         self.njoints = data_dim[1]
         self.nfeats = data_dim[2]

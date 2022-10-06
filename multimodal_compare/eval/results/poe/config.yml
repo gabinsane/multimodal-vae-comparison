@@ -3,18 +3,20 @@ dataset_name: gebid
 epochs: 10
 exp_name: poe
 labels: null
-loss: bce
+beta: 1
 lr: 1e-4
 mixing: poe
 modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
+  recon_loss:  bce
   path: ./data/level2/image
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  recon_loss: category_ce
   path: ./data/level2/attrs.pkl
 n_latents: 64
 obj: elbo
