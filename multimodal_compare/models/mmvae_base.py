@@ -70,10 +70,30 @@ class TorchMMVAE(nn.Module):
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
             px_zs[modality] = [dist.Normal(*p) for p in px_z]
+        return self.make_output_dict(qz_xs, px_zs, zs)
+
+    def make_output_dict(self, encoder_dists, decoder_dists, latent_samples, single_latents=None):
+        """
+        Prepares output of the forward pass
+
+        :param encoder_dists: dict with modalities as keys and encoder distributions as values
+        :type encoder_dists: dict
+        :param decoder_dists: dict with modalities as keys and decoder distributions as values
+        :type decoder_dists: dict
+        :param latent_samples: dict with modalities as keys and dicts with latent samples as values
+        :type latent_samples: dict
+        :param single_latents: (optional) dict with modalities as keys and dicts with single latent distributions as values
+        :type single_latents: dict
+        :return: output dictionary
+        :rtype: dict
+        """
         output_dict = {}
-        for modality in self.vaes.keys():
-            output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
-                                              latent_samples=zs[modality])
+        for m in self.vaes.keys():
+            decoder_dists[m] = [decoder_dists[m]] if not isinstance(decoder_dists[m], list) else decoder_dists[m]
+            output_dict[m] = VaeOutput(encoder_dists=encoder_dists[m],
+                                              decoder_dists=decoder_dists[m],
+                                              latent_samples=latent_samples[m],
+                                              single_latents=single_latents[m] if single_latents is not None else None)
         return output_dict
 
     def encode(self, inputs):

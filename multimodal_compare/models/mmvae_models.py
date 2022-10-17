@@ -3,7 +3,7 @@ from models.mmvae_base import TorchMMVAE
 import torch, copy
 import torch.distributions as dist
 import torch.nn as nn
-from utils import combinatorial, Constants, unpack_vae_outputs, log_joint, log_batch_marginal, get_all_pairs
+from utils import combinatorial, unpack_vae_outputs, log_joint, log_batch_marginal, get_all_pairs, subsample_input_modalities, find_out_batch_size
 from torch.autograd import Variable
 from models.NetworkTypes import VaeOutput
 
@@ -12,8 +12,11 @@ class MOE(TorchMMVAE):
     def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae
+
         :param vaes: list of modality-specific vae objects
-        :type encoders: list
+        :type vaes: list
+        :param obj_cofig: config with objective-specific parameters (obj name, beta.)
+        :type obj_config: dict
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
@@ -83,6 +86,7 @@ class MOE(TorchMMVAE):
     def forward(self, x, K=1):
         """
         Forward pass that takes input data and outputs a list of posteriors, reconstructions and latent samples
+
         :param x: input data, a list of modalities where missing modalities are replaced with None
         :type x: list
         :param K: sample K samples from the posterior
@@ -92,13 +96,13 @@ class MOE(TorchMMVAE):
         """
         qz_xs = self.encode(x)
         zs = {}
-        for modality, qz_x in qz_xs.items():
-            if qz_x is not None:
-                qz_xs[modality] = self.vaes[modality].qz_x(*qz_x)
-                z = self.vaes[modality].qz_x(*qz_x).rsample(torch.Size([K]))
+        for modality, qz in qz_xs.items():
+            if qz is not None:
+                qz_xs[modality] = self.vaes[modality].qz_x(*list(qz))
+                z = self.vaes[modality].qz_x(*qz).rsample(torch.Size([K]))
                 zs[modality] = {"latents": z, "masks": None}
             else:
-                zs[modality] = {"latents":None, "masks":None}
+                zs[modality] = {"latents": None, "masks": None}
         # decode the samples
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
@@ -113,15 +117,12 @@ class MOE(TorchMMVAE):
             for mod_vae, vae in self.vaes.items():
                 if mod_vae != modality:  # fill-in off-diagonal
                     px_zs[mod_vae].append(vae.px_z(*vae.dec(z)))
-        output_dict = {}
-        for modality in self.vaes.keys():
-            output_dict[modality] = VaeOutput(encoder_dists=qz_xs[modality], decoder_dists=px_zs[modality],
-                                              latent_samples=zs[modality])
-        return output_dict
+        return self.make_output_dict(qz_xs, px_zs, zs)
 
     def reconstruct(self, data, runPath, epoch, N=8):
         """
         Reconstruct data for individual experts
+
         :param data: list of input modalities
         :type data: list
         :param runPath: path to save data to
@@ -139,8 +140,11 @@ class POE(TorchMMVAE):
     def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public
+
         :param vaes: list of modality-specific vae objects
-        :type encoders: list
+        :type vaes: list
+        :param obj_cofig: config with objective-specific parameters (obj name, beta.)
+        :type obj_config: dict
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
@@ -161,15 +165,8 @@ class POE(TorchMMVAE):
         :rtype: torch.tensor
         """
         lpx_zs, klds, losses = [[] for _ in range(len(mods.keys()))], [], []
-        for m in range(len(mods.keys()) + 1):
-            mods_input = copy.deepcopy(mods)
-            for d in mods.keys():
-                mods_input[d]["data"] = None
-                mods_input[d]["masks"] = None
-            if m == len(mods.keys()):
-                mods_input = mods
-            else:
-                mods_input["mod_{}".format(m + 1)] = mods["mod_{}".format(m + 1)]
+        mods_inputs = subsample_input_modalities(mods)
+        for m, mods_input in enumerate(mods_inputs):
             output_dic = self.forward(mods_input)
             qz_xs, zss, px_zs, _ = unpack_vae_outputs(output_dic)
             kld = self.obj_fn.calc_kld(qz_xs[0], self.pz(*self.pz_params.to("cuda")))
@@ -199,21 +196,18 @@ class POE(TorchMMVAE):
         :return: dict where keys are modalities and values are a named tuple
         :rtype: dict
         """
-        mu, logvar, single_params = self.infer(inputs, K)
+        mu, logvar, single_params = self.modality_mixing(inputs, K)
         qz_x = dist.Normal(*[mu, logvar])
         z = qz_x.rsample(torch.Size([1]))
         qz_d, px_d, z_d = {}, {}, {}
-        z_d["joint"] = {"latents": z, "masks": None}
         for mod, vae in self.vaes.items():
-            px_d[mod] = vae.px_z(*vae.dec(z_d["joint"]))
-        output_dict = {}
-        qz_d["joint"] = qz_x
-        for modality in self.vaes.keys():
-            output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
-                                              latent_samples=z_d["joint"])
-        return output_dict
+            px_d[mod] = vae.px_z(*vae.dec({"latents": z, "masks": None}))
+        for key in inputs.keys():
+            qz_d[key] = qz_x
+            z_d[key] = {"latents": z, "masks": None}
+        return self.make_output_dict(qz_d, px_d, z_d)
 
-    def infer(self, x, K=1):
+    def modality_mixing(self, x, K=1):
         """
         Inference module, calculates the joint posterior
         :param inputs: input data, a dict of modalities where missing modalities are replaced with None
@@ -223,10 +217,7 @@ class POE(TorchMMVAE):
         :return: joint posterior and individual posteriors
         :rtype: tuple(torch.tensor, torch.tensor, list, list)
         """
-        for key in x.keys():
-            if x[key]["data"] is not None:
-                batch_size = x[key]["data"].shape[0]
-                break
+        batch_size = find_out_batch_size(x)
         # initialize the universal prior expert
         mu, logvar = self.prior_expert((1, batch_size, self.vaes["mod_1"].n_latents), use_cuda=True)
         for m, vae in self.vaes.items():
@@ -259,8 +250,11 @@ class MoPOE(TorchMMVAE):
     def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variational Autoencoder with Generalized Multimodal Elbo https://github.com/thomassutter/MoPoE
+
         :param vaes: list of modality-specific vae objects
-        :type encoders: list
+        :type vaes: list
+        :param obj_cofig: config with objective-specific parameters (obj name, beta.)
+        :type obj_config: dict
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
@@ -283,7 +277,7 @@ class MoPOE(TorchMMVAE):
         """
         qz_xs, zss, px_zs, single_latents = unpack_vae_outputs(self.forward(mods))
         lpx_zs, klds = [], []
-        uni_mus, uni_logvars = list(torch.stack(single_latents[0][:-1]).squeeze(0)), list(torch.stack(single_latents[1][:-1]).squeeze(0))
+        uni_mus, uni_logvars = single_latents
         uni_dists = [dist.Normal(*[mu, logvar]) for mu, logvar in zip(uni_mus, uni_logvars)]
         for r, px_z in enumerate(px_zs):
             tag = "mod_{}".format(r + 1)
@@ -311,21 +305,19 @@ class MoPOE(TorchMMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        mu, logvar, single_params = self.infer(inputs, K)
+        mu, logvar, single_latents = self.modality_mixing(inputs, K)
         qz_x = dist.Normal(*[mu, logvar])
         z = qz_x.rsample(torch.Size([1]))
         qz_d, px_d, z_d = {}, {}, {}
         z_d["joint"] = {"latents": z, "masks": None}
         for mod, vae in self.vaes.items():
-            px_d[mod] = vae.px_z(*vae.dec(z_d["joint"]))
-        output_dict = {}
-        qz_d["joint"] = qz_x
-        for modality in self.vaes.keys():
-            output_dict[modality] = VaeOutput(encoder_dists=qz_d["joint"], decoder_dists=[px_d[modality]],
-                                              latent_samples=z_d["joint"], single_latents=single_params)
-        return output_dict
+            px_d[mod] = vae.px_z(*vae.dec({"latents": z, "masks": None}))
+        for key in inputs.keys():
+            qz_d[key] = qz_x
+            z_d[key] = {"latents": z, "masks": None}
+        return self.make_output_dict(qz_d, px_d, z_d, single_latents)
 
-    def infer(self, x, num_samples=None):
+    def modality_mixing(self, x, num_samples=None):
         mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
         for m, vae in enumerate(self.vaes.values()):
             tag = "mod_{}".format(m + 1)
@@ -352,7 +344,10 @@ class MoPOE(TorchMMVAE):
                 logvars = torch.cat((logvars, s_logvar), dim=0)
         weights = (1 / float(mus.shape[0])) * torch.ones(mus.shape[0]).cuda()
         joint_mu, joint_logvar = self.moe_fusion(mus, logvars, weights)
-        return joint_mu, joint_logvar, [mus, torch.clamp(logvars, min=0.0001)]
+        single_latents = {}
+        for i, mu in enumerate(mus[:2]):
+            single_latents["mod_{}".format(i+1)] = [mu, torch.clamp(logvars, min=0.0001)[i]]
+        return joint_mu, joint_logvar, single_latents
 
     def reparameterize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
@@ -401,8 +396,11 @@ class DMVAE(TorchMMVAE):
     def __init__(self, vaes, obj_config, model_config=None):
         """
         Private-Shared Disentangled Multimodal VAE for Learning of Latent Representations https://github.com/seqam-lab/DMVAE
+
         :param vaes: list of modality-specific vae objects
-        :type encoders: list
+        :type vaes: list
+        :param obj_cofig: config with objective-specific parameters (obj name, beta.)
+        :type obj_config: dict
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
