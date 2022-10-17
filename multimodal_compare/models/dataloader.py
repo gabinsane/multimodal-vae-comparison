@@ -103,12 +103,12 @@ class DataModule(LightningDataModule):
     def train_dataloader(self) -> DataLoader:
         """Return Train DataLoader"""
         return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=0)
+                          num_workers=4)
 
     def val_dataloader(self) -> DataLoader:
         """Return Val DataLoader"""
         return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=0)
+                          num_workers=4)
 
     def predict_dataloader(self, batch_size) -> DataLoader:
         """Return Val DataLoader with custom batch size"""
