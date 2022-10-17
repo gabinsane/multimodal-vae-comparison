@@ -65,7 +65,7 @@ class MultimodalVAE(pl.LightningModule):
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
             obj_cfg = {"obj":self.config.obj, "beta":self.config.beta}
-            self.model = getattr(models, self.config.mixing.lower())(vaes, obj_cfg)
+            self.model = getattr(models, self.config.mixing.lower())(vaes, obj_cfg, self.config.model_cfg)
             assert isinstance(self.model, TorchMMVAE)
         else:
             self.model = vaes["mod_1"]  # unimodal VAE scenario

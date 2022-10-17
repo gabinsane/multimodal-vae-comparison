@@ -12,7 +12,7 @@ class MOE(TorchMMVAE):
     def __init__(self, vaes, obj_config, model_config=None):
         """
         Multimodal Variaional Autoencoder with Mixture of Experts https://github.com/iffsid/mmvae
-
+        
         :param vaes: list of modality-specific vae objects
         :type vaes: list
         :param obj_cofig: config with objective-specific parameters (obj name, beta.)
