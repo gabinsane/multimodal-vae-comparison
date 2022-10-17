@@ -114,3 +114,13 @@ class DataModule(LightningDataModule):
         """Return Val DataLoader with custom batch size"""
         return DataLoader(self.dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                           num_workers=0)
+
+    def get_num_samples(self, num_samples):
+        """Returns batch of the predict_dataloader together with the indices"""
+        while True:
+            try:
+                data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
+                index = iter(self.trainer.datamodule.predict_dataloader(num_samples))._next_index()
+                return data, index
+            except:
+                continue

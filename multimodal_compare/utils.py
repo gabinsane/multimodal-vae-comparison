@@ -1,5 +1,5 @@
 import math
-import os, csv
+import os, csv, copy
 import shutil
 import pathlib
 import cv2
@@ -7,9 +7,19 @@ import glob, imageio
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import torch
+from collections import defaultdict
 import pickle
 from visualization import tensors_to_df
 from itertools import combinations
+
+
+def find_out_batch_size(inputs):
+    batch_size = None
+    for key in inputs.keys():
+        if inputs[key]["data"] is not None:
+            batch_size = inputs[key]["data"].shape[0]
+            break
+    return batch_size
 
 def check_input_unpacked(mods):
     """Checks if the input is unpacked in case of a unimodal scenario"""
@@ -17,11 +27,32 @@ def check_input_unpacked(mods):
         mods = mods[list(mods.keys())[0]]
     return mods
 
+def subsample_input_modalities(mods):
+    mods_inputs = []
+    for m in range(len(mods) + 1):
+        mods_input = copy.deepcopy(mods)
+        for d in mods.keys():
+            mods_input[d]["data"] = None
+            mods_input[d]["masks"] = None
+        if m == len(mods.keys()):
+            mods_input = mods
+        else:
+            mods_input["mod_{}".format(m + 1)] = mods["mod_{}".format(m + 1)]
+        mods_inputs.append(mods_input)
+    return mods_inputs
+
 def data_to_device(data, device):
     for key in data.keys():
         data[key] = {k: v.to(device=device, non_blocking=True) if hasattr(v, 'to') else v for k, v in
                      data[key].items()}
     return data
+
+def merge_dicts(d1, d2):
+    dd = defaultdict(list)
+    for d in (d1, d2):  # you can list as many input dicts as you want here
+        for key, value in d.items():
+            dd[key].append(value)
+    return dd
 
 def unpack_vae_outputs(output):
     qz_xs = [output[m].encoder_dists for m in output.keys()]

@@ -183,9 +183,8 @@ class MultimodalVAE(pl.LightningModule):
         :rtype: list
         """
         if not data:
-            data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
-            if labels is not None:
-                labels = [labels[x] for x in (iter(self.trainer.datamodule.predict_dataloader(num_samples)))._next_index()]
+            data, indices = self.trainer.datamodule.get_num_samples(num_samples)
+            labels = [labels[x] for x in indices] if labels is not None else None
         data_i = check_input_unpacked(data_to_device(data, self.device))
         output = self.model.forward(data_i)
         qz_xs, zss, _, _ = unpack_vae_outputs(output)
