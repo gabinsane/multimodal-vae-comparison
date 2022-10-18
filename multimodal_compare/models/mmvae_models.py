@@ -100,7 +100,7 @@ class MOE(TorchMMVAE):
             if qz is not None:
                 qz_xs[modality] = self.vaes[modality].qz_x(*list(qz))
                 z = self.vaes[modality].qz_x(*qz).rsample(torch.Size([K]))
-                zs[modality] = {"latents": z, "masks": None}
+                zs[modality] = {"latents": z, "masks": x[modality]["masks"]}
             else:
                 zs[modality] = {"latents": None, "masks": None}
         # decode the samples
@@ -201,10 +201,10 @@ class POE(TorchMMVAE):
         z = qz_x.rsample(torch.Size([1]))
         qz_d, px_d, z_d = {}, {}, {}
         for mod, vae in self.vaes.items():
-            px_d[mod] = vae.px_z(*vae.dec({"latents": z, "masks": None}))
+            px_d[mod] = vae.px_z(*vae.dec({"latents": z, "masks": inputs[mod]["masks"]}))
         for key in inputs.keys():
             qz_d[key] = qz_x
-            z_d[key] = {"latents": z, "masks": None}
+            z_d[key] = {"latents": z, "masks": inputs[key]["masks"]}
         return self.make_output_dict(qz_d, px_d, z_d)
 
     def modality_mixing(self, x, K=1):
@@ -355,7 +355,7 @@ class MoPOE(TorchMMVAE):
             qz_d[mod] = dist.Normal(*latents["joint"])
             z = single_latents[mod].rsample(torch.Size([1])) if latents["modalities"][mod] is not None \
                 else qz_d[mod].rsample(torch.Size([1]))
-            z_d[mod] = {"latents": z, "masks": None}
+            z_d[mod] = {"latents": z, "masks": inputs[mod]["masks"]}
             px_d[mod] = vae.px_z(*vae.dec(z_d[mod]))
         return self.make_output_dict(qz_d, px_d, z_d, single_latents)
 
