@@ -159,6 +159,25 @@ class BaseObjective():
             klds.append(self.calc_kld(d, model.pz(*model.pz_params.cuda())))
         return klds
 
+    def weighted_group_kld(self, latent_dists, model, weights):
+        """
+        Calculated the weighted group KL-divergence.
+
+        :param latent_dists: list of the two distributions
+        :type latent_dists: list
+        :param model: model object
+        :type model: object
+        :param weights: tensor with weights for each distribution
+        :type weights: torch.Tensor
+        :return: group divergence, list of klds
+        :rtype: tuple
+        """
+        klds = []
+        for d in latent_dists:
+            klds.append(self.calc_kld(d, model.pz(*model.pz_params.cuda())))
+        group_div = torch.stack(klds).sum(-1).mean(1) * weights
+        return group_div.sum(), klds
+
 
 class UnimodalObjective(BaseObjective):
     """
