@@ -102,7 +102,7 @@ class BaseVae(nn.Module):
 
 class VAE(BaseVae):
     def __init__(self, enc, dec, feature_dim, n_latents, ltype, prior_dist=dist.Normal,
-                 likelihood_dist=dist.Normal, post_dist=dist.Normal, obj_fn=None, beta=1):
+                 likelihood_dist=dist.Normal, post_dist=dist.Normal, obj_fn=None, beta=1, id_name="mod_1"):
         """
         The general unimodal VAE module, can be used separately or in a multimodal VAE
 
@@ -134,7 +134,7 @@ class VAE(BaseVae):
             nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
             nn.Parameter(torch.ones(1, n_latents), requires_grad=False)  # logvar
         ])
-        self.modelName = 'vae_{}'.format(enc)
+        self.modelName = id_name
         self.ltype = ltype
         self.obj_fn = self.set_objective_fn(obj_fn, beta)
 

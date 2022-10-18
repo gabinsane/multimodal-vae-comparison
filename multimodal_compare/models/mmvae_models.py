@@ -6,7 +6,7 @@ import torch.nn as nn
 from utils import combinatorial, unpack_vae_outputs, log_joint, log_batch_marginal, get_all_pairs, subsample_input_modalities, find_out_batch_size
 from torch.autograd import Variable
 from models.NetworkTypes import VaeOutput
-
+from itertools import chain, combinations
 
 class MOE(TorchMMVAE):
     def __init__(self, vaes, obj_config, model_config=None):
@@ -265,6 +265,25 @@ class MoPOE(TorchMMVAE):
         self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
         self.prior_dist = dist.Normal
+        self.subsets = self.set_subsets()
+        self.weights = None
+
+    def set_subsets(self):
+        """
+        powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3)
+        (1,2,3)
+        """
+        xs = list(self.vaes.keys())
+        subsets_list = chain.from_iterable(combinations(xs, n) for n in range(len(xs)+1))
+        subsets = dict()
+        for k, mod_names in enumerate(subsets_list):
+            mods = []
+            for l, mod_name in enumerate(sorted(mod_names)):
+                mods.append(self.vaes[mod_name])
+            key = '_'.join(sorted(mod_names))
+            subsets[key] = mods
+        subsets.pop("", None)
+        return subsets
 
     def objective(self, mods):
         """
@@ -277,23 +296,47 @@ class MoPOE(TorchMMVAE):
         """
         qz_xs, zss, px_zs, single_latents = unpack_vae_outputs(self.forward(mods))
         lpx_zs, klds = [], []
-        uni_mus, uni_logvars = single_latents
-        uni_dists = [dist.Normal(*[mu, logvar]) for mu, logvar in zip(uni_mus, uni_logvars)]
+        group_divergence = self.obj_fn.weighted_group_kld(single_latents + [qz_xs[0]], self, self.weights)
         for r, px_z in enumerate(px_zs):
-            tag = "mod_{}".format(r + 1)
-            self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
-            lpx_z = self.obj_fn.recon_loss_fn(px_z[0], mods[tag]["data"]).cuda() * self.vaes["mod_{}".format(r+1)].llik_scaling
-            lpx_zs.append(lpx_z.sum(-1))
-        rec_loss = torch.stack(lpx_zs).sum() / len(lpx_zs)
-        rec_loss = Variable(rec_loss, requires_grad=True)
-        group_divergence = self.obj_fn.calc_klds(qz_xs, self)
-        kld_mods = self.obj_fn.calc_klds(uni_dists, self)
-        kld_weighted = (torch.stack(kld_mods).sum(0) + torch.stack(group_divergence).sum(0)).sum()
-        d = {"lpx_z": rec_loss, "kld": kld_weighted, "qz_xs": qz_xs, "zs": zss, "pz": self.pz, "pz_params": self.pz_params}
+             tag = "mod_{}".format(r + 1)
+             self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
+             lpx_z = self.obj_fn.recon_loss_fn(px_z[0], mods[tag]["data"]).cuda() * self.vaes["mod_{}".format(r+1)].llik_scaling
+             lpx_zs.append(lpx_z.sum(-1))
+        d = {"lpx_z": torch.stack(lpx_zs).sum(0).mean(), "kld": group_divergence[0], "qz_x": qz_xs, "zs": zss, "pz": self.pz,
+             "pz_params": self.pz_params}
         obj = self.obj_fn.calculate_loss(d)
-        individual_losses = [-m.sum() / self.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs)]
-        obj["reconstruction_loss"] = individual_losses
+        ind_losses = [-m / self.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs)]
+        obj["reconstruction_loss"] = ind_losses
         return obj
+
+    def modality_mixing(self, input_batch):
+        latents = dict()
+        enc_mods = self.encode(input_batch)
+        latents['modalities'] = enc_mods
+        mus = torch.Tensor().to("cuda")
+        logvars = torch.Tensor().to("cuda")
+        distr_subsets = dict()
+        for k, s_key in enumerate(self.subsets.keys()):
+            mods = self.subsets[s_key]
+            mus_subset = torch.Tensor().to("cuda")
+            logvars_subset = torch.Tensor().to("cuda")
+            mods_avail = True
+            for m, mod in enumerate(mods):
+                if mod.modelName in input_batch.keys() and input_batch[mod.modelName]["data"] is not None:
+                    mus_subset = torch.cat((mus_subset, enc_mods[mod.modelName][0].unsqueeze(0)), dim=0)
+                    logvars_subset = torch.cat((logvars_subset,  enc_mods[mod.modelName][1].unsqueeze(0)),  dim=0)
+                else:
+                    mods_avail = False
+            if mods_avail:
+                s_mu, s_logvar = self.poe_fusion(mus_subset, logvars_subset)
+                distr_subsets[s_key] = [s_mu, s_logvar]
+                mus = torch.cat((mus, s_mu.unsqueeze(0)), dim=0)
+                logvars = torch.cat((logvars, s_logvar.unsqueeze(0)), dim=0)
+        self.weights = (1/float(mus.shape[0]))*torch.ones(mus.shape[0]).to("cuda")
+        joint_mu, joint_logvar = self.moe_fusion(mus, logvars, self.weights)
+        latents['joint'] = [joint_mu.squeeze(0), joint_logvar.squeeze(0)]
+        latents['subsets'] = distr_subsets
+        return latents
 
     def forward(self, inputs, K=1):
         """
@@ -305,49 +348,16 @@ class MoPOE(TorchMMVAE):
         :return: a list of posterior distributions, a list of reconstructions and latent samples
         :rtype: tuple(list, list, list)
         """
-        mu, logvar, single_latents = self.modality_mixing(inputs, K)
-        qz_x = dist.Normal(*[mu, logvar])
-        z = qz_x.rsample(torch.Size([1]))
-        qz_d, px_d, z_d = {}, {}, {}
-        z_d["joint"] = {"latents": z, "masks": None}
+        latents = self.modality_mixing(inputs)
+        qz_d, px_d, z_d, single_latents = {}, {}, {}, {}
         for mod, vae in self.vaes.items():
-            px_d[mod] = vae.px_z(*vae.dec({"latents": z, "masks": None}))
-        for key in inputs.keys():
-            qz_d[key] = qz_x
-            z_d[key] = {"latents": z, "masks": None}
+            single_latents[mod] = dist.Normal(*latents["modalities"][mod]) if latents["modalities"][mod] is not None else None
+            qz_d[mod] = dist.Normal(*latents["joint"])
+            z = single_latents[mod].rsample(torch.Size([1])) if latents["modalities"][mod] is not None \
+                else qz_d[mod].rsample(torch.Size([1]))
+            z_d[mod] = {"latents": z, "masks": None}
+            px_d[mod] = vae.px_z(*vae.dec(z_d[mod]))
         return self.make_output_dict(qz_d, px_d, z_d, single_latents)
-
-    def modality_mixing(self, x, num_samples=None):
-        mu, logvar = [None] * len(self.vaes), [None] * len(self.vaes)
-        for m, vae in enumerate(self.vaes.values()):
-            tag = "mod_{}".format(m + 1)
-            if x[tag]["data"] is not None:
-                mod_mu, mod_logvar = vae.enc(x[tag])
-                mu[m] = mod_mu.unsqueeze(0)
-                logvar[m] = mod_logvar.unsqueeze(0)
-        mus, logvars = torch.Tensor().cuda(), torch.Tensor().cuda()
-        distr_subsets = dict()
-        for k, subset in enumerate(self.subsets):
-            mus_subset = torch.Tensor().cuda()
-            logvars_subset = torch.Tensor().cuda()
-            for vae in subset:
-                mod_index = list(self.vaes).index(vae)
-                if mu[mod_index] is not None:
-                    mus_subset = torch.cat((mus_subset, mu[mod_index].unsqueeze(0)), dim=0)
-                    logvars_subset = torch.cat((logvars_subset, logvar[mod_index].unsqueeze(0)), dim=0)
-            if mus_subset.nelement() != 0:
-                s_mu, s_logvar = self.poe_fusion(mus_subset, logvars_subset)
-                distr_subsets[k] = [s_mu, s_logvar]
-                if len(mus.shape) > 3:
-                    mus = mus.squeeze(0)
-                mus = torch.cat((mus, s_mu), dim=0)
-                logvars = torch.cat((logvars, s_logvar), dim=0)
-        weights = (1 / float(mus.shape[0])) * torch.ones(mus.shape[0]).cuda()
-        joint_mu, joint_logvar = self.moe_fusion(mus, logvars, weights)
-        single_latents = {}
-        for i, mu in enumerate(mus[:2]):
-            single_latents["mod_{}".format(i+1)] = [mu, torch.clamp(logvars, min=0.0001)[i]]
-        return joint_mu, joint_logvar, single_latents
 
     def reparameterize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
@@ -357,9 +367,7 @@ class MoPOE(TorchMMVAE):
     def reweight_weights(self, w):
         return w / w.sum()
 
-    def moe_fusion(self, mus, logvars, weights=None):
-        if weights is None:
-            weights = self.weights
+    def moe_fusion(self, mus, logvars, weights):
         weights = self.reweight_weights(weights)
         mu_moe, logvar_moe = self.mixture_component_selection(mus, logvars, weights)
         return [mu_moe, logvar_moe]

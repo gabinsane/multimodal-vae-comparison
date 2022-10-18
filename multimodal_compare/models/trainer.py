@@ -5,7 +5,6 @@ import models
 from models.vae import VAE
 import os, copy
 from utils import make_kl_df, unpack_vae_outputs, data_to_device, check_input_unpacked
-from models.config_cls import Config
 from models.mmvae_base import TorchMMVAE
 from visualization import plot_kls_df
 from visualization import t_sne
@@ -61,7 +60,7 @@ class MultimodalVAE(pl.LightningModule):
         for i, m in enumerate(self.config.mods):
                 vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], self.feature_dims[m["mod_type"]],
                                                    self.config.n_latents, m["recon_loss"], obj_fn=self.config.obj,
-                                                   beta=self.config.beta)
+                                                   beta=self.config.beta, id_name="mod_{}".format(i + 1))
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
             obj_cfg = {"obj":self.config.obj, "beta":self.config.beta}
