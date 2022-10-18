@@ -1,5 +1,6 @@
 batch_size: 24
 epochs: 600
+dataset_name: gebid
 exp_name: gebidlevel5_mmvae_0
 labels: null
 beta: 1
