@@ -177,7 +177,7 @@ class GEBID(BaseDataset):
 
 class CUB(GEBID):
     feature_dims = {"image": [64, 64, 3],
-                    "text": [52, 27, 1]
+                    "text": [246, 27, 1]
                     }
 
     def __init__(self, pth, mod_type):
