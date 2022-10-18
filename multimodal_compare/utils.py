@@ -60,7 +60,7 @@ def unpack_vae_outputs(output):
     px_zs = [output[m].decoder_dists for m in output.keys()]
     single_latents = None
     if output["mod_1"].single_latents is not None:
-        single_latents = [[output[m].single_latents[0] for m in output.keys()],[output[m].single_latents[1] for m in output.keys()]]
+        single_latents = [output[m].single_latents for m in output.keys()]
     return qz_xs, zss, px_zs, single_latents
 
 def get_root_folder():
