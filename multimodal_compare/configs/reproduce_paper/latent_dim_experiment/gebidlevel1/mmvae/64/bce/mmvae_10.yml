@@ -1,5 +1,6 @@
 batch_size: 32
 epochs: 600
+dataset_name: gebid
 exp_name: gebidlevel1_mmvae_10
 labels: null
 beta: 1
@@ -10,13 +11,13 @@ modality_1:
   encoder: CNN
   mod_type: image
   recon_loss:  bce
-  path: ./data/level1/image
+  path: ./data/level5/image
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
   recon_loss: category_ce
-  path: ./data/level1/attrs.pkl
+  path: ./data/level5/attrs.pkl
 n_latents: 64
 obj: elbo
 optimizer: adam
