@@ -36,6 +36,10 @@ class BaseObjective():
         :return: computed loss
         :rtype: torch.tensor
         """
+        if target["masks"] is not None:
+            output.loc = output.loc[:, :target["masks"].shape[1]]
+            output.scale = output.loc[:, :target["masks"].shape[1]]
+        target = target["data"]
         output, target = self.reshape_for_loss(output, target, K)
         bs = target.shape[0]
         loss = getattr(ReconLoss, self.ltype)(output, target, bs)

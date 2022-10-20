@@ -1,5 +1,4 @@
 from enum import Enum
-from collections import namedtuple
 
 
 class NetworkTypes(Enum):
@@ -9,9 +8,6 @@ class NetworkTypes(Enum):
     FNN = 3
     TRANSFORMER = 4
     DCNN = 5
-
-fields = ["encoder_dists", "decoder_dists","latent_samples", "single_latents"]
-VaeOutput = namedtuple("vae_output", fields, defaults=(None,) * len(fields))
 
 
 class NetworkRoles(Enum):

@@ -54,15 +54,6 @@ def merge_dicts(d1, d2):
             dd[key].append(value)
     return dd
 
-def unpack_vae_outputs(output):
-    qz_xs = [output[m].encoder_dists for m in output.keys()]
-    zss = [output[m].latent_samples for m in output.keys()]
-    px_zs = [output[m].decoder_dists for m in output.keys()]
-    single_latents = None
-    if output["mod_1"].single_latents is not None:
-        single_latents = [output[m].single_latents for m in output.keys()]
-    return qz_xs, zss, px_zs, single_latents
-
 def get_root_folder():
     return os.path.dirname(__file__)
 

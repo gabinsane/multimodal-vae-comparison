@@ -14,7 +14,7 @@ from models.encoders import VaeEncoder, Enc_CNN
 
 def test_VaeEncoder_dims():
     batch_size = 32
-    encoder = Enc_CNN(10, (3, 64, 64))
+    encoder = Enc_CNN(10, (3, 64, 64), None)
     assert issubclass(Enc_CNN, VaeEncoder), f"{encoder.__class__} is not a subclass of {VaeEncoder}"
     x = torch.rand((batch_size, *encoder.data_dim))
 

@@ -21,6 +21,19 @@ class Config():
         self.parser = parser
         self.eval_only = eval_only
         self.mods = []
+        self.params = self.parse_params(parser)
+        self._define_params()
+        self._setup_savedir()
+
+    def parse_params(self, parser):
+        """
+        Get parsed params
+
+        :param parser: argument parser or str path to config
+        :type parser: (argparse.ArgumentParser, str)
+        :return: parsed parameters
+        :rtype: dict
+        """
         assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str))
         if isinstance(parser, argparse.ArgumentParser):
             self.params = self._parse_args()
@@ -35,8 +48,7 @@ class Config():
             self.params = self._load_config(os.path.join(get_root_folder(), parser, 'config.yml'))
         else:
             raise ValueError(f"{parser} is not a valid path nor parser")
-        self._define_params()
-        self._setup_savedir()
+        return self.params
 
     def get_vis_dir(self):
         """
@@ -59,7 +71,10 @@ class Config():
         """
         mods = sorted([x for x in dir(self) if "modality" in x])
         for m in mods:
-            self.mods.append(getattr(self, m))
+            d = getattr(self, m)
+            if not "private_latents" in d.keys():
+                d["private_latents"] = None
+            self.mods.append(d)
         if config["labels"]:
             with open(config["labels"], 'rb') as handle:
                 self.labels = pickle.load(handle)

@@ -6,12 +6,12 @@ import torch.nn.functional as F
 from models import encoders, decoders
 from models.decoders import VaeDecoder
 from models.encoders import VaeEncoder
-from models.NetworkTypes import VaeOutput
+from models.output_storage import VAEOutput
 from models.objectives import UnimodalObjective
 
 class DencoderFactory(object):
     @classmethod
-    def get_nework_classes(cls, enc_name, dec_name, n_latents, data_dim:tuple):
+    def get_nework_classes(cls, enc_name, dec_name, n_latents, private_latents, data_dim:tuple):
         """
         Instantiates the encoder and decoder networks
 
@@ -23,9 +23,9 @@ class DencoderFactory(object):
        :rtype: tuple(object, object)
        """
         assert hasattr(encoders, "Enc_{}".format(enc_name)), "Did not find encoder {}".format(enc_name)
-        enc_obj = getattr(encoders, "Enc_{}".format(enc_name))(n_latents, data_dim)
+        enc_obj = getattr(encoders, "Enc_{}".format(enc_name))(n_latents, data_dim, private_latents)
         assert hasattr(decoders, "Dec_{}".format(dec_name)), "Did not find decoder {}".format(dec_name)
-        dec_obj = getattr(decoders, "Dec_{}".format(dec_name))(n_latents, data_dim)
+        dec_obj = getattr(decoders, "Dec_{}".format(dec_name))(n_latents, data_dim, private_latents)
         return enc_obj, dec_obj
 
 
@@ -95,13 +95,14 @@ class BaseVae(nn.Module):
         zs = qz_x.rsample(torch.Size([K]))
         px_z_params = self.decode({"latents":zs, "masks": None})
         px_z = self.px_z(*px_z_params)
-        output_dict = {}
-        output_dict["mod_1"] = VaeOutput(encoder_dists=qz_x, decoder_dists=px_z,
-                                          latent_samples={"latents":zs})
-        return output_dict
+        out = VAEOutput()
+        out.set_with_dict({"mod_1":qz_x}, "encoder_dist")
+        out.set_with_dict({"mod_1":{"latents":zs, "masks": None}}, "latent_samples")
+        out.set_with_dict({"mod_1":px_z}, "decoder_dist")
+        return out
 
 class VAE(BaseVae):
-    def __init__(self, enc, dec, feature_dim, n_latents, ltype, prior_dist=dist.Normal,
+    def __init__(self, enc, dec, feature_dim, n_latents, ltype, private_latents=None, prior_dist=dist.Normal,
                  likelihood_dist=dist.Normal, post_dist=dist.Normal, obj_fn=None, beta=1, id_name="mod_1"):
         """
         The general unimodal VAE module, can be used separately or in a multimodal VAE
@@ -121,18 +122,20 @@ class VAE(BaseVae):
         :param post_dist: posterior distribution
         :type post_dist: torch.dist
         """
-        enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, feature_dim)
+        enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim)
         super(VAE, self).__init__(enc_net, dec_net, prior_dist, likelihood_dist, post_dist)
         self._qz_x_params = None
         self.llik_scaling = 1.0
         self.data_dim = feature_dim
+        self.private_latents = private_latents
         self.n_latents = n_latents
         self.post_dist = post_dist
         self.likelihood_dist = likelihood_dist
         self.prior_dist = prior_dist
+        self.total_latents = self.n_latents + self.private_latents if self.private_latents is not None else self.n_latents
         self._pz_params = nn.ParameterList([
-            nn.Parameter(torch.zeros(1, n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.zeros(1, self.total_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.ones(1, self.total_latents), requires_grad=False)  # logvar
         ])
         self.modelName = id_name
         self.ltype = ltype
@@ -190,8 +193,8 @@ class VAE(BaseVae):
         """
         assert self.obj_fn is not None, "loss_fn not defined!"
         output = self.forward(data["mod_1"])
-        qz_x = output["mod_1"].encoder_dists
-        px_z = output["mod_1"].decoder_dists
-        zs = output["mod_1"].latent_samples
-        loss = self.obj_fn.calculate_loss(px_z, data["mod_1"]["data"], qz_x, self.prior_dist, self._pz_params, zs)
+        qz_x = output.mods["mod_1"].encoder_dist
+        px_z = output.mods["mod_1"].decoder_dist
+        zs = output.mods["mod_1"].latent_samples
+        loss = self.obj_fn.calculate_loss(px_z, data["mod_1"], qz_x, self.prior_dist, self._pz_params, zs)
         return loss

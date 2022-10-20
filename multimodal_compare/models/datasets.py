@@ -107,12 +107,28 @@ class BaseDataset():
         return data_and_masks
 
     def _postprocess_all2img(self, data):
+        """
+        Converts any kind of data to images to save traversal visualizations
+
+        :param data: input data
+        :type data: torch.tensor
+        :return: processed images
+        :rtype: torch.tensor
+        """
         output_processed = self._postprocess(data)
         output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
             if self.mod_type == "text" else output_processed
         return output_processed
 
     def save_traversals(self, recons, path):
+        """
+        Makes a grid of traversals and saves as image
+
+        :param recons: data represented as images
+        :type recons: torch.tensor
+        :param path: path to save the traversal to
+        :type path: str
+        """
         output_processed = torch.tensor(self._postprocess_all2img(recons)).transpose(1, 3)
         grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
         cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
@@ -123,7 +139,7 @@ class BaseDataset():
 class GEBID(BaseDataset):
     feature_dims = {"image": [64, 64, 3],
                     "text": [52, 27, 1]
-                    }
+                    }  # these feature_dims are also used by the encoder and decoder networks
 
     def __init__(self, pth, mod_type):
         super().__init__(pth, mod_type)
@@ -176,9 +192,11 @@ class GEBID(BaseDataset):
         cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
 
 class CUB(GEBID):
+    """Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
+    represented as sequences of one-hot-encodings for each character (incl. spaces)"""
     feature_dims = {"image": [64, 64, 3],
                     "text": [246, 27, 1]
-                    }
+                    }  # these feature_dims are also used by the encoder and decoder networks
 
     def __init__(self, pth, mod_type):
         super().__init__(pth, mod_type)
@@ -226,9 +244,10 @@ class CUB(GEBID):
 
 
 class MNIST_SVHN(BaseDataset):
+    """Dataset class for the MNIST-SVHN bimodal dataset (can be also used for unimodal training)"""
     feature_dims = {"mnist": [28,28,1],
                     "svhn": [32,32,3]
-                    }
+                    }  # these feature_dims are also used by the encoder and decoder networks
 
     def __init__(self, pth, mod_type):
         super().__init__(pth, mod_type)
