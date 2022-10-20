@@ -34,8 +34,8 @@ class MOE(TorchMMVAE):
 
         :param data: input data with modalities as keys
         :type data: dict
-        :return: loss calculated using self.obj_fn
-        :rtype: torch.tensor
+        :return obj: dictionary with the obligatory "loss" key on which the model is optimized, plus any other keys that you wish to log
+        :rtype obj: dict
         """
         output = self.forward(data)
         out_d = output.unpack_values()
@@ -143,8 +143,8 @@ class POE(TorchMMVAE):
 
         :param data: input data with modalities as keys
         :type data: dict
-        :return: loss calculated using self.obj_fn
-        :rtype: torch.tensor
+        :return obj: dictionary with the obligatory "loss" key on which the model is optimized, plus any other keys that you wish to log
+        :rtype obj: dict
         """
         lpx_zs, klds, losses = [[] for _ in range(len(mods.keys()))], [], []
         mods_inputs = subsample_input_modalities(mods)
@@ -275,8 +275,8 @@ class MoPOE(TorchMMVAE):
 
         :param data: input data with modalities as keys
         :type data: dict
-        :return: loss calculated using self.obj_fn
-        :rtype: torch.tensor
+        :return obj: dictionary with the obligatory "loss" key on which the model is optimized, plus any other keys that you wish to log
+        :rtype obj: dict
         """
         output = self.forward(mods)
         out_unpacked = output.unpack_values()
@@ -410,8 +410,8 @@ class DMVAE(TorchMMVAE):
 
         :param data: input data with modalities as keys
         :type data: dict
-        :return: loss calculated using self.obj_fn
-        :rtype: torch.tensor
+        :return obj: dictionary with the obligatory "loss" key on which the model is optimized, plus any other keys that you wish to log
+        :rtype obj: dict
         """
         output_whole = self.forward(mods)
         losses, ind_losses, klds = [], [], []

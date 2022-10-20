@@ -1,2 +1,3 @@
 ./multimodal_compare/data/*
-./multimodal_compare/results/*
+./multimodal_compare/results/
+builddocs.txt

@@ -91,9 +91,46 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract dataset class shared for all datasets</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._mod_specific_fns">
-<span class="sig-name descname"><span class="pre">_mod_specific_fns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._mod_specific_fns" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._mod_specific_loaders" title="Permalink to this definition"></a></dt>
 <dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._postprocess">
+<span class="sig-name descname"><span class="pre">_postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._postprocess" title="Permalink to this definition"></a></dt>
+<dd><p>Postprocesses the output data according to modality type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>postprocessed data</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._postprocess_all2img">
+<span class="sig-name descname"><span class="pre">_postprocess_all2img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._postprocess_all2img" title="Permalink to this definition"></a></dt>
+<dd><p>Converts any kind of data to images to save traversal visualizations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>torch.tensor</em>) – input data</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>processed images</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -106,6 +143,37 @@
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._preprocess_images">
+<span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._preprocess_images" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading images and preparing them as torch tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>preprocessed data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset._preprocess_text_onehot">
+<span class="sig-name descname"><span class="pre">_preprocess_text_onehot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._preprocess_text_onehot" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading text strings and preparing them as torch one-hot encodings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>torch with text encodings and masks</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>torch.tensor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -138,26 +206,50 @@
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.save_traversals">
+<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.save_traversals" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a grid of traversals and saves as image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recons</strong> (<em>torch.tensor</em>) – data represented as images</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to save the traversal to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">CUB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.GEBID" title="multimodal_compare.models.datasets.GEBID"><code class="xref py py-class docutils literal notranslate"><span class="pre">GEBID</span></code></a></p>
+<p>Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
+represented as sequences of one-hot-encodings for each character (incl. spaces)</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._mod_specific_fns">
-<span class="sig-name descname"><span class="pre">_mod_specific_fns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._mod_specific_fns" title="Permalink to this definition"></a></dt>
-<dd><p>Assigns the preprocessing function based on the mod_type</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._process_images">
-<span class="sig-name descname"><span class="pre">_process_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._process_images" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._postprocess_text">
+<span class="sig-name descname"><span class="pre">_postprocess_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._postprocess_text" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._process_text">
-<span class="sig-name descname"><span class="pre">_process_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._process_text" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._preprocess_text_onehot">
+<span class="sig-name descname"><span class="pre">_preprocess_text_onehot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._preprocess_text_onehot" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading text strings and preparing them as torch one-hot encodings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>torch with text encodings and masks</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'image':</span> <span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">3],</span> <span class="pre">'text':</span> <span class="pre">[246,</span> <span class="pre">27,</span> <span class="pre">1]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.CUB.feature_dims" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -167,19 +259,57 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">GEBID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._mod_specific_fns">
-<span class="sig-name descname"><span class="pre">_mod_specific_fns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._mod_specific_fns" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._mod_specific_loaders" title="Permalink to this definition"></a></dt>
 <dd><p>Assigns the preprocessing function based on the mod_type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._process_images">
-<span class="sig-name descname"><span class="pre">_process_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._process_images" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._postprocess_images">
+<span class="sig-name descname"><span class="pre">_postprocess_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._postprocess_images" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._process_text">
-<span class="sig-name descname"><span class="pre">_process_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._process_text" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._postprocess_text">
+<span class="sig-name descname"><span class="pre">_postprocess_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._postprocess_text" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._preprocess_images">
+<span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._preprocess_images" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading images and preparing them as torch tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>preprocessed data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._preprocess_text">
+<span class="sig-name descname"><span class="pre">_preprocess_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._preprocess_text" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'image':</span> <span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">3],</span> <span class="pre">'text':</span> <span class="pre">[52,</span> <span class="pre">27,</span> <span class="pre">1]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID.save_recons" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -188,11 +318,28 @@
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">MNIST_SVHN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<p>Dataset class for the MNIST-SVHN bimodal dataset (can be also used for unimodal training)</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_fns">
-<span class="sig-name descname"><span class="pre">_mod_specific_fns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_fns" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_loaders" title="Permalink to this definition"></a></dt>
 <dd><p>Assigns the preprocessing function based on the mod_type</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist">
+<span class="sig-name descname"><span class="pre">_postprocess_mnist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._postprocess_svhn">
+<span class="sig-name descname"><span class="pre">_postprocess_svhn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_svhn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._process_mnist">
@@ -202,6 +349,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._process_svhn">
 <span class="sig-name descname"><span class="pre">_process_svhn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._process_svhn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'mnist':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">1],</span> <span class="pre">'svhn':</span> <span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">3]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN.save_recons" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

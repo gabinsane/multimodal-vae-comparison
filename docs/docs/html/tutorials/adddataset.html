@@ -101,30 +101,33 @@ you can train the models on your own data.</p>
 <li><p>a directory containing <code class="docutils literal notranslate"><span class="pre">.png</span></code> images</p></li>
 </ul>
 <p>To train with any of these, specify the path to your data in the <code class="docutils literal notranslate"><span class="pre">config.yml</span></code>:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w"></span>
-<span class="w"> </span><span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w"></span>
-<span class="w"> </span><span class="nt">exp_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cub</span><span class="w"></span>
-<span class="w"> </span><span class="nt">labels</span><span class="p">:</span><span class="w"></span>
-<span class="w"> </span><span class="nt">loss</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bce</span><span class="w"></span>
-<span class="w"> </span><span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span><span class="w"></span>
-<span class="w"> </span><span class="nt">mixing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">moe</span><span class="w"></span>
-<span class="w"> </span><span class="nt">n_latents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
-<span class="w"> </span><span class="nt">obj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elbo</span><span class="w"></span>
-<span class="w"> </span><span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adam</span><span class="w"></span>
-<span class="w"> </span><span class="nt">pre_trained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
-<span class="w"> </span><span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="w"> </span><span class="nt">viz_freq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="w"> </span><span class="nt">test_split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w"></span>
-<span class="w"> </span><span class="nt">modality_1</span><span class="p">:</span><span class="w"></span>
-<span class="hll"><span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/cub/images</span><span class="w"></span>
-</span><span class="hll"><span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
-</span><span class="hll"><span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNN</span><span class="w"></span>
-</span><span class="hll"><span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNN</span><span class="w"></span>
-</span><span class="hll"><span class="w"> </span><span class="nt">modality_2</span><span class="p">:</span><span class="w"></span>
-</span><span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/cub/cub_captions.pkl</span><span class="w"></span>
-<span class="hll"><span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text</span><span class="w"></span>
-</span><span class="hll"><span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TxtTransformer</span><span class="w"></span>
-</span><span class="hll"><span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TxtTransformer</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
+<span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span><span class="w"></span>
+<span class="nt">exp_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cub</span><span class="w"></span>
+<span class="nt">labels</span><span class="p">:</span><span class="w"></span>
+<span class="nt">beta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span><span class="w"></span>
+<span class="nt">mixing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">moe</span><span class="w"></span>
+<span class="nt">n_latents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span><span class="w"></span>
+<span class="nt">obj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elbo</span><span class="w"></span>
+<span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adam</span><span class="w"></span>
+<span class="nt">pre_trained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
+<span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
+<span class="nt">viz_freq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+<span class="nt">test_split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w"></span>
+<span class="hll"><span class="nt">dataset_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cub</span><span class="w"></span>
+</span><span class="nt">modality_1</span><span class="p">:</span><span class="w"></span>
+<span class="hll"><span class="w">  </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNN</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CNN</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">recon_loss</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">bce</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/cub/images</span><span class="w"></span>
+</span><span class="nt">modality_2</span><span class="p">:</span><span class="w"></span>
+<span class="hll"><span class="w">  </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TxtTransformer</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TxtTransformer</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">recon_loss</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">category_ce</span><span class="w"></span>
+</span><span class="hll"><span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/cub/cub_captions.pkl</span><span class="w"></span>
 </span></pre></div>
 </div>
 <p>This is an example of the config file for the CUB dataset (for download, see our
@@ -136,45 +139,79 @@ modalities are expected to be ordered so that they can be semantically matched i
 <h2>Adding a new dataset class<a class="headerlink" href="#adding-a-new-dataset-class" title="Permalink to this heading"></a></h2>
 <p>If you wish to train on your own data, you will need to make a custom dataset class in <code class="docutils literal notranslate"><span class="pre">datasets.py</span></code>. Any new dataset must inherit
 from BaseDataset to have some common methods used by the DataModule.</p>
-<p>Here we show how we added CUB in datasets.py:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">class CUB(BaseDataset)</span><span class="p">:</span><span class="w"></span>
-<span class="linenos"> 2</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">def __init__(self, pth, mod_type)</span><span class="p p-Indicator">:</span><span class="w"></span>
-<span class="linenos"> 3</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">super().__init__(pth, mod_type)</span><span class="w"></span>
-<span class="linenos"> 4</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">self.mod_type = mod_type</span><span class="w"></span>
-<span class="linenos"> 5</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">self.path = pth</span><span class="w"></span>
-<span class="linenos"> 6</span>
-<span class="linenos"> 7</span><span class="w">    </span><span class="nt">def _mod_specific_fns(self)</span><span class="p">:</span><span class="w"></span>
-<span class="linenos"> 8</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">return {&quot;image&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._process_images, &quot;text&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._process_text}</span><span class="w"></span>
-<span class="linenos"> 9</span>
-<span class="linenos">10</span><span class="w">    </span><span class="nt">def _process_images(self)</span><span class="p">:</span><span class="w"></span>
-<span class="linenos">11</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">data = [torch.from_numpy(np.asarray(x.reshape(3, 64,64)).astype(np.float)) for x in self.get_data_raw()]</span><span class="w"></span>
-<span class="linenos">12</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">return torch.stack(data)</span><span class="w"></span>
+<p>In case of CUB, we can also inherit the GEBID class as the data format is very similar. We can thus add it in datasets.py like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CUB</span><span class="p">(</span><span class="n">GEBID</span><span class="p">):</span>
+<span class="linenos"> 2</span>    <span class="sd">&quot;&quot;&quot;Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text</span>
+<span class="linenos"> 3</span><span class="sd">    represented as sequences of one-hot-encodings for each character (incl. spaces)&quot;&quot;&quot;</span>
+<span class="linenos"> 4</span>    <span class="n">feature_dims</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="linenos"> 5</span>                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">246</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="linenos"> 6</span>                    <span class="p">}</span>  <span class="c1"># these feature_dims are also used by the encoder and decoder networks</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pth</span><span class="p">,</span> <span class="n">mod_type</span><span class="p">):</span>
+<span class="linenos"> 9</span>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pth</span><span class="p">,</span> <span class="n">mod_type</span><span class="p">)</span>
+<span class="linenos">10</span>        <span class="bp">self</span><span class="o">.</span><span class="n">mod_type</span> <span class="o">=</span> <span class="n">mod_type</span>
+<span class="linenos">11</span>        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">pth</span>
+<span class="linenos">12</span>        <span class="bp">self</span><span class="o">.</span><span class="n">text2img_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 <span class="linenos">13</span>
-<span class="linenos">14</span><span class="w">    </span><span class="nt">def _process_text(self)</span><span class="p">:</span><span class="w"></span>
-<span class="linenos">15</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">self.has_masks = True</span><span class="w"></span>
-<span class="linenos">16</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">self.categorical = True</span><span class="w"></span>
-<span class="linenos">17</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">data = [&quot; &quot;.join(x) for x in self.get_data_raw()]</span><span class="w"></span>
-<span class="linenos">18</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">data = [one_hot_encode(len(f), f) for f in data]</span><span class="w"></span>
-<span class="linenos">19</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">data = [torch.from_numpy(np.asarray(x)) for x in data]</span><span class="w"></span>
-<span class="linenos">20</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)</span><span class="w"></span>
-<span class="linenos">21</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)</span><span class="w"></span>
-<span class="linenos">22</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">data_masks = torch.cat((data, masks), dim=-1)</span><span class="w"></span>
-<span class="linenos">23</span><span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">return data_masks</span><span class="w"></span>
+<span class="linenos">14</span>    <span class="k">def</span> <span class="nf">_preprocess_text_onehot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="linenos">15</span>        <span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos">16</span><span class="sd">        General function for loading text strings and preparing them as torch one-hot encodings</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="sd">        :return: torch with text encodings and masks</span>
+<span class="linenos">19</span><span class="sd">        :rtype: torch.tensor</span>
+<span class="linenos">20</span><span class="sd">        &quot;&quot;&quot;</span>
+<span class="linenos">21</span>        <span class="bp">self</span><span class="o">.</span><span class="n">has_masks</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">22</span>        <span class="bp">self</span><span class="o">.</span><span class="n">categorical</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">23</span>        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">one_hot_encode</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_data_raw</span><span class="p">()]</span>
+<span class="linenos">24</span>        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+<span class="linenos">25</span>        <span class="n">masks</span> <span class="o">=</span> <span class="n">lengths_to_mask</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">26</span>        <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">pad_sequence</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="linenos">27</span>        <span class="n">data_and_masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="n">masks</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">28</span>        <span class="k">return</span> <span class="n">data_and_masks</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span>    <span class="k">def</span> <span class="nf">_postprocess_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="linenos">31</span>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="linenos">32</span>            <span class="n">masks</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span>
+<span class="linenos">33</span>            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
+<span class="linenos">34</span>            <span class="n">text</span> <span class="o">=</span> <span class="n">output_onehot2text</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="linenos">35</span>            <span class="k">if</span> <span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">36</span>                <span class="n">masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos">37</span>                <span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[:</span><span class="n">masks</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">text</span><span class="p">)]</span>
+<span class="linenos">38</span>        <span class="k">else</span><span class="p">:</span>
+<span class="linenos">39</span>            <span class="n">text</span> <span class="o">=</span> <span class="n">output_onehot2text</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="linenos">40</span>        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="linenos">41</span>            <span class="n">phr</span> <span class="o">=</span> <span class="n">phrase</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+<span class="linenos">42</span>            <span class="n">newphr</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">phr</span><span class="p">)</span>
+<span class="linenos">43</span>            <span class="n">stringcount</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">44</span>            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">phr</span><span class="p">):</span>
+<span class="linenos">45</span>                <span class="n">stringcount</span> <span class="o">+=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span>
+<span class="linenos">46</span>                <span class="k">if</span> <span class="n">stringcount</span> <span class="o">&gt;</span> <span class="mi">40</span><span class="p">:</span>
+<span class="linenos">47</span>                    <span class="n">newphr</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">48</span>                    <span class="n">stringcount</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">49</span>            <span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">newphr</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> &quot;</span><span class="p">)</span>
+<span class="linenos">50</span>        <span class="k">return</span> <span class="n">text</span>
 </pre></div>
 </div>
 <p>Eventhough the dataset is multimodal, a new instance of it will be created for each modality. Therefore,
 the constructor gets two arguments: path to the modality (str) and modality_type (str). Modality type is any string
 that you assign to the given modality to distinguish it from the others. For CUB we chose “image” for images and “text” for text, for MNIST_SVHN
 we have “mnist” and “svhn”. You specify mod_type in the config.</p>
-<p>Next thing you need are methods that prepare each modality for training (_process_text and _process_images). Data loading is handled automatically by BaseDataset, so you
+<dl class="simple">
+<dt>You also need to specify the expected shape of the data in the class attribute “feature_dims”. This will be used by the dataset class to postprocess the data (i.e. reconstructions produced by the model),</dt><dd><p>but also by the encoder and decoder networks to adjust sizes of the network layers.</p>
+</dd>
+</dl>
+<p>Next thing you need are methods that prepare each modality for training (_preprocess_text and _preprocess_images). Here we use _preprocess_images from GEBID, since it is the same format, and only rewrite _preprocess_text.  Data loading is handled automatically by BaseDataset, so you
 only perform reshaping, converting to tensors etc., so that these functions return tensors of the same length on the output.
-Note: In case of sequential data (like text here), we make boolean masks and concatenate them with the last dimension of the text data. This is then automatically handled by the collate function</p>
-<p>The last thing we need to do is map the data processing functions to the modality types, i.e. define _mod_specific_fns():</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">def _mod_specific_fns(self)</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">return {&quot;image&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._process_images, &quot;text&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._process_text}</span><span class="w"></span>
+Note: In case of sequential data (like text here), we make boolean masks and concatenate them with the last dimension of the text data. This is then automatically handled by the collate function.</p>
+<p>The last thing we need to do is map the data processing functions to the modality types, i.e. define _mod_specific_loaders() and _mod_specific_savers():</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">def _mod_specific_loaders(self)</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">return {&quot;image&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._preprocess_images, &quot;text&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._preprocess_text}</span><span class="w"></span>
+
+<span class="nt">def _mod_specific_savers(self)</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">return {&quot;image&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._postprocess_images, &quot;text&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self._postprocess_text}</span><span class="w"></span>
 </pre></div>
 </div>
-<p>Here we just assign the methods to the selected mod_types. Once this is done, the dataset class should be ready and you can launch training.</p>
+<p>Here we just assign the above-mentioned methods to the selected mod_types. Once this is done, the dataset class should be ready and you can launch training.</p>
 </section>
 <section id="different-data-formats">
 <h2>Different data formats<a class="headerlink" href="#different-data-formats" title="Permalink to this heading"></a></h2>
@@ -220,7 +257,7 @@ Alternatively, you can try to incorporate it on your own. You will need to adjus
     <span class="k">return</span> <span class="n">d</span>
 </pre></div>
 </div>
-<p>ByPlease note that by default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
+<p>Please note that by default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
 text data (arbitrary strings which we encode on the character-level) and sequential data (e.g. actions suitable for a Transformer network). If you add a new data structure or image resolution,
 you will also need to add new encoder and decoder networks - you can then specify these in the config file.</p>
 </section>
