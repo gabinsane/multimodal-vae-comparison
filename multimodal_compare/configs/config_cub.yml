@@ -1,4 +1,4 @@
-batch_size: 32
+batch_size: 16
 epochs: 600
 exp_name: cub
 labels:
@@ -10,7 +10,7 @@ obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
-viz_freq: 10
+viz_freq: 1
 test_split: 0.1
 dataset_name: cub
 modality_1:
