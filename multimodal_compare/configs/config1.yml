@@ -1,10 +1,10 @@
 batch_size: 32
 epochs: 20
-exp_name: dmvae
+exp_name: poe
 labels:
 beta: 1
 lr: 1e-4
-mixing: dmvae
+mixing: poe
 n_latents: 64
 obj: elbo
 optimizer: adam
@@ -14,14 +14,14 @@ viz_freq: 1
 test_split: 0.1
 dataset_name: mnist_svhn
 modality_1:
-  decoder: MNIST_DMVAE
-  encoder: MNIST_DMVAE
+  decoder: MNIST
+  encoder: MNIST
   mod_type: mnist
   recon_loss:  bce
   path: ./data/mnist_svhn/mnist
 modality_2:
-  decoder: SVHN_DMVAE
-  encoder: SVHN_DMVAE
+  decoder: SVHN
+  encoder: SVHN
   recon_loss: bce
   mod_type: svhn
   path: ./data/mnist_svhn/svhn
