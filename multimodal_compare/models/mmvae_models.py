@@ -88,8 +88,8 @@ class MOE(TorchMMVAE):
         # decode the samples
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
-            if px_z[0] is not None:
-                px_zs[modality] = dist.Normal(*px_z[0])
+            if px_z is not None:
+                px_zs[modality] = dist.Normal(*px_z)
         for mod_name in missing:
             zs[mod_name] = zs[filled[0]]
             px_zs[mod_name] = dist.Normal(*self.vaes[mod_name].dec(zs[filled[0]]))
@@ -403,6 +403,7 @@ class DMVAE(TorchMMVAE):
         self.model_config = model_config
         self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'dmvae'
+        assert self.latent_factorization, "DMVAE requires private_latents in the config"
 
     def objective(self, mods):
         """

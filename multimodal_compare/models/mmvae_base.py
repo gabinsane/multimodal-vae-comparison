@@ -92,7 +92,7 @@ class TorchMMVAE(nn.Module):
 
     def make_output_dict(self, encoder_dist=None, decoder_dist=None, latent_samples=None,
                          joint_dist=None, enc_dist_private=None, dec_dist_private=None,
-                         joint_decoder_dist=None, cross_decoder_dist=None):
+                         joint_decoder_dist=None, cross_decoder_dists=None):
         """
         Prepares output of the forward pass
 
@@ -117,7 +117,7 @@ class TorchMMVAE(nn.Module):
         """
         out = VAEOutput()
         for v in ["encoder_dist", "decoder_dist", "latent_samples", "joint_dist", "enc_dist_private", "dec_dist_private",
-                  "joint_decoder_dist", "cross_decoder_dist"]:
+                  "joint_decoder_dist", "cross_decoder_dists"]:
             out.set_with_dict(locals()[v], v)
         return out
 
@@ -182,7 +182,7 @@ class TorchMMVAE(nn.Module):
                 pz_x = vae.dec(samples[modality])
                 pz_xs[modality] = pz_x
             elif modality in samples and samples[modality]["latents"] is None:
-                pz_xs[modality] = [None]
+                pz_xs[modality] = None
         return pz_xs
 
     @staticmethod
