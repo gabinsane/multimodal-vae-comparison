@@ -20,32 +20,35 @@ To train with any of these, specify the path to your data in the ``config.yml``:
 
 
 .. code-block:: yaml
-   :emphasize-lines: 16,17,18, 19, 20, 22, 23, 24, 25, 26
+   :emphasize-lines: 15, 17,18, 19, 20, 21, 23, 24, 25, 26, 27
 
-    batch_size: 32
-    epochs: 600
-    exp_name: cub
-    labels:
-    loss: bce
-    lr: 1e-3
-    mixing: moe
-    n_latents: 16
-    obj: elbo
-    optimizer: adam
-    pre_trained: null
-    seed: 2
-    viz_freq: 10
-    test_split: 0.1
-    modality_1:
-      path: ./data/cub/images
-      mod_type: image
-      decoder: CNN
-      encoder: CNN
-    modality_2:
-      path: ./data/cub/cub_captions.pkl
-      mod_type: text
-      decoder: TxtTransformer
-      encoder: TxtTransformer
+   batch_size: 16
+   epochs: 600
+   exp_name: cub
+   labels:
+   beta: 1
+   lr: 1e-3
+   mixing: moe
+   n_latents: 16
+   obj: elbo
+   optimizer: adam
+   pre_trained: null
+   seed: 2
+   viz_freq: 1
+   test_split: 0.1
+   dataset_name: cub
+   modality_1:
+     decoder: CNN
+     encoder: CNN
+     mod_type: image
+     recon_loss:  bce
+     path: ./data/cub/images
+   modality_2:
+     decoder: TxtTransformer
+     encoder: TxtTransformer
+     mod_type: text
+     recon_loss: category_ce
+     path: ./data/cub/cub_captions.pkl
 
 
 This is an example of the config file for the CUB dataset (for download, see our
@@ -62,52 +65,85 @@ Adding a new dataset class
 If you wish to train on your own data, you will need to make a custom dataset class in ``datasets.py``. Any new dataset must inherit
 from BaseDataset to have some common methods used by the DataModule.
 
-Here we show how we added CUB in datasets.py:
+In case of CUB, we can also inherit the GEBID class as the data format is very similar. We can thus add it in datasets.py like this:
 
-.. code-block:: yaml
+.. code-block:: python
    :linenos:
 
-   class CUB(BaseDataset):
+   class CUB(GEBID):
+       """Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
+       represented as sequences of one-hot-encodings for each character (incl. spaces)"""
+       feature_dims = {"image": [64, 64, 3],
+                       "text": [246, 27, 1]
+                       }  # these feature_dims are also used by the encoder and decoder networks
+
        def __init__(self, pth, mod_type):
            super().__init__(pth, mod_type)
            self.mod_type = mod_type
            self.path = pth
+           self.text2img_size = (64,256,3)
 
-       def _mod_specific_fns(self):
-           return {"image": self._process_images, "text": self._process_text}
+       def _preprocess_text_onehot(self):
+           """
+           General function for loading text strings and preparing them as torch one-hot encodings
 
-       def _process_images(self):
-           data = [torch.from_numpy(np.asarray(x.reshape(3, 64,64)).astype(np.float)) for x in self.get_data_raw()]
-           return torch.stack(data)
-
-       def _process_text(self):
+           :return: torch with text encodings and masks
+           :rtype: torch.tensor
+           """
            self.has_masks = True
            self.categorical = True
-           data = [" ".join(x) for x in self.get_data_raw()]
-           data = [one_hot_encode(len(f), f) for f in data]
+           data = [one_hot_encode(len(f), f) for f in self.get_data_raw()]
            data = [torch.from_numpy(np.asarray(x)) for x in data]
            masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
            data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
-           data_masks = torch.cat((data, masks), dim=-1)
-           return data_masks
+           data_and_masks = torch.cat((data, masks), dim=-1)
+           return data_and_masks
+
+       def _postprocess_text(self, data):
+           if isinstance(data, dict):
+               masks = data["masks"]
+               data = data["data"]
+               text = output_onehot2text(data)
+               if masks is not None:
+                   masks = torch.count_nonzero(masks, dim=-1)
+                   text = [x[:masks[i]] for i, x in enumerate(text)]
+           else:
+               text = output_onehot2text(data)
+           for i, phrase in enumerate(text):
+               phr = phrase.split(" ")
+               newphr = copy.deepcopy(phr)
+               stringcount = 0
+               for x, w in enumerate(phr):
+                   stringcount += (len(w))+1
+                   if stringcount > 40:
+                       newphr.insert(x, "\n")
+                       stringcount = 0
+               text[i] = (" ".join(newphr)).replace("\n  ", "\n ")
+           return text
 
 Eventhough the dataset is multimodal, a new instance of it will be created for each modality. Therefore,
 the constructor gets two arguments: path to the modality (str) and modality_type (str). Modality type is any string
 that you assign to the given modality to distinguish it from the others. For CUB we chose "image" for images and "text" for text, for MNIST_SVHN
 we have "mnist" and "svhn". You specify mod_type in the config.
 
-Next thing you need are methods that prepare each modality for training (_process_text and _process_images). Data loading is handled automatically by BaseDataset, so you
+You also need to specify the expected shape of the data in the class attribute "feature_dims". This will be used by the dataset class to postprocess the data (i.e. reconstructions produced by the model),
+ but also by the encoder and decoder networks to adjust sizes of the network layers.
+
+Next thing you need are methods that prepare each modality for training (_preprocess_text and _preprocess_images). Here we use _preprocess_images from GEBID, since it is the same format, and only rewrite _preprocess_text.  Data loading is handled automatically by BaseDataset, so you
 only perform reshaping, converting to tensors etc., so that these functions return tensors of the same length on the output.
 Note: In case of sequential data (like text here), we make boolean masks and concatenate them with the last dimension of the text data. This is then automatically handled by the collate function.
 
-The last thing we need to do is map the data processing functions to the modality types, i.e. define _mod_specific_fns():
+The last thing we need to do is map the data processing functions to the modality types, i.e. define _mod_specific_loaders() and _mod_specific_savers():
 
 .. code-block:: yaml
 
-       def _mod_specific_fns(self):
-           return {"image": self._process_images, "text": self._process_text}
+    def _mod_specific_loaders(self):
+        return {"image": self._preprocess_images, "text": self._preprocess_text}
 
-Here we just assign the methods to the selected mod_types. Once this is done, the dataset class should be ready and you can launch training.
+    def _mod_specific_savers(self):
+        return {"image": self._postprocess_images, "text": self._postprocess_text}
+
+Here we just assign the above-mentioned methods to the selected mod_types. Once this is done, the dataset class should be ready and you can launch training.
 
 Different data formats
 ------------------------
@@ -159,6 +195,6 @@ Next, decide how you will load the data.
         d = self.prepare_for_encoder(d)
         return d
 
-ByPlease note that by default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
+Please note that by default, we have incorporated encoders and decoders for images (preferably in 32x32x3 or 64x64x3 resolution, resp. 28x28x1 pixels for MNIST),
 text data (arbitrary strings which we encode on the character-level) and sequential data (e.g. actions suitable for a Transformer network). If you add a new data structure or image resolution,
 you will also need to add new encoder and decoder networks - you can then specify these in the config file.

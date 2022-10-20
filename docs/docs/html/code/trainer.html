@@ -87,12 +87,15 @@
 <span id="trainer"></span><h1>MultimodalVAE class<a class="headerlink" href="#multimodalvae-class" title="Permalink to this heading"></a></h1>
 <span class="target" id="module-multimodal_compare.models.trainer"></span><dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.trainer.</span></span><span class="sig-name descname"><span class="pre">MultimodalVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.trainer.</span></span><span class="sig-name descname"><span class="pre">MultimodalVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_dims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningModule</span></code></p>
 <p>Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cfg</strong> (<a class="reference internal" href="config_cls.html#multimodal_compare.models.config_cls.Config" title="multimodal_compare.models.config_cls.Config"><em>Config</em></a>) – instance of Config class</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_dims</strong> (<em>dict</em>) – dictionary with feature dimensions of raining data</p></li>
+<li><p><strong>cfg</strong> (<a class="reference internal" href="config_cls.html#multimodal_compare.models.config_cls.Config" title="multimodal_compare.models.config_cls.Config"><em>Config</em></a>) – instance of Config class</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -102,14 +105,25 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.analyse_data">
-<span class="sig-name descname"><span class="pre">analyse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.analyse_data" title="Permalink to this definition"></a></dt>
-<dd><p>Encodes data and plots T-SNE.
-:param data: test data
-:type data: torch.tensor
-:param labels: labels for the data for labelled T-SNE (optional) - list of strings
-:type labels: list
-:return: returns K latent samples for each input
-:rtype: list</p>
+<span class="sig-name descname"><span class="pre">analyse_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.analyse_data" title="Permalink to this definition"></a></dt>
+<dd><p>Encodes data and plots T-SNE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>torch.tensor</em>) – test data</p></li>
+<li><p><strong>labels</strong> (<em>list</em>) – labels for the data for labelled T-SNE (optional) - list of strings</p></li>
+<li><p><strong>num_samples</strong> (<em>int</em>) – number of samples to use for visualization</p></li>
+<li><p><strong>path_label</strong> (<em>str</em>) – label under which to save the visualizations</p></li>
+<li><p><strong>savedir</strong> (<em>str</em>) – where to save the reconstructions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns K latent samples for each input</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -119,15 +133,42 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_mod_names">
+<span class="sig-name descname"><span class="pre">get_mod_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.get_mod_names" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_model">
 <span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.get_model" title="Permalink to this definition"></a></dt>
 <dd><p>Sets up the model according to the config file</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_objective">
-<span class="sig-name descname"><span class="pre">get_objective</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.get_objective" title="Permalink to this definition"></a></dt>
-<dd><p>Find the selected objective</p>
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.save_reconstructions">
+<span class="sig-name descname"><span class="pre">save_reconstructions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.save_reconstructions" title="Permalink to this definition"></a></dt>
+<dd><p>Save reconstructed data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_samples</strong> (<em>int</em>) – number of samples to take for reconstruction</p></li>
+<li><p><strong>savedir</strong> (<em>str</em>) – where to save the reconstructions</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.save_traversals">
+<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">36</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savedir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.save_traversals" title="Permalink to this definition"></a></dt>
+<dd><p>Generate and save traversals for each modality</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_samples</strong> (<em>int</em>) – number of samples to generate</p></li>
+<li><p><strong>savedir</strong> (<em>str</em>) – where to save the reconstructions</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -139,6 +180,17 @@
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.training_step">
 <span class="sig-name descname"><span class="pre">training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.training_step" title="Permalink to this definition"></a></dt>
 <dd><p>Iterates over the train loader</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.validation_epoch_end">
+<span class="sig-name descname"><span class="pre">validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.validation_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Save visualizations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>outputs</strong> (<em>torch.tensor</em>) – Loss that comes from validation_step</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

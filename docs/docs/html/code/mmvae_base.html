@@ -87,7 +87,7 @@
 <span id="multimodal-vae-base-class"></span><span id="mmvae-base"></span><h1>Multimodal VAE Base Class<a class="headerlink" href="#module-multimodal_compare.models.mmvae_base" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_base.</span></span><span class="sig-name descname"><span class="pre">TorchMMVAE</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_base.</span></span><span class="sig-name descname"><span class="pre">TorchMMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_latents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>Base class for all PyTorch based MMVAE implementations.</p>
 <dl class="py attribute">
@@ -96,17 +96,11 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE._pz_params">
-<span class="sig-name descname"><span class="pre">_pz_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE._pz_params" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.add_vaes">
 <span class="sig-name descname"><span class="pre">add_vaes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vae_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModuleDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.add_vaes" title="Permalink to this definition"></a></dt>
 <dd><p>This functions updates the VAEs of the MMVAE with a given dictionary.
 :param vae_dict: A dictionary with the modality names as keys and BaseVAEs as values
 :param type vae_dict: nn.ModuleDict</p>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="py method">
@@ -115,10 +109,7 @@
 <dd><p>Make reconstructions for the input samples</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>samples</strong> (<em>dict</em>) – Dictionary with modalities as keys and latent sample tensors as values</p></li>
-<li><p><strong>K</strong> (<em>int</em>) – number of samples</p></li>
-</ul>
+<dd class="field-odd"><p><strong>samples</strong> (<em>dict</em>) – Dictionary with modalities as keys and latent sample tensors as values</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>dictionary with modalities as keys and torch distributions as values</p>
@@ -135,10 +126,7 @@
 <dd><p>Encode inputs with appropriate VAE encoders</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inputs</strong> (<em>dict</em>) – input dictionary with modalities as keys and data tensors as values</p></li>
-<li><p><strong>K</strong> (<em>int</em>) – number of samples</p></li>
-</ul>
+<dd class="field-odd"><p><strong>inputs</strong> (<em>dict</em>) – input dictionary with modalities as keys and data tensors as values</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>qz_xs dictionary with modalities as keys and distribution parameters as values</p>
@@ -170,6 +158,55 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.get_missing_modalities">
+<span class="sig-name descname"><span class="pre">get_missing_modalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mods</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.get_missing_modalities" title="Permalink to this definition"></a></dt>
+<dd><p>Get indices of modalities that are missing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mods</strong> (<em>list</em>) – list of modalities</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of indices of missing modalities</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.latent_factorization">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">latent_factorization</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.latent_factorization" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if latent space is factorized into shared and modality-specific subspaces, else False</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.make_output_dict">
+<span class="sig-name descname"><span class="pre">make_output_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enc_dist_private</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec_dist_private</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_decoder_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_decoder_dist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.make_output_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Prepares output of the forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder_dist</strong> (<em>dict</em>) – dict with modalities as keys and encoder distributions as values</p></li>
+<li><p><strong>decoder_dist</strong> (<em>dict</em>) – dict with modalities as keys and decoder distributions as values</p></li>
+<li><p><strong>latent_samples</strong> (<em>dict</em>) – dict with modalities as keys and dicts with latent samples as values</p></li>
+<li><p><strong>joint_dist</strong> (<em>dict</em>) – dict with modalities as keys and joint distribution as values</p></li>
+<li><p><strong>enc_dist_private</strong> (<em>dict</em>) – dict with modalities as keys and dicts with single latent distributions as values</p></li>
+<li><p><strong>dec_dist_private</strong> (<em>dict</em>) – dict with modalities as keys and dicts with single decoder distributions as values</p></li>
+<li><p><strong>joint_decoder_dist</strong> (<em>dict</em>) – dict with modalities as keys and dicts with decoder distributions coming from joint distribution</p></li>
+<li><p><strong>cross_decoder_dist</strong> (<em>dict</em>) – dict with modalities as keys and dicts with cross-modal decoder distributions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>VAEOutput object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.modality_mixing">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">modality_mixing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mods</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.modality_mixing" title="Permalink to this definition"></a></dt>
 <dd><p>Mix the encoded distributions according to the chosen approach</p>
@@ -185,6 +222,48 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.objective">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mods</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.objective" title="Permalink to this definition"></a></dt>
+<dd><p>Includes the forward pass and calculates the loss</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mods</strong> (<em>dict</em>) – dictionary with input data with modalities as keys</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>loss</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.product_of_experts">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">product_of_experts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.product_of_experts" title="Permalink to this definition"></a></dt>
+<dd><p>Calculated the product of experts for input data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<em>list</em>) – list of means</p></li>
+<li><p><strong>logvar</strong> (<em>list</em>) – list of logvars</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>joint posterior</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.pz_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.pz_params" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.training">

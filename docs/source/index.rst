@@ -9,7 +9,7 @@ multimodal variational autoencoders. The toolkit can be used with arbitrary data
 By default, we provide implementations of the `MVAE <https://github.com/mhw32/multimodal-vae-public>`_
 (`paper <https://arxiv.org/abs/1802.05335>`_), `MMVAE <https://github.com/iffsid/mmvae>`_
 (`paper <https://arxiv.org/pdf/1911.03393.pdf>`_), `MoPoE <https://github.com/thomassutter/MoPoE>`_
-(`paper <https://openreview.net/forum?id=5Y21V0RDBV>`_) and `DMVAE <https://github.com/seqam-lab/DMVAE>`_ models, but anyone is free to contribute with their own
+(`paper <https://openreview.net/forum?id=5Y21V0RDBV>`_) and `DMVAE <https://github.com/seqam-lab/DMVAE>`_ (`paper <https://openaccess.thecvf.com/content/CVPR2021W/MULA/papers/Lee_Private-Shared_Disentangled_Multimodal_VAE_for_Learning_of_Latent_Representations_CVPRW_2021_paper.pdf>`_) models, but anyone is free to contribute with their own
 implementation.
 
 We also provide a custom synthetic bimodal dataset, called GeBiD, designed specifically for comparison of the
