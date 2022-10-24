@@ -124,7 +124,7 @@ class VAE(BaseVae):
         """
         enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim)
         super(VAE, self).__init__(enc_net, dec_net, prior_dist, likelihood_dist, post_dist)
-        self._qz_x_params = None
+        self._qz_x_params, self._pz_params_private = None, None
         self.llik_scaling = 1.0
         self.data_dim = feature_dim
         self.private_latents = private_latents
@@ -137,10 +137,23 @@ class VAE(BaseVae):
             nn.Parameter(torch.zeros(1, self.total_latents), requires_grad=False),  # mu
             nn.Parameter(torch.ones(1, self.total_latents), requires_grad=False)  # logvar
         ])
+        if self.private_latents is not None:
+            self._pz_params_private = nn.ParameterList([
+                nn.Parameter(torch.zeros(1, self.private_latents), requires_grad=False),  # mu
+                nn.Parameter(torch.ones(1, self.private_latents), requires_grad=False)  # logvar
+            ])
         self.modelName = id_name
         self.ltype = ltype
         self.obj_fn = self.set_objective_fn(obj_fn, beta)
 
+
+    @property
+    def pz_params_private(self):
+        """
+        :return: returns likelihood parameters for the private latent space
+        :rtype: list(torch.tensor, torch.tensor)
+        """
+        return self._pz_params_private[0], F.softmax(self._pz_params_private[1], dim=1) * self._pz_params_private[1].size(-1)
 
     @property
     def pz_params(self):

@@ -423,15 +423,17 @@ class DMVAE(TorchMMVAE):
             kld_poe = self.obj_fn.calc_kld(output.joint_dist, self.pz(*self.pz_params.to("cuda")))
             lpx_z_poe = (self.obj_fn.recon_loss_fn(output.joint_decoder_dist, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1)
             lpx_zs_cross = []
+            klds_priv = []
             for k, r in output.cross_decoder_dists.items():
                 lpx_zs_cross.append((self.obj_fn.recon_loss_fn(r, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1))
-            loss = self.obj_fn.calculate_loss({"lpx_z": lpx_z, "kld": kld})["loss"] #+ self.obj_fn.calculate_loss({"lpx_z": lpx_z_poe, "kld": kld_poe})["loss"] \
-                   #+ self.obj_fn.calculate_loss({"lpx_z": torch.stack(lpx_zs_cross).sum(), "kld": kld})["loss"]
+                klds_priv.append(self.obj_fn.calc_kld(output.enc_dist_private, self.pz(*self.vaes[mod].pz_params_private)))
+            loss = self.obj_fn.calculate_loss({"lpx_z": lpx_z, "kld": kld.sum(-1)})["loss"] + self.obj_fn.calculate_loss({"lpx_z": lpx_z_poe, "kld": kld_poe})["loss"] \
+                   + self.obj_fn.calculate_loss({"lpx_z": torch.stack(lpx_zs_cross).sum(), "kld": torch.stack(klds_priv).sum(-1)})["loss"]
             losses.append(loss)
             ind_losses.append(lpx_z)
             klds.append(kld)
         ind_losses_reweighted = [-(m).sum() / self.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(ind_losses)]
-        obj = {"loss":Variable(torch.stack(losses).sum(), requires_grad=True), "reconstruction_loss": ind_losses_reweighted, "kld": torch.stack(klds).mean(0).sum()}
+        obj = {"loss":torch.stack(losses).sum(), "reconstruction_loss": ind_losses_reweighted, "kld": torch.stack(klds).mean(0).sum()}
         return obj
 
     def forward(self, x, K=1):
