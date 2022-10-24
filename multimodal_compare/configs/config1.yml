@@ -1,10 +1,10 @@
 batch_size: 32
 epochs: 20
-exp_name: dmvae
+exp_name: moe
 labels:
 beta: 1
 lr: 1e-4
-mixing: dmvae
+mixing: moe
 n_latents: 64
 obj: elbo
 optimizer: adam

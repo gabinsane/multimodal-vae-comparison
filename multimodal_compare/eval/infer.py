@@ -107,8 +107,9 @@ class MMVAEExperiment():
         :rtype: MMVAE/VAE
         """
         config = self.get_config()
-        model = MultimodalVAE(config)
-        model_loaded = model.load_from_checkpoint(self.path, cfg=config)
+        data_module = DataModule(config)
+        model = MultimodalVAE(config,data_module.get_dataset_class().feature_dims)
+        model_loaded = model.load_from_checkpoint(self.path, cfg=config, feature_dims=data_module.get_dataset_class().feature_dims)
         model_loaded.eval()
         self.model = model_loaded
         self.model.config.mPath = self.base_path
@@ -202,9 +203,9 @@ class MMVAEExperiment():
             inp = {"mod_1": {"data": w.unsqueeze(0).to(torch.device("cuda")), "masks": None},
                    "mod_2": {"data": None, "masks": None}}
             recons = model.model.to(torch.device("cuda")).forward(inp)
-            recons = [recons["mod_1"].decoder_dists[0].loc[0], recons["mod_2"].decoder_dists[0].loc]
+            recons = [recons.mods["mod_1"].decoder_dist.loc[0], recons.mods["mod_2"].decoder_dist.loc]
             image, recon_text = _process_recons(recons)
-            txt_outputs.append(recon_text[0][0])
+            txt_outputs.append(recon_text[0])
             img_outputs.append(image * 255)
             image = cv2.cvtColor(image * 255, cv2.COLOR_BGR2RGB)
             cv2.imwrite(os.path.join(path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)], i)), image)
@@ -231,7 +232,7 @@ class MMVAEExperiment():
             model.eval()
             inp = {"mod_1":{"data":None, "masks":None}, "mod_2":{"data":txt_inp.unsqueeze(0).to(torch.device("cuda")), "masks":None}}
             recons = model.model.to(torch.device("cuda")).forward(inp)
-            recons = [recons["mod_1"].decoder_dists[0].loc[0], recons["mod_2"].decoder_dists[0].loc]
+            recons = [recons.mods["mod_1"].decoder_dist.loc[0], recons.mods["mod_2"].decoder_dist.loc]
             image, recon_text = _process_recons(recons)
             txtoutputs.append(recon_text[0][0])
             img_outputs.append(image * 255)

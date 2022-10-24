@@ -98,7 +98,10 @@ class BaseDataset():
         """
         self.has_masks = True
         self.categorical = True
-        data = [" ".join(x) for x in self.get_data_raw()]
+        data = []
+        for x in self.get_data_raw():
+            d = " ".join(x) if isinstance(x, list) else x
+            data.append(d)
         data = [one_hot_encode(len(f), f) for f in data]
         data = [torch.from_numpy(np.asarray(x)) for x in data]
         masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
