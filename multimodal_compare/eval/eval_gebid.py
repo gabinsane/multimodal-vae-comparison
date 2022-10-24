@@ -492,8 +492,8 @@ def calculate_joint_coherency(model_exp):
     """
     samples = model_exp.get_traversal_samples(latent_dim=model_exp.model.config.n_latents, n_samples_per_dim=15)
     recons = model_exp.decode_latents(samples)
-    img_recons = recons["mod_1"][0][0]
-    txt_recons = recons["mod_2"][0][0]
+    img_recons = recons["mod_1"][0]
+    txt_recons = recons["mod_2"][0]
     correct_pairs, corr_feats = [], []
     for ind, txt in enumerate(txt_recons):
         text = output_onehot2text(recon=txt.unsqueeze(0))[0]
@@ -557,7 +557,7 @@ def labelled_tsne(model_exp):
     testset = model_exp.get_test_data_sample()
     labels = prepare_labels(testset["mod_2"])
     for i, label in enumerate(labels):
-        model_exp.model.analyse_data(testset, label, len(label), path_label="eval_{}".format(i))
+        model_exp.model.analyse_data(testset, label, path_label="eval_{}".format(i), savedir=model_exp.base_path)
     print("Saved labelled T-SNEs in {}".format(os.path.join(model_exp.get_base_path(), "visuals")))
 
 
