@@ -109,7 +109,7 @@ class MultimodalVAE(pl.LightningModule):
         if (self.trainer.current_epoch) % self.config.viz_freq == 0:
             savepath = os.path.join(self.config.mPath, "visuals/epoch_{}/".format(self.trainer.current_epoch))
             os.makedirs(savepath, exist_ok=True)
-            self.analyse_data(savedir=savepath, labels=self.config.labels)
+            self.analyse_data(savedir=savepath)
             self.save_reconstructions(savedir=savepath)
             self.save_traversals(savedir=savepath)
 
@@ -168,7 +168,6 @@ class MultimodalVAE(pl.LightningModule):
             p = os.path.join(savedir, "traversals_{}.png".format(data_class.mod_type))
             data_class.save_traversals(recons, p)
 
-
     def analyse_data(self, data=None, labels=None, num_samples=250, path_label="", savedir=None):
         """
         Encodes data and plots T-SNE.
@@ -187,8 +186,7 @@ class MultimodalVAE(pl.LightningModule):
         :rtype: list
         """
         if not data:
-            data, indices = self.trainer.datamodule.get_num_samples(num_samples)
-            labels = [labels[x] for x in indices] if labels is not None else None
+            data, labels = self.trainer.datamodule.get_num_samples(num_samples)
         data_i = check_input_unpacked(data_to_device(data, self.device))
         output = self.model.forward(data_i)
         output_dic = output.unpack_values()

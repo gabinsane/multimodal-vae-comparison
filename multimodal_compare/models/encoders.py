@@ -329,11 +329,11 @@ class Enc_FNN(VaeEncoder):
         self.net_type = "FNN"
         self.hidden_dim = 300
         self.lin1 = torch.nn.DataParallel(Linear(np.prod(data_dim), self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(Linear(np.prod(data_dim), self.hidden_dim))
+        self.lin2 = torch.nn.DataParallel(Linear(self.hidden_dim, self.hidden_dim))
         self.lin3 = torch.nn.DataParallel(Linear(self.hidden_dim, self.hidden_dim))
 
-        self.fc21 = torch.nn.DataParallel(Linear(self.hidden_dim, latent_dim))
-        self.fc22 = torch.nn.DataParallel(Linear(self.hidden_dim, latent_dim))
+        self.fc21 = torch.nn.DataParallel(Linear(self.hidden_dim, self.out_dim))
+        self.fc22 = torch.nn.DataParallel(Linear(self.hidden_dim, self.out_dim))
 
     def forward(self, x):
         """
@@ -350,6 +350,7 @@ class Enc_FNN(VaeEncoder):
         e = torch.relu(self.lin2(e))
         e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
+        lv = F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
 
 
@@ -496,7 +497,7 @@ class Enc_VideoGPT(VaeEncoder):
         self.convs = ModuleList()
         max_ds = n_times_downsample.max()
         for i in range(max_ds):
-            in_channels = 3 if i == 0 else latent_dim
+            in_channels = 3 if i == 0 else self.out_dim
             stride = tuple([2 if d > 0 else 1 for d in n_times_downsample])
             conv = SamePadConv3d(in_channels, latent_dim, 4, stride=stride)
             self.convs.append(conv)
@@ -507,8 +508,8 @@ class Enc_VideoGPT(VaeEncoder):
               for _ in range(n_res_layers)],
             BatchNorm3d(latent_dim),
             ReLU())
-        self.mu_layer = torch.nn.DataParallel(Linear(latent_dim * 16 * 16, latent_dim))
-        self.logvar_layer = torch.nn.DataParallel(Linear(latent_dim * 16 * 16, latent_dim))
+        self.mu_layer = torch.nn.DataParallel(Linear(self.out_dim * 16 * 16 * 4, self.out_dim))
+        self.logvar_layer = torch.nn.DataParallel(Linear(self.out_dim * 16 * 16 * 4, self.out_dim))
 
     def forward(self, x):
         """
@@ -570,7 +571,7 @@ class Enc_Transformer(VaeEncoder):
         self.mu_layer = torch.nn.DataParallel(Linear(self.out_dim, self.out_dim))
         self.logvar_layer = torch.nn.DataParallel(Linear(self.out_dim, self.out_dim))
 
-        self.skel_Embeding = torch.nn.DataParallel(Linear(self.input_feats, self.out_dim))
+        self.skel_Embedding = torch.nn.DataParallel(Linear(self.input_feats, self.out_dim))
         self.sequence_pos_encoder = PositionalEncoding(self.out_dim, self.dropout)
         seqTransEncoderLayer = torch.nn.DataParallel(TransformerEncoderLayer(d_model=self.out_dim,
                                                                              nhead=self.num_heads,
@@ -589,13 +590,13 @@ class Enc_Transformer(VaeEncoder):
         :return: tensor of means, tensor of log variances
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        x = batch["data"]
+        x = batch["data"].double()
         mask = batch["masks"]
         bs, nframes, njoints, nfeats = x.shape
         mask = mask if mask is not None else torch.tensor(np.ones((bs, x.shape[1]), dtype=bool)).cuda()
         x = x.permute((1, 0, 2, 3)).reshape(nframes, bs, njoints * nfeats)
         # embedding of the skeleton
-        x = self.skelEmbedding(x.cuda())
+        x = self.skel_Embedding(x.cuda().float())
         # add positional encoding
         x = self.sequence_pos_encoder(x)
         # transformer layers

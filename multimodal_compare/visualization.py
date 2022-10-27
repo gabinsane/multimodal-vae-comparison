@@ -7,6 +7,7 @@ import pandas as pd
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
+marker_styles = ['X', 'v', 'p', '.', '^', '<', '>', '8', 's', ',', '*', 'h', 'H', 'o', 'd', 'P', 'D']
 
 def custom_cmap(n):
     """Create customised colormap for scattered latent plot of n categories.
@@ -30,21 +31,22 @@ def t_sne(data, path, labels, K=1):
     for ind, mod in enumerate(data):
         if not labels:
             palette = sns.color_palette("hls", len(data))
-            data_labels.append(["Modality {}".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
+            data_labels.append(["Modality {} ".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
         else:
-            palette = sns.color_palette("hls", len(data) * len(set(labels)))
+            palette = (sns.color_palette("hls", len(set(labels))))
             if len(data) > 1:
-                l = ["Class {} Mod {}".format(str(i), ind +1) for i in list(labels)]
+                l = ["{} Modality {} ".format(str(i), ind +1) for i in list(labels)]
             else:
-                l = ["Class {}".format(str(i)) for i in list(labels)]
+                l = ["{}".format(str(i)) for i in list(labels)]
             data_labels.append([val for val in l for _ in range(K)])
     if data_labels:
         labels = np.concatenate(data_labels)
     df["y"] = labels
-    ax = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette = palette, data = df)
+    df["Classes"] = [x[-11:] for x in df.y.to_list()] if len(data) > 1 else ["Modality 1"] * len(labels)
+    ax = sns.scatterplot(x="comp-1", y="comp-2", hue=[x[:-11] for x in df.y.to_list()], palette=palette, data=df,
+                         style='Classes', markers=marker_styles[:len(data)])
     ax.set(title="T-SNE projection")
-    cols = len(data) if labels is not None else 1
-    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=cols)
+    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=1)
     plt.savefig(path, bbox_inches='tight')
     plt.clf()
 

@@ -1,0 +1,34 @@
+batch_size: 16
+epochs: 400
+exp_name: moe
+labels:
+beta: 1
+lr: 1e-4
+mixing: moe
+n_latents: 10
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+viz_freq: 5
+test_split: 0.1
+dataset_name: sprites
+modality_1:
+  decoder: VideoGPT
+  encoder: VideoGPT
+  mod_type: frames
+  recon_loss:  bce
+  path: ./data/sprites
+modality_2:
+  decoder: FNN
+  encoder: FNN
+  recon_loss: category_ce
+  mod_type: actions
+  path: ./data/sprites
+modality_3:
+  decoder: FNN
+  encoder: FNN
+  recon_loss: category_ce
+  mod_type: attributes
+  path: ./data/sprites
+
