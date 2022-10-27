@@ -39,12 +39,16 @@ def t_sne(data, path, labels, K=1):
             else:
                 l = ["{}".format(str(i)) for i in list(labels)]
             data_labels.append([val for val in l for _ in range(K)])
-    if data_labels:
+    if labels:
         labels = np.concatenate(data_labels)
-    df["y"] = labels
-    df["Classes"] = [x[-11:] for x in df.y.to_list()] if len(data) > 1 else ["Modality 1"] * len(labels)
-    ax = sns.scatterplot(x="comp-1", y="comp-2", hue=[x[:-11] for x in df.y.to_list()], palette=palette, data=df,
-                         style='Classes', markers=marker_styles[:len(data)])
+        df["y"] = labels
+        df["Classes"] = [x[-11:] for x in df.y.to_list()] if len(data) > 1 else ["Modality 1"] * len(labels)
+        ax = sns.scatterplot(x="comp-1", y="comp-2", hue=[x[:-11] for x in df.y.to_list()], palette=palette, data=df,
+                             style='Classes', markers=marker_styles[:len(data)])
+    else:
+        labels = np.concatenate(data_labels)
+        df["y"] = labels
+        ax = sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(), palette=palette, data=df)
     ax.set(title="T-SNE projection")
     sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1), ncol=1)
     plt.savefig(path, bbox_inches='tight')
