@@ -48,7 +48,7 @@ class DataModule(LightningDataModule):
             d = d[shuffle]
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
             self.dataset_val.append(d[int(len(d) * (1 - self.val_split)):])
-        self.labels = list(np.asarray(self.get_labels())[shuffle])
+        self.labels = list(np.asarray(self.get_labels())[shuffle]) if self.get_labels() is not None else None
         if len(self.dataset_train) == 1:
             self.dataset_train = TensorDataset(self.dataset_train[0])
             self.dataset_val = TensorDataset(self.dataset_val[0])
@@ -147,6 +147,7 @@ class DataModule(LightningDataModule):
             try:
                 data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
                 index = iter(self.trainer.datamodule.predict_dataloader(num_samples))._next_index()
-                return data, [self.labels[x] for x in index]
+                labels = [self.labels[x] for x in index] if self.labels is not None else None
+                return data, labels
             except:
                 continue
