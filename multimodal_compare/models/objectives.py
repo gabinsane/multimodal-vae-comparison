@@ -111,7 +111,7 @@ class BaseObjective():
         :rtype: tuple(torch.tensor, torch.tensor, str)
         """
         target = torch.stack(target).float() if isinstance(target, list) else target
-        target = target.repeat(K, 1, 1, 1).reshape(*output.loc.shape)
+        target = target.repeat(K, *([1]*(len(target.shape)-1))).reshape(*output.loc.shape)
         return output, target
 
     @staticmethod

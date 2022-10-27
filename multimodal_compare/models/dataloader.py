@@ -1,5 +1,6 @@
 from pytorch_lightning import LightningDataModule
 import torch
+import numpy as np
 from models import datasets
 from typing import Optional
 from torchnet.dataset import TensorDataset
@@ -39,10 +40,15 @@ class DataModule(LightningDataModule):
         """ Loads appropriate dataset classes and makes data splits """
         for i, p in enumerate(self.pths):
             self.datasets.append(self.get_dataset_class()(p, self.mod_types[i]))
+        shuffle = None
         for dataset in self.datasets:
             d = dataset.get_data()
+            if shuffle is None:
+                shuffle = np.random.permutation(len(d))
+            d = d[shuffle]
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
             self.dataset_val.append(d[int(len(d) * (1 - self.val_split)):])
+        self.labels = list(np.asarray(self.get_labels())[shuffle])
         if len(self.dataset_train) == 1:
             self.dataset_train = TensorDataset(self.dataset_train[0])
             self.dataset_val = TensorDataset(self.dataset_val[0])
@@ -59,7 +65,10 @@ class DataModule(LightningDataModule):
         :return: dictionary with data and masks
         :rtype: dict
         """
-        dic = {"data": batch[:,:,:-1], "masks": batch[:,:,-1].bool()}
+        if len(batch.shape) == 3:
+            dic = {"data": batch[:,:,:-1], "masks": batch[:,:,-1].bool()}
+        elif len(batch.shape) == 4:
+            dic = {"data": batch[:,:,:, :-1], "masks": batch[:,:,0,-1].squeeze().bool()}
         return dic
 
     def prepare_singlemodal(self, batch, mod_index):
@@ -85,7 +94,7 @@ class DataModule(LightningDataModule):
         """
         Custom collate function that puts data in a dictionary and prepares masks if needed
 
-        :param batch: input batcg
+        :param batch: input batch
         :type batch: list
         :return: dictionary with data batch
         :rtype: dict
@@ -115,12 +124,29 @@ class DataModule(LightningDataModule):
         return DataLoader(self.dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                           num_workers=0)
 
+    def get_labels(self):
+        """
+        Return data labels for given indices if available
+
+        :param indices: list of data indices to return
+        :type indices: list
+        :return: list of labels for given indices
+        :rtype: list
+        """
+        if self.labels is not None:
+            return self.labels
+        else:
+            for d in self.datasets:
+                if hasattr(d, "labels") and d.labels() is not None:
+                    return d.labels()
+        return None
+
     def get_num_samples(self, num_samples):
         """Returns batch of the predict_dataloader together with the indices"""
         while True:
             try:
                 data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
                 index = iter(self.trainer.datamodule.predict_dataloader(num_samples))._next_index()
-                return data, index
+                return data, [self.labels[x] for x in index]
             except:
                 continue

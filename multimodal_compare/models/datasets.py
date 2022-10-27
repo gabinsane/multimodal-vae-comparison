@@ -1,10 +1,10 @@
 import torch
-import cv2
+import cv2, os
 import numpy as np
 import math, copy
 from utils import one_hot_encode, output_onehot2text, lengths_to_mask, turn_text2image, load_data, add_recon_title
 from torchvision.utils import make_grid
-
+import imageio
 
 class BaseDataset():
     """
@@ -36,6 +36,10 @@ class BaseDataset():
         Assigns the postprocessing function based on the mod_type
         """
         raise NotImplementedError
+
+    def labels(self):
+        """Returns labels for the whole dataset"""
+        return None
 
     def _preprocess(self):
         """
@@ -127,7 +131,7 @@ class BaseDataset():
         """
         Makes a grid of traversals and saves as image
 
-        :param recons: data represented as images
+        :param recons: data to save
         :type recons: torch.tensor
         :param path: path to save the traversal to
         :type path: str
@@ -297,3 +301,152 @@ class MNIST_SVHN(BaseDataset):
         inputs = np.hstack(input_processed).astype("uint8")
         final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
         cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
+
+class SPRITES(BaseDataset):
+    feature_dims = {"frames": [8,64,64,3],
+                    "attributes": [4,6],
+                    "actions": [9]
+                    }  # these feature_dims are also used by the encoder and decoder networks
+
+    def __init__(self, pth, mod_type):
+        super().__init__(pth, mod_type)
+        self.mod_type = mod_type
+        self.path = pth
+        self.text2img_size = (64, 145, 3)
+        self.directions = ['front', 'left', 'right']
+        self.actions = ['walk', 'spellcard', 'slash']
+        self.label_map = ["walk front", "walk left", "walk right", "spellcard front", "spellcard left",
+                          "spellcard right", "slash front", "slash left", "slash right"]
+        self.attr_map = ["skin", "hair", "top", "pants"]
+        self.att_names = [["pink", "yellow", "grey", "silver", "beige", "brown"], ["green", "blue", "yellow", "silver", "red", "purple"],
+                          ["maroon", "blue", "white", "armor", "brown", "shirt"], ["white", "gold", "red", "armor", "blue", "green"]]
+
+    def labels(self):
+        actions = np.argmax(self.get_actions()[:, :9], axis=-1)
+        labels = []
+        for a in actions:
+            labels.append(self.label_map[int(a)])
+        return labels
+
+    def get_frames(self):
+        X_train = []
+        for act in range(len(self.actions)):
+            for i in range(len(self.directions)):
+                x = np.load(os.path.join(self.path, '%s_%s_frames_train.npy' % (self.actions[act], self.directions[i])))
+                X_train.append(x)
+        data = np.concatenate(X_train, axis=0)
+        return torch.tensor(data)
+
+    def get_attributes(self):
+        self.categorical = True
+        A_train = []
+        for act in range(len(self.actions)):
+            for i in range(len(self.directions)):
+                a = np.load(os.path.join(self.path, '%s_%s_attributes_train.npy' % (self.actions[act], self.directions[i])))
+                A_train.append(a[:, 0, :, :])
+        data = np.concatenate(A_train, axis=0)
+        return torch.tensor(data)
+
+    def get_actions(self):
+        self.categorical = True
+        D_train = []
+        for act in range(len(self.actions)):
+            for i in range(len(self.directions)):
+                a = np.load(os.path.join(self.path, '%s_%s_attributes_train.npy' % (self.actions[act], self.directions[i])))
+                d = np.zeros([a.shape[0], 9])
+                d[:, 3 * act + i] = 1
+                D_train.append(d)
+        data = np.concatenate(D_train, axis=0)
+        return torch.tensor(data)
+
+    def make_masks(self, shape):
+        return torch.ones(shape).unsqueeze(-1)
+
+    def _mod_specific_loaders(self):
+        return {"frames": self.get_frames, "attributes": self.get_attributes, "actions": self.get_actions}
+
+    def _mod_specific_savers(self):
+        return {"frames": self._postprocess_frames, "attributes": self._postprocess_attributes,
+                "actions": self._postprocess_actions}
+
+    def _postprocess_frames(self, data):
+        data = data["data"] if isinstance(data, dict) else data
+        return np.asarray(data.detach().cpu().reshape(-1, *self.feature_dims["frames"])) * 255
+
+    def _postprocess_actions(self, data):
+        data = data["data"] if isinstance(data, dict) else data
+        indices = np.argmax(data.detach().cpu(), axis=-1)
+        return [self.label_map[int(i)] for i in indices]
+
+    def _postprocess_attributes(self, data):
+        data = data["data"] if isinstance(data, dict) else data
+        indices = np.argmax(data.detach().cpu(), axis=-1)
+        atts = []
+        for i in indices:
+            label = ""
+            for att_i, a in enumerate(i):
+                label += self.att_names[att_i][a] + " " + self.attr_map[att_i]
+                label += " \n" if att_i in [1,2,3] else ", "
+            atts.append(label)
+        return atts
+
+    def iter_over_inputs(self, outs, data, mod_names, f=0):
+        input_processed = []
+        for key, d in data.items():
+            output = self._mod_specific_savers()[mod_names[key]](d)
+            images = turn_text2image(output, img_size=self.text2img_size) if mod_names[key] in ["attributes", "actions"] \
+                else output[:, f, :, :, :]
+            images = add_recon_title(images, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            input_processed.append(np.vstack(images))
+            input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3)) * 145)
+        inputs = np.hstack(input_processed).astype("uint8")
+        return np.hstack((inputs, np.vstack(outs).astype("uint8")))
+
+    def save_recons(self, data, recons, path, mod_names):
+        output_processed = self._postprocess_all2img(recons)
+        if self.mod_type != "frames" and [k for k, v in mod_names.items() if v == 'frames'][0] not in data.keys():
+            outs = add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
+            final = self.iter_over_inputs(outs, data, mod_names)
+            cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
+        else:
+            timesteps = []
+            for f in range(8):
+                outs = add_recon_title(output_processed[:, f, :, :, :], "output\n{}".format(self.mod_type), (0, 170, 0))\
+                if self.mod_type == "frames" else add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
+                final = self.iter_over_inputs(outs, data, mod_names, f)
+                timesteps.append(final)
+            imageio.mimsave(path.replace(".png", ".gif"), timesteps)
+
+    def _postprocess_all2img(self, data):
+        """
+        Converts any kind of data to images to save traversal visualizations
+
+        :param data: input data
+        :type data: torch.tensor
+        :return: processed images
+        :rtype: torch.tensor
+        """
+        output_processed = self._postprocess(data)
+        output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
+            if self.mod_type in ["actions", "attributes"] else output_processed
+        return output_processed
+
+    def save_traversals(self, recons, path):
+        """
+        Makes a grid of traversals and saves as animated gif image
+
+        :param recons: data to save
+        :type recons: torch.tensor
+        :param path: path to save the traversal to
+        :type path: str
+        """
+        if self.mod_type != "frames":
+            output_processed = torch.tensor(self._postprocess_all2img(recons)).transpose(1, 3)
+            grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
+            cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
+        else:
+            grids = []
+            output_processed = torch.tensor(self._postprocess_all2img(recons)).permute(1,0,4,2,3)
+            for i in output_processed:
+                grids.append(np.asarray(make_grid(i, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0)).astype("uint8"))
+            imageio.mimsave(path.replace(".png", ".gif"), grids)

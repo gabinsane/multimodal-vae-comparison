@@ -314,7 +314,7 @@ class Dec_FNN(VaeDecoder):
         p = torch.relu(self.lin2(p))
         p = torch.relu(self.lin3(p))
         d = (self.fc3(p))  # reshape data
-        d = d.clamp(Constants.eta, 1 - Constants.eta)
+        d = d.reshape(-1, *self.data_dim)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
@@ -463,14 +463,14 @@ class Dec_VideoGPT(VaeDecoder):
             nn.ReLU())
         n_times_upsample = np.array([int(math.log2(d)) for d in self.upsample])
         max_us = n_times_upsample.max()
-        self.convts = ModuleList()
+        self.convts = nn.ModuleList()
         for i in range(max_us):
             out_channels = 3 if i == max_us - 1 else self.out_dim
             us = tuple([2 if d > 0 else 1 for d in n_times_upsample])
             convt = SamePadConvTranspose3d(self.out_dim, out_channels, 4, stride=us)
             self.convts.append(convt)
             n_times_upsample -= 1
-        self.upsample = torch.nn.DataParallel(nn.Linear(self.out_dim, self.out_dim * 16 * 16 * 3))
+        self.upsample = torch.nn.DataParallel(nn.Linear(self.out_dim, self.out_dim * 16 * 16 * self.data_dim[0]))
 
     def forward(self, z):
         """
@@ -483,12 +483,12 @@ class Dec_VideoGPT(VaeDecoder):
         """
         x = z["latents"]
         x_upsampled = self.upsample(x)
-        h = self.res_stack(x_upsampled.view(-1, x.shape[2], 3, 16, 16))
+        h = self.res_stack(x_upsampled.view(-1, x.shape[2], self.data_dim[0], 16, 16))
         for i, convt in enumerate(self.convts):
             h = convt(h)
             if i < len(self.convts) - 1:
                 h = F.relu(h)
-        h = h.permute(0, 1, 3, 4, 2)
+        h = h.permute(0, 2, 3, 4, 1)
         h = torch.sigmoid(h)
         return h, torch.tensor(0.75).to(x.device)
 
