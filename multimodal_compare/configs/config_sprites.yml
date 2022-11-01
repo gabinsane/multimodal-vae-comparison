@@ -3,9 +3,9 @@ epochs: 400
 exp_name: poe_sprites
 labels:
 beta: 1
-lr: 1e-4
+lr: 1e-3
 mixing: poe
-n_latents: 10
+n_latents: 16
 obj: elbo
 optimizer: adam
 pre_trained: null
