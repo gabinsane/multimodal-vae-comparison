@@ -336,7 +336,9 @@ python main.py --cfg configs/config_cub.yml
 ```
 
 #### Sprites
- 
+
+![Sprites](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif)
+
 You can download the sorted version (4.6 GB) with 3 modalities (image sequences, actions and attributes) and train:
 
 ```
@@ -345,10 +347,6 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.zip   # do
 unzip sprites.zip -d ./data/
 python main.py --cfg configs/config_sprites.yml
 ```
-
-<div style="text-align: left">
- <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif" width="300"  alt="UML class diagram"/>
-</div>
 
 
 [How to train on your own dataset](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/adddataset.html)
