@@ -308,12 +308,14 @@ Please feel free to propose your own model and training config so that we can ad
 
 ### Training on other datasets
 
-By default, we also support training on MNIST_SVHN (or MNIST/SVHN only) and the Caltech-UCSD Birds 200 (CUB) dataset as 
-used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf). We provide the default training configs which
+By default, we also support training on MNIST_SVHN (or MNIST/SVHN only), Caltech-UCSD Birds 200 (CUB) dataset as 
+used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf) and Sprites (as in [this repository](https://github.com/YingzhenLi/Sprites)). We provide the default training configs which
  you can adjust according to your needs (e.g. change the model, loss objective etc.). 
 
 
-For training on MNIST_SVHN, first download the dataset (30 MB in total) before the training. You can run the following:
+#### MNIST_SVHN
+
+First download the dataset (30 MB in total) before the training. You can run the following:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
@@ -322,7 +324,9 @@ unzip mnist_svhn.zip -d ./data/
 python main.py --cfg configs/config_mnistsvhn.yml
 ```
 
-For training on CUB, we provide our preprocessed and cleaned version of the dataset (106 MB in total). To download and train, run:
+#### CUB
+
+We provide our preprocessed and cleaned version of the dataset (106 MB in total). To download and train, run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
@@ -330,6 +334,21 @@ wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # downlo
 unzip cub.zip -d ./data/
 python main.py --cfg configs/config_cub.yml
 ```
+
+#### Sprites
+ 
+You can download the sorted version (4.6 GB) with 3 modalities (image sequences, actions and attributes) and train:
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.zip   # download Sprites dataset
+unzip sprites.zip -d ./data/
+python main.py --cfg configs/config_sprites.yml
+```
+
+<div style="text-align: left">
+ <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif" width="300"  alt="UML class diagram"/>
+</div>
 
 
 [How to train on your own dataset](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/adddataset.html)
@@ -354,8 +373,7 @@ use only the part of the class name following after the underscore (e.g. CNN for
 
 ## Unit tests
 
-We provide a set of unit tests to check whether any newly-added implementations meet the requirements and did not disrupt
-any of the existing functions. To verify that everything is implemented correctly, run:
+We provide a set of unit tests to check whether any newly-added implementations disrupt any of the existing functions. To run the unit test proceed as follows:
 
 ```
 cd ~/multimodal-vae-comparison/
@@ -366,6 +384,21 @@ py.test .
 ## License
 
 This code is published under the [CC BY-NC-SA 4.0 license](https://creativecommons.org/licenses/by-nc-sa/4.0/).  
+
+
+If you use our toolkit or dataset in your work, please, give us an attribution using the following citation:
+```
+@misc{https://doi.org/10.48550/arxiv.2209.03048,
+  doi = {10.48550/ARXIV.2209.03048},
+  url = {https://arxiv.org/abs/2209.03048},  
+  author = {Sejnova, Gabriela and Vavrecka, Michal and Stepanova, Karla},  
+  keywords = {Machine Learning (cs.LG), FOS: Computer and information sciences, FOS: Computer and information sciences},  
+  title = {Benchmarking Multimodal Variational Autoencoders: GeBiD Dataset and Toolkit},  
+  publisher = {arXiv},  
+  year = {2022},  
+  copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
+}
+```
 
 
 ## Acknowledgment

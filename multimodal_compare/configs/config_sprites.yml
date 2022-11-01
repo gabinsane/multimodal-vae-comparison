@@ -10,7 +10,7 @@ obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
-viz_freq: 5
+viz_freq: 1
 test_split: 0.1
 dataset_name: sprites
 modality_1:
