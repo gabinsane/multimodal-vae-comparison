@@ -327,10 +327,10 @@ class Enc_FNN(VaeEncoder):
         """
         super(Enc_FNN, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
         self.net_type = "FNN"
-        self.hidden_dim = 300
+        self.hidden_dim = 128
         self.lin1 = torch.nn.DataParallel(Linear(np.prod(data_dim), self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(Linear(self.hidden_dim, self.hidden_dim))
-        self.lin3 = torch.nn.DataParallel(Linear(self.hidden_dim, self.hidden_dim))
+        #self.lin2 = torch.nn.DataParallel(Linear(self.hidden_dim, self.hidden_dim))
+        #self.lin3 = torch.nn.DataParallel(Linear(self.hidden_dim, self.hidden_dim))
 
         self.fc21 = torch.nn.DataParallel(Linear(self.hidden_dim, self.out_dim))
         self.fc22 = torch.nn.DataParallel(Linear(self.hidden_dim, self.out_dim))
@@ -347,8 +347,8 @@ class Enc_FNN(VaeEncoder):
         x = x["data"]
         x = (x).float()
         e = torch.relu(self.lin1(x.view(x.shape[0], -1)))
-        e = torch.relu(self.lin2(e))
-        e = torch.relu(self.lin3(e))
+        #e = torch.relu(self.lin2(e))
+        #e = torch.relu(self.lin3(e))
         lv = self.fc22(e)
         lv = F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
@@ -499,14 +499,14 @@ class Enc_VideoGPT(VaeEncoder):
         for i in range(max_ds):
             in_channels = 3 if i == 0 else self.out_dim
             stride = tuple([2 if d > 0 else 1 for d in n_times_downsample])
-            conv = SamePadConv3d(in_channels, latent_dim, 4, stride=stride)
+            conv = SamePadConv3d(in_channels, self.out_dim, 4, stride=stride)
             self.convs.append(conv)
             n_times_downsample -= 1
-        self.conv_last = SamePadConv3d(in_channels, latent_dim, kernel_size=3)
+        self.conv_last = SamePadConv3d(in_channels, self.out_dim, kernel_size=3)
         self.res_stack = Sequential(
-            *[AttentionResidualBlock(latent_dim)
+            *[AttentionResidualBlock(self.out_dim)
               for _ in range(n_res_layers)],
-            BatchNorm3d(latent_dim),
+            BatchNorm3d(self.out_dim),
             ReLU())
         self.mu_layer = torch.nn.DataParallel(Linear(self.out_dim * 16 * 16 * 4, self.out_dim))
         self.logvar_layer = torch.nn.DataParallel(Linear(self.out_dim * 16 * 16 * 4, self.out_dim))
@@ -526,8 +526,8 @@ class Enc_VideoGPT(VaeEncoder):
             h = F.relu(conv(h.float()))
         h = self.conv_last(h)
         h = self.res_stack(h)
-        mu = self.mu_layer(h.view(x.shape[0], -1))
-        logvar = self.logvar_layer(h.view(x.shape[0], -1))
+        mu = self.mu_layer(h.reshape(x.shape[0], -1))
+        logvar = self.logvar_layer(h.reshape(x.shape[0], -1))
         logvar = F.softmax(logvar, dim=-1) + Constants.eta
         return mu, logvar
 

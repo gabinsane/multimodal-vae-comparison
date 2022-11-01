@@ -1,10 +1,10 @@
 batch_size: 16
 epochs: 400
-exp_name: moe
+exp_name: poe_sprites
 labels:
 beta: 1
 lr: 1e-4
-mixing: moe
+mixing: poe
 n_latents: 10
 obj: elbo
 optimizer: adam

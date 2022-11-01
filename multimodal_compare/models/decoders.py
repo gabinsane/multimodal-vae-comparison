@@ -293,11 +293,11 @@ class Dec_FNN(VaeDecoder):
         """
         super(Dec_FNN, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
         self.net_type = "FNN"
-        self.hidden_dim = 30
+        self.hidden_dim = 128
         self.data_dim = data_dim
         self.lin1 = torch.nn.DataParallel(nn.Linear(self.out_dim, self.hidden_dim))
-        self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
-        self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        #self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
+        #self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, np.prod(data_dim)))
 
     def forward(self, z):
@@ -311,8 +311,8 @@ class Dec_FNN(VaeDecoder):
         """
         z = z["latents"]
         p = torch.relu(self.lin1(z))
-        p = torch.relu(self.lin2(p))
-        p = torch.relu(self.lin3(p))
+        #p = torch.relu(self.lin2(p))
+        #p = torch.relu(self.lin3(p))
         d = (self.fc3(p))  # reshape data
         d = d.reshape(-1, *self.data_dim)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale

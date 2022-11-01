@@ -189,10 +189,9 @@ class UnimodalObjective(BaseObjective):
     """
     def __init__(self, obj:str,beta=1):
         super().__init__()
-        assert hasattr(self, obj), "Objective {} is not implemented in unimodal scenario".format(obj)
         self.beta = beta
+        self.objective = None
         self.obj_name = obj
-        self.objective = getattr(self, obj)
 
     def calculate_loss(self, px_z, target, qz_x, prior_dist, pz_params, zs, K=1):
         """
@@ -213,10 +212,13 @@ class UnimodalObjective(BaseObjective):
         :return: calculated losses
         :rtype: dict
         """
+        assert hasattr(self, self.obj_name), "Objective {} is not implemented in unimodal scenario".format(obj)
+        self.objective = getattr(self, self.obj_name)
         data = {"px_z":px_z, "target":target, "qz_x": qz_x, "prior_dist":prior_dist, "zs":zs, "K": K, "pz_params":pz_params}
         output = self.objective(data)
         assert isinstance(output, dict), "Objective function must return a dictionary"
         return output
+
 
     def elbo(self, data):
         """
