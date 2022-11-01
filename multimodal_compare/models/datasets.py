@@ -317,9 +317,9 @@ class SPRITES(BaseDataset):
         self.actions = ['walk', 'spellcard', 'slash']
         self.label_map = ["walk front", "walk left", "walk right", "spellcard front", "spellcard left",
                           "spellcard right", "slash front", "slash left", "slash right"]
-        self.attr_map = ["skin", "hair", "top", "pants"]
-        self.att_names = [["pink", "yellow", "grey", "silver", "beige", "brown"], ["green", "blue", "yellow", "silver", "red", "purple"],
-                          ["maroon", "blue", "white", "armor", "brown", "shirt"], ["white", "gold", "red", "armor", "blue", "green"]]
+        self.attr_map = ["skin", "pants", "top", "hair"]
+        self.att_names = [["pink", "yellow", "grey", "silver", "beige", "brown"], ["white", "gold", "red", "armor", "blue", "green"],
+                          ["maroon", "blue", "white", "armor", "brown", "shirt"],["green", "blue", "yellow", "silver", "red", "purple"]]
 
     def labels(self):
         actions = np.argmax(self.get_actions()[:, :9], axis=-1)
@@ -386,7 +386,7 @@ class SPRITES(BaseDataset):
             label = ""
             for att_i, a in enumerate(i):
                 label += self.att_names[att_i][a] + " " + self.attr_map[att_i]
-                label += " \n" if att_i in [1,2,3] else ", "
+                label += " \n" if att_i in [0,1,3] else ", "
             atts.append(label)
         return atts
 
@@ -446,7 +446,7 @@ class SPRITES(BaseDataset):
             cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
         else:
             grids = []
-            output_processed = torch.tensor(self._postprocess_all2img(recons)).permute(1,0,4,2,3)
+            output_processed = torch.tensor(self._postprocess_all2img(recons)).permute(1,0,4,3,2)
             for i in output_processed:
                 grids.append(np.asarray(make_grid(i, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0)).astype("uint8"))
             imageio.mimsave(path.replace(".png", ".gif"), grids)
