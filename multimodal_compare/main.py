@@ -1,11 +1,13 @@
 import argparse
 import numpy as np
 import torch
+import os
 import pytorch_lightning as pl
 from models.trainer import MultimodalVAE
 from models.config_cls import Config
 from models.dataloader import DataModule
 from pytorch_lightning.callbacks import ModelCheckpoint
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--cfg", help="Specify config file", metavar="FILE")
@@ -29,6 +31,7 @@ parser.add_argument('--optimizer', type=str, default=None,
                     help='optimizer')
 
 def main():
+    tic = time.perf_counter()
     config = Config(parser)
     torch.manual_seed(config.seed)
     torch.cuda.manual_seed(config.seed)
@@ -39,6 +42,9 @@ def main():
     pl_trainer = pl.Trainer(accelerator='gpu', default_root_dir=config.mPath, max_epochs=config.epochs,
                             check_val_every_n_epoch=1)
     pl_trainer.fit(model_wrapped, datamodule=data_module)
+    toc = time.perf_counter()
+    with open(os.path.join(config.mPath, 'training_time.txt'), 'w') as f:
+        f.write("The training took {} minutes".format((toc-tic)/60))
 
 if __name__ == '__main__':
     main()
