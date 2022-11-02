@@ -1,28 +1,27 @@
 batch_size: 32
-epochs: 20
-exp_name: moe
-labels:
+epochs: 600
+dataset_name: gebid
+exp_name: gebidlevel5_mvae
+labels: null
 beta: 1
 lr: 1e-4
-mixing: moe
-n_latents: 64
+mixing: poe
+modality_1:
+  decoder: CNN
+  encoder: CNN
+  mod_type: image
+  recon_loss:  bce
+  path: ./data/level5/image
+modality_2:
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  mod_type: text
+  recon_loss: category_ce
+  path: ./data/level5/attrs.pkl
+n_latents: 32
 obj: elbo
 optimizer: adam
 pre_trained: null
-seed: 2
-viz_freq: 1
+seed: 1
 test_split: 0.1
-dataset_name: mnist_svhn
-modality_1:
-  decoder: MNIST_DMVAE
-  encoder: MNIST_DMVAE
-  mod_type: mnist
-  recon_loss:  bce
-  path: ./data/mnist_svhn/mnist
-modality_2:
-  decoder: SVHN_DMVAE
-  encoder: SVHN_DMVAE
-  recon_loss: bce
-  mod_type: svhn
-  path: ./data/mnist_svhn/svhn
-
+viz_freq: 20
