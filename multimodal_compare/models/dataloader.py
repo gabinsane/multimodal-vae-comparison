@@ -24,6 +24,7 @@ class DataModule(LightningDataModule):
         self.dataset_val = []
         self.datasets = []
         self.labels = self.config.labels
+        self.labels_val, self.labels_train = None, None
         self.batch_size = self.config.batch_size
 
     def get_dataset_class(self):
@@ -48,7 +49,8 @@ class DataModule(LightningDataModule):
             d = d[shuffle]
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
             self.dataset_val.append(d[int(len(d) * (1 - self.val_split)):])
-        self.labels = list(np.asarray(self.get_labels())[shuffle]) if self.get_labels() is not None else None
+        self.labels_train = list(np.asarray(self.get_labels())[shuffle])[:int(len(d) * (1 - self.val_split))] if self.get_labels() is not None else None
+        self.labels_val = list(np.asarray(self.get_labels())[shuffle])[int(len(d) * (1 - self.val_split)):] if self.get_labels() is not None else None
         if len(self.dataset_train) == 1:
             self.dataset_train = TensorDataset(self.dataset_train[0])
             self.dataset_val = TensorDataset(self.dataset_val[0])
@@ -124,21 +126,28 @@ class DataModule(LightningDataModule):
         return DataLoader(self.dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                           num_workers=0)
 
-    def get_labels(self):
+    def get_labels(self, split="all"):
         """
         Return data labels for given indices if available
 
-        :param indices: list of data indices to return
-        :type indices: list
+        :param split: "all"/"train"/"val" depending on the data split
+        :type split: str
         :return: list of labels for given indices
         :rtype: list
         """
-        if self.labels is not None:
-            return self.labels
+        labels = {"all": self.labels, "val": self.labels_val, "train": self.labels_train}[split]
+        if labels is not None:
+            return labels
         else:
             for d in self.datasets:
                 if hasattr(d, "labels") and d.labels() is not None:
-                    return d.labels()
+                    labels = d.labels()
+                    if split == "all":
+                        return labels
+                    elif split == "val":
+                        return labels[int(len(labels) * (1 - self.val_split)):]
+                    elif split == "train":
+                        return labels[:int(len(labels) * (1 - self.val_split))]
         return None
 
     def get_num_samples(self, num_samples):
@@ -147,7 +156,7 @@ class DataModule(LightningDataModule):
             try:
                 data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
                 index = iter(self.trainer.datamodule.predict_dataloader(num_samples))._next_index()
-                labels = [self.labels[x] for x in index] if self.labels is not None else None
+                labels = [self.get_labels("val")[x] for x in index] if self.get_labels("val") is not None else None
                 return data, labels
             except:
                 continue
