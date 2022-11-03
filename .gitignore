@@ -1,3 +1,4 @@
 ./multimodal_compare/data/*
 ./multimodal_compare/results/
+.idea
 builddocs.txt
