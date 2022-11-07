@@ -347,6 +347,8 @@ class SPRITES(BaseDataset):
                           ["maroon", "blue", "white", "armor", "brown", "shirt"],["green", "blue", "yellow", "silver", "red", "purple"]]
 
     def labels(self):
+        if self.current_path is None:
+            return None
         actions = np.argmax(self.get_actions()[:, :9], axis=-1)
         labels = []
         for a in actions:
