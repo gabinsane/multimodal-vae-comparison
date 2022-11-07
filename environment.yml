@@ -34,7 +34,7 @@ dependencies:
   - seaborn
   - pytorch
   - torchvision
-  - pytorch-lightning
+  - pytorch-lightning>=1.7.7
   - umap-learn
   - pyyaml
   - pytest

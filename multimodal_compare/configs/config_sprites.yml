@@ -19,16 +19,19 @@ modality_1:
   mod_type: frames
   recon_loss:  bce
   path: ./data/sprites
+  test_datapath: ./data/sprites/test
 modality_2:
   decoder: FNN
   encoder: FNN
   recon_loss: category_ce
   mod_type: actions
   path: ./data/sprites
+  test_datapath: ./data/sprites/test
 modality_3:
   decoder: FNN
   encoder: FNN
   recon_loss: category_ce
   mod_type: attributes
   path: ./data/sprites
+  test_datapath: ./data/sprites/test
 

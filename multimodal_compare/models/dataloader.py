@@ -17,13 +17,16 @@ class DataModule(LightningDataModule):
         super().__init__()
         self.config = config
         self.pths = [x["path"] for x in self.config.mods]
+        self.testpths = [x["test_datapath"] if "test_datapath" in x.keys() else None for x in self.config.mods]
         self.mod_types = [x["mod_type"] for x in self.config.mods]
         self.val_split = self.config.test_split
         self.dataset_name = self.config.dataset_name
         self.dataset_train = []
         self.dataset_val = []
+        self.dataset_test = []
         self.datasets = []
         self.labels = self.config.labels
+        self.labels_test = self.config.labels_test
         self.labels_val, self.labels_train = None, None
         self.batch_size = self.config.batch_size
 
@@ -39,24 +42,33 @@ class DataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None) -> None:
         """ Loads appropriate dataset classes and makes data splits """
+        if all([isinstance(x, TensorDataset) for x in [self.dataset_test, self.dataset_val]]):
+            return
         for i, p in enumerate(self.pths):
-            self.datasets.append(self.get_dataset_class()(p, self.mod_types[i]))
-        shuffle = None
+            self.datasets.append(self.get_dataset_class()(p, self.testpths[i], self.mod_types[i]))
+        shuffle, shuffle_test = None, None
         for dataset in self.datasets:
             d = dataset.get_data()
+            d_test = dataset.get_test_data()
             if shuffle is None:
                 shuffle = np.random.permutation(len(d))
+                shuffle_test = np.random.permutation(len(d_test)) if d_test is not None else None
             d = d[shuffle]
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
             self.dataset_val.append(d[int(len(d) * (1 - self.val_split)):])
+            if d_test is not None:
+                self.dataset_test.append(d_test[shuffle_test])
         self.labels_train = list(np.asarray(self.get_labels())[shuffle])[:int(len(d) * (1 - self.val_split))] if self.get_labels() is not None else None
         self.labels_val = list(np.asarray(self.get_labels())[shuffle])[int(len(d) * (1 - self.val_split)):] if self.get_labels() is not None else None
+        self.labels_test = list(np.asarray(self.get_labels(split="test"))[shuffle_test]) if self.get_labels(split="test") is not None else None
         if len(self.dataset_train) == 1:
             self.dataset_train = TensorDataset(self.dataset_train[0])
             self.dataset_val = TensorDataset(self.dataset_val[0])
+            self.dataset_test = TensorDataset(self.dataset_test[0]) if self.dataset_test[0] is not None else None
         else:
             self.dataset_train = TensorDataset(self.dataset_train)
             self.dataset_val = TensorDataset(self.dataset_val)
+            self.dataset_test = TensorDataset(self.dataset_test) if len(self.dataset_test) > 0 else None
 
     def make_masks(self, batch):
         """
@@ -126,37 +138,49 @@ class DataModule(LightningDataModule):
         return DataLoader(self.dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                           num_workers=0)
 
+    def test_dataloader(self):
+        """Return Test DataLoader"""
+        return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
+                          num_workers=1)
+
+
     def get_labels(self, split="all"):
         """
         Return data labels for given indices if available
 
-        :param split: "all"/"train"/"val" depending on the data split
+        :param split: "all"/"train"/"val/test" depending on the data split
         :type split: str
         :return: list of labels for given indices
         :rtype: list
         """
-        labels = {"all": self.labels, "val": self.labels_val, "train": self.labels_train}[split]
+        labels = {"all": self.labels, "val": self.labels_val, "train": self.labels_train, "test":self.labels_test}[split]
         if labels is not None:
             return labels
         else:
             for d in self.datasets:
                 if hasattr(d, "labels") and d.labels() is not None:
-                    labels = d.labels()
+                    labels = d.get_labels(split="train")
                     if split == "all":
                         return labels
                     elif split == "val":
                         return labels[int(len(labels) * (1 - self.val_split)):]
                     elif split == "train":
                         return labels[:int(len(labels) * (1 - self.val_split))]
+                    elif split == "test":
+                        return d.get_labels(split="test")
         return None
 
-    def get_num_samples(self, num_samples):
+    def get_label_for_indices(self, indices, split):
+        """Get labels for the given data split according to indices"""
+        return [self.get_labels(split)[x] for x in indices] if self.get_labels(split) is not None else None
+
+    def get_num_samples(self, num_samples, split="val"):
         """Returns batch of the predict_dataloader together with the indices"""
         while True:
             try:
                 data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
                 index = iter(self.trainer.datamodule.predict_dataloader(num_samples))._next_index()
-                labels = [self.get_labels("val")[x] for x in index] if self.get_labels("val") is not None else None
+                labels = self.get_label_for_indices(index, split)
                 return data, labels
             except:
                 continue

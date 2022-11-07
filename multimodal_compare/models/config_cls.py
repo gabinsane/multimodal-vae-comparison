@@ -18,6 +18,7 @@ class Config():
         self.num_mods = None
         self.model_cfg = {}
         self.mPath = None
+        self.labels_test = None
         self.parser = parser
         self.eval_only = eval_only
         self.mods = []
@@ -34,9 +35,11 @@ class Config():
         :return: parsed parameters
         :rtype: dict
         """
-        assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str))
+        assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str) or isinstance(parser, dict))
         if isinstance(parser, argparse.ArgumentParser):
             self.params = self._parse_args()
+        elif isinstance(parser, dict):
+            self.params = parser
         elif isinstance(parser, str) and os.path.isfile(parser):
             self.params = self._load_config(parser)
         elif isinstance(parser, str) and os.path.isdir(parser):

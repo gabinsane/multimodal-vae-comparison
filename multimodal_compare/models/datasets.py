@@ -11,7 +11,7 @@ class BaseDataset():
     Abstract dataset class shared for all datasets
     """
 
-    def __init__(self, pth, mod_type):
+    def __init__(self, pth, testpth, mod_type):
         """
 
         :param pth: path to the given modality
@@ -21,6 +21,8 @@ class BaseDataset():
         """
         assert hasattr(self, "feature_dims"), "Dataset class must have the feature_dims attribute"
         self.path = pth
+        self.testdata = testpth
+        self.current_path = None
         self.mod_type = mod_type
         self.has_masks = False
         self.categorical = False
@@ -41,6 +43,20 @@ class BaseDataset():
         """Returns labels for the whole dataset"""
         return None
 
+    def get_labels(self, split="train"):
+        """Returns labels for the given split: train or test"""
+        self.current_path = self.path if split == "train" else self.testdata
+        return self.labels()
+
+    def current_datatype(self):
+        """Returns whther the current path to data points to test data or train data"""
+        if self.current_path == self.testdata:
+            return "test"
+        elif self.current_path == self.path:
+            return "train"
+        else:
+            return None
+
     def _preprocess(self):
         """
         Preprocesses the loaded data according to modality type
@@ -49,7 +65,7 @@ class BaseDataset():
         :rtype: list
         """
         assert self.mod_type in self._mod_specific_loaders().keys(), "Unsupported modality type for {}".format(
-            self.path)
+            self.current_path)
         return self._mod_specific_loaders()[self.mod_type]()
 
     def _postprocess(self, output_data):
@@ -59,7 +75,7 @@ class BaseDataset():
         :return: postprocessed data
         :rtype: list
         """
-        assert self.mod_type in self._mod_specific_savers().keys(), "Unsupported modality type for {}".format(self.path)
+        assert self.mod_type in self._mod_specific_savers().keys(), "Unsupported modality type for {}".format(self.current_path)
         return self._mod_specific_savers()[self.mod_type](output_data)
 
     def get_data_raw(self):
@@ -69,7 +85,7 @@ class BaseDataset():
         :return: loaded raw data
         :rtype: list
         """
-        data = load_data(self.path)
+        data = load_data(self.current_path)
         return data
 
     def get_data(self):
@@ -79,7 +95,20 @@ class BaseDataset():
         :return: processed data
         :rtype: list
         """
+        self.current_path = self.path
         return self._preprocess()
+
+    def get_test_data(self):
+        """
+        Returns processed test data if available
+
+        :return: processed data
+        :rtype: list
+        """
+        if self.testdata is not None:
+            self.current_path = self.testdata
+            return self._preprocess()
+        return None
 
     def _preprocess_images(self, dimensions):
         """
@@ -148,10 +177,9 @@ class GEBID(BaseDataset):
                     "text": [52, 27, 1]
                     }  # these feature_dims are also used by the encoder and decoder networks
 
-    def __init__(self, pth, mod_type):
-        super().__init__(pth, mod_type)
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
-        self.path = pth
         self.text2img_size = (64,192,3)
 
     def _mod_specific_loaders(self):
@@ -205,10 +233,9 @@ class CUB(GEBID):
                     "text": [246, 27, 1]
                     }  # these feature_dims are also used by the encoder and decoder networks
 
-    def __init__(self, pth, mod_type):
-        super().__init__(pth, mod_type)
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
-        self.path = pth
         self.text2img_size = (64,256,3)
 
     def _preprocess_text_onehot(self):
@@ -256,10 +283,9 @@ class MNIST_SVHN(BaseDataset):
                     "svhn": [32,32,3]
                     }  # these feature_dims are also used by the encoder and decoder networks
 
-    def __init__(self, pth, mod_type):
-        super().__init__(pth, mod_type)
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
-        self.path = pth
 
     def _mod_specific_loaders(self):
         return {"mnist": self._process_mnist, "svhn": self._process_svhn}
@@ -308,10 +334,9 @@ class SPRITES(BaseDataset):
                     "actions": [9]
                     }  # these feature_dims are also used by the encoder and decoder networks
 
-    def __init__(self, pth, mod_type):
-        super().__init__(pth, mod_type)
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
-        self.path = pth
         self.text2img_size = (64, 145, 3)
         self.directions = ['front', 'left', 'right']
         self.actions = ['walk', 'spellcard', 'slash']
@@ -332,7 +357,7 @@ class SPRITES(BaseDataset):
         X_train = []
         for act in range(len(self.actions)):
             for i in range(len(self.directions)):
-                x = np.load(os.path.join(self.path, '%s_%s_frames_train.npy' % (self.actions[act], self.directions[i])))
+                x = np.load(os.path.join(self.current_path, '{}_{}_frames_{}.npy'.format(self.actions[act], self.directions[i], self.current_datatype())))
                 X_train.append(x)
         data = np.concatenate(X_train, axis=0)
         return torch.tensor(data)
@@ -342,7 +367,7 @@ class SPRITES(BaseDataset):
         A_train = []
         for act in range(len(self.actions)):
             for i in range(len(self.directions)):
-                a = np.load(os.path.join(self.path, '%s_%s_attributes_train.npy' % (self.actions[act], self.directions[i])))
+                a = np.load(os.path.join(self.current_path, '{}_{}_attributes_{}.npy'.format(self.actions[act], self.directions[i], self.current_datatype())))
                 A_train.append(a[:, 0, :, :])
         data = np.concatenate(A_train, axis=0)
         return torch.tensor(data)
@@ -352,7 +377,7 @@ class SPRITES(BaseDataset):
         D_train = []
         for act in range(len(self.actions)):
             for i in range(len(self.directions)):
-                a = np.load(os.path.join(self.path, '%s_%s_attributes_train.npy' % (self.actions[act], self.directions[i])))
+                a = np.load(os.path.join(self.current_path, '{}_{}_attributes_{}.npy'.format(self.actions[act], self.directions[i], self.current_datatype())))
                 d = np.zeros([a.shape[0], 9])
                 d[:, 3 * act + i] = 1
                 D_train.append(d)
