@@ -1,21 +1,19 @@
 # code for qualitative evaluation of multimodal VAEs trained on GeBiD dataset
 import argparse
-import glob
+import glob, yaml
 import imageio
 import statistics as stat
-
 import cv2
 import numpy as np
 import pickle
 import torch
-import warnings
-import os
+import os, glob
+from utils import listdirs, last_letter
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from utils import output_onehot2text
-from eval.infer import MMVAEExperiment, define_path
+from utils import output_onehot2text, one_hot_encode
 
 shapetemplates = glob.glob('./eval/templates/*.png')
 colors = {"yellow": [255, 255, 0], "red": [255, 0, 0], "green": [0, 255, 0], "blue": [0, 0, 255],
@@ -303,7 +301,7 @@ def search_att(txt, source, idx=None, indices=None):
     return att
 
 
-def get_attribute_from_recon(attribute, txt):
+def get_attribute_from_recon(attribute, txt, m_exp):
     """
 
     :param attribute:
@@ -317,9 +315,9 @@ def get_attribute_from_recon(attribute, txt):
     if attribute == "size":
         idx, indices = 0, None
     elif attribute == "shape":
-        idx, indices = {1: 0, 2: 1, 3: 2, 4: 2, 5: 2}[args.level], None
+        idx, indices = {1: 0, 2: 1, 3: 2, 4: 2, 5: 2}[m_exp.level], None
     elif attribute == "color":
-        idx, indices = {3: 1, 4: 1, 5: 1}[args.level], None
+        idx, indices = {3: 1, 4: 1, 5: 1}[m_exp.level], None
     elif attribute == "background":
         idx, indices = None, [-2, -1]
     else:
@@ -328,7 +326,7 @@ def get_attribute_from_recon(attribute, txt):
     return att
 
 
-def try_retrieve_atts(txt):
+def try_retrieve_atts(txt, m_exp):
     """
 
     :param txt:
@@ -337,8 +335,8 @@ def try_retrieve_atts(txt):
     :rtype:
     """
     atts = []
-    for a in level_attributes[args.level]:
-        a = get_attribute_from_recon(a, txt)
+    for a in level_attributes[m_exp.level]:
+        a = get_attribute_from_recon(a, txt, m_exp)
         if a is None:
             atts.append("Unknown")
         else:
@@ -384,7 +382,7 @@ def count_same_letters(a, b):
     return sum(a[i] == b[i] for i in range(len(a)))
 
 
-def check_cross_sample_correct(testtext, reconimage=None, recontext=None):
+def check_cross_sample_correct(testtext, m_exp, reconimage=None, recontext=None):
     """
     Detects the features in images/text and checks if they are coherent
 
@@ -400,20 +398,20 @@ def check_cross_sample_correct(testtext, reconimage=None, recontext=None):
     correct_attributes = []
     correct_letters = None
     assert (reconimage is None) or (recontext is None), "for evaluation of both text and image, use joint_coherency"
-    for att in level_attributes[args.level]:
+    for att in level_attributes[m_exp.level]:
         correct = 0
         if reconimage is not None:
             att_value = get_attribute(att, testtext)
             if att_value:
                 correct = image_has_attribute_val(att, att_value, reconimage)
         elif recontext is not None:
-            attr = get_attribute_from_recon(att, recontext)
+            attr = get_attribute_from_recon(att, recontext, m_exp)
             if attr is not None:
                 if attr in testtext:
                     correct = 1
         correct_attributes.append(int(correct))
-    correct_features = sum(correct_attributes) / len(level_attributes[args.level])
-    if sum(correct_attributes) == len(level_attributes[args.level]):
+    correct_features = sum(correct_attributes) / len(level_attributes[m_exp.level])
+    if sum(correct_attributes) == len(level_attributes[m_exp.level]):
         all_correct = True
     else:
         all_correct = False
@@ -443,6 +441,57 @@ def get_mean_stats(list_of_stats, percentage=True):
             stats.append(sum(l) / len(l))
     return stats
 
+def text_to_image(text, model_exp):
+    """
+    Reconstructs text from the image input using the provided model
+    :param text: list of strings to reconstruct
+    :type text: list
+    :param model: model object
+    :type model: object
+    :param path: where to save the outputs
+    :type path: str
+    :return: returns reconstructed images and also texts
+    :rtype: tuple(list, list)
+    """
+    img_outputs, txtoutputs = [], []
+    for i, w in enumerate(text):
+        txt_inp = one_hot_encode(len(w), w.lower())
+        inp = {"mod_1":{"data":None, "masks":None}, "mod_2":{"data":txt_inp.unsqueeze(0).to(torch.device("cuda")), "masks":None}}
+        recons = model_exp.model.to(torch.device("cuda")).forward(inp)
+        recons1, recons2 = recons.mods["mod_1"].decoder_dist.loc[0], recons.mods["mod_2"].decoder_dist.loc
+        image, recon_text = model_exp.datamodule.datasets[0].get_processed_recons(recons1), \
+                            model_exp.datamodule.datasets[1].get_processed_recons(recons2)
+        txtoutputs.append(recon_text[0])
+        img_outputs.append(image)
+        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        #cv2.imwrite(os.path.join(path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)], i)), image)
+    return img_outputs, txtoutputs
+
+def image_to_text(imgs, model_exp):
+        """
+        Reconstructs image from the text input using the provided model
+        :param imgs: list of images to reconstruct
+        :type imgs: list
+        :param model: model object
+        :type model: object
+        :param path: where to save the outputs
+        :type path: str
+        :return: returns reconstructed images and texts
+        :rtype: tuple(list, list)
+        """
+        txt_outputs, img_outputs = [], []
+        for i, w in enumerate(imgs):
+            inp = {"mod_1": {"data": w.unsqueeze(0).to(torch.device("cuda")), "masks": None},
+                   "mod_2": {"data": None, "masks": None}}
+            recons = model_exp.model.to(torch.device("cuda")).forward(inp)
+            recons1, recons2 = recons.mods["mod_1"].decoder_dist.loc[0], recons.mods["mod_2"].decoder_dist.loc
+            image, recon_text = model_exp.datamodule.datasets[0].get_processed_recons(recons1),  model_exp.datamodule.datasets[1].get_processed_recons(recons2)
+            txt_outputs.append(recon_text[0])
+            img_outputs.append(image)
+            #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            #cv2.imwrite(os.path.join(path, "cross_sample_{}_{}.png".format(recon_text[0][0][:len(w)], i)), image)
+        return img_outputs, txt_outputs
+
 
 def calculate_cross_coherency(model_exp):
     """
@@ -453,27 +502,27 @@ def calculate_cross_coherency(model_exp):
     :return: mean cross accuracies
     :rtype: dict
     """
-    with open("./eval/templates/cross_level_{}.pkl".format(args.level), 'rb') as handle:
+    with open("./eval/templates/cross_level_{}.pkl".format(model_exp.level), 'rb') as handle:
         t = pickle.load(handle)[:100]
-        if args.level > 1:
+        if model_exp.level > 1:
             t = [" ".join(x) for x in t]
-    with open("./eval/templates/cross_level{}_images.pkl".format(args.level), 'rb') as handle:
+    with open("./eval/templates/cross_level{}_images.pkl".format(model_exp.level), 'rb') as handle:
         test_images = pickle.load(handle)[:100]
         test_images = torch.tensor(test_images).permute(0, 3, 2, 1) / 255
     acc_all = {"text_image": [0, 0], "image_text": [0, 0, 0]}
-    images, texts = model_exp.text_to_image(t)
+    images, texts = text_to_image(t, model_exp)
     correct_pairs, corr_feats, corr_letters = [], [], []
     for ind, img in enumerate(images):
         img = np.asarray(img, dtype="uint8")
-        correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=t[ind], reconimage=img)
+        correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=t[ind], m_exp=model_exp, reconimage=img)
         correct_pairs.append(int(correct))
         corr_feats.append(corr_feat)
         corr_letters.append(corr_letter)
     acc_all["text_image"] = get_mean_stats([correct_pairs, corr_feats])
-    images, texts = model_exp.image_to_text(test_images)
+    images, texts = image_to_text(test_images, model_exp)
     correct_pairs, corr_feats, corr_letters = [], [], []
     for ind, txt in enumerate(texts):
-        correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=t[ind], recontext=txt)
+        correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=t[ind], m_exp=model_exp, recontext=txt)
         correct_pairs.append(int(correct))
         corr_feats.append(corr_feat)
         corr_letters.append(corr_letter)
@@ -490,17 +539,15 @@ def calculate_joint_coherency(model_exp):
     :return: mean joint accuracy
     :rtype: dict
     """
-    samples = model_exp.get_traversal_samples(latent_dim=model_exp.model.config.n_latents, n_samples_per_dim=15)
-    recons = model_exp.decode_latents(samples)
-    img_recons = recons["mod_1"][0]
-    txt_recons = recons["mod_2"][0]
+    recons = model_exp.save_joint_samples(num_samples=32, savedir=os.path.join(model_exp.config.mPath, "visuals/"))
+    img_recons = recons["mod_1"]
+    txt_recons = recons["mod_2"]
     correct_pairs, corr_feats = [], []
     for ind, txt in enumerate(txt_recons):
-        text = output_onehot2text(recon=txt.unsqueeze(0))[0]
-        atts = try_retrieve_atts(text)
+        atts = try_retrieve_atts(txt, model_exp)
         if atts is not None:
-            img = np.asarray(img_recons[ind].detach().cpu() * 255, dtype="uint8")
-            correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=atts, reconimage=img)
+            img = np.asarray(img_recons[ind], dtype="uint8")
+            correct, corr_feat, corr_letter = check_cross_sample_correct(testtext=atts, m_exp=model_exp, reconimage=img)
         else:
             correct = 0
             corr_feat = 0
@@ -510,7 +557,7 @@ def calculate_joint_coherency(model_exp):
     return output
 
 
-def prepare_labels(labels):
+def prepare_labels(labels, model_exp):
     """
     Turns the text modality into labels by separating the features.
 
@@ -525,12 +572,12 @@ def prepare_labels(labels):
         o = [s for n, s in enumerate(v) if labels["masks"][v_i][n]]
         labels_cropped.append("".join(o))
     labels_sep = []
-    for i in range(args.level):
-        if args.level == 1:
+    for i in range(model_exp.level):
+        if model_exp.level == 1:
             ls = labels_cropped
-        elif args.level in [2, 3]:
+        elif model_exp.level in [2, 3]:
             ls = [x.split(" ")[i] for x in labels_cropped]
-        elif args.level == 4:
+        elif model_exp.level == 4:
             if i < 3:
                 ls = [x.split(" ")[i] for x in labels_cropped]
             else:
@@ -553,56 +600,40 @@ def labelled_tsne(model_exp):
     :param model: multimodal VAE
     :type model: object
     """
-    model_exp.get_test_data_bs(batch_size=250)
-    testset = model_exp.get_test_data_sample()
-    labels = prepare_labels(testset["mod_2"])
+    testset, _ = model_exp.datamodule.get_num_samples(250, split="test")
+    labels = prepare_labels(testset["mod_2"], model_exp)
     for i, label in enumerate(labels):
-        model_exp.model.analyse_data(testset, label, path_label="eval_{}".format(i), savedir=model_exp.base_path)
-    print("Saved labelled T-SNEs in {}".format(os.path.join(model_exp.get_base_path(), "visuals")))
+        model_exp.analyse_data(testset, label, path_name="eval_{}".format(i), savedir=os.path.join(model_exp.config.mPath, "visuals"))
+    print("Saved labelled T-SNEs in {}".format(os.path.join(model_exp.config.mPath, "visuals")))
 
-
-def listdirs(rootdir):
-    """
-    Lists all the subdirectories within a directory
-
-    :param rootdir: path to the root dir
-    :type rootdir: str
-    :return: list of subdirectories
-    :rtype: str
-    """
-    dirs = []
-    for file in os.listdir(rootdir):
-        d = os.path.join(rootdir, file)
-        if os.path.isdir(d):
-            dirs.append(d)
-    return dirs
-
-
-def last_letter(word):
-    return word[::-1]
 
 
 def eval_all(model_exp):
+    print("- Making T-SNE for each feature")
     labelled_tsne(model_exp)
+    print("- Calculating cross coherency")
     output_cross = calculate_cross_coherency(model_exp)
+    print("- Calculating joint coherency")
     output_joint = calculate_joint_coherency(model_exp)
     return output_cross, output_joint
 
 def print_save_stats(stats_dict, path):
-    with open(os.path.join(os.path.dirname(path),'gebid_stats.txt'), 'w') as f:
+    print("Final results:")
+    with open(os.path.join(path,'gebid_stats.txt'), 'w') as f:
         for key, value_dict in stats_dict.items():
-            if value_dict["stdev"]:
-                stat = "{}: {:.2f} ({:. 2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
+            if value_dict["stdev"] is not None:
+                stat = "{}: {:.2f} ({:.2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
             else:
                 stat = "{}: {:.2f}".format(key, round(value_dict["value"], 2))
             print(stat)
             f.write(stat)
             f.write('\n')
+    print("\n GeBiD statistics printed in {} \n".format(os.path.join(path,'gebid_stats.txt')))
 
-
-def eval_single_model(pth):
-    m_exp = MMVAEExperiment(path=pth)
-    m_exp.model.to(torch.device("cuda"))
+def eval_single_model(m_exp):
+    print("\nCalculating GeBiD automatic statistics")
+    level = int(os.path.dirname(m_exp.config.mods[0]["path"])[-1])
+    m_exp.level = level
     output_cross, output_joint = eval_all(m_exp)
     output_dict = {"Text-Image Strict":{"value":output_cross["text_image"][0], "stdev":None},
                    "Text-Image Features":{"value":output_cross["text_image"][1], "stdev":None},
@@ -611,49 +642,68 @@ def eval_single_model(pth):
                    "Image-Text Letters":{"value":output_cross["image_text"][2], "stdev":None},
                    "Joint Strict":{"value":output_joint["joint"][0], "stdev":None},
                    "Joint Features":{"value":output_joint["joint"][1], "stdev":None}}
-    print_save_stats(output_dict, pth)
+    print_save_stats(output_dict, m_exp.config.mPath)
 
+def fill_cats(text_image, image_text, joint, data):
+    for i, x in enumerate(data["text_image"]):
+        text_image[i].append(x)
+    for i, x in enumerate(data["image_text"]):
+        image_text[i].append(x)
+    for i, x in enumerate(data["joint"]):
+        joint[i].append(x)
+    return text_image, image_text, joint
 
-
-def eval_over_seeds(parent_dir):
+def eval_gebid_over_seeds(parent_dir):
     all_models = listdirs(parent_dir)
     all_models = sorted(all_models, key=last_letter)
     text_image = [[], []]
     image_text = [[], [], []]
     joint = [[], []]
     for m in all_models:
-        pth = os.path.join(m, "last.ckpt")
-        m_exp = MMVAEExperiment(path=pth)
-        m_exp.model.to(torch.device("cuda"))
-        output_cross, output_joint = eval_all(m_exp)
-        for i, x in enumerate(output_cross["text_image"]):
-              text_image[i].append(x)
-        for i, x in enumerate(output_cross["image_text"]):
-                 image_text[i].append(x)
-        for i, x in enumerate(output_joint["joint"]):
-                 joint[i].append(x)
+        if os.path.exists(os.path.join(m, "gebid_stats.txt")):
+            print("Model: {} already has the statistics".format(m))
+            with open(os.path.join(m, "gebid_stats.txt"), 'r') as stream:
+                d = yaml.safe_load(stream)
+                ls = [["Text-Image", "Image-Text", "Joint"], ["Strict", "Features", "Letters"]]
+                output = {}
+                for a in ls[0]:
+                    key = a.lower().replace("-", "_")
+                    output[key] = []
+                    for b in ls[1]:
+                        valname =  " ".join((a, b))
+                        if valname in d.keys():
+                            value = d[valname] if not isinstance(d[valname], str) else float(d[valname].split(" (")[0])
+                            output[key].append(value)
+        else:
+            latest_version = max(glob.glob(os.path.join(m, "lightning_logs/" '*/')), key=os.path.getmtime)
+            latest_ckpt = max(glob.glob(os.path.join(latest_version, "checkpoints",'*')), key=os.path.getmtime)
+            print("Model: {}".format(latest_ckpt))
+            exp = MultimodalVAEInfer(latest_ckpt)
+            model = exp.get_wrapped_model()
+            eval_single_model(model)
+            output, output_joint = eval_all(model)
+            output["joint"] = output_joint["joint"]
+        text_image, image_text, joint = fill_cats(text_image, image_text, joint, output)
     output_dict = {"Text-Image Strict":{"value":stat.mean(text_image[0]), "stdev":stat.stdev(text_image[0])},
                    "Text-Image Features":{"value":stat.mean(text_image[1]), "stdev":stat.stdev(text_image[1])},
                    "Image-Text Strict":{"value":stat.mean(image_text[0]), "stdev":stat.stdev(image_text[0])},
                    "Image-Text Features":{"value":stat.mean(image_text[1]), "stdev":stat.stdev(image_text[1])},
                    "Image-Text Letters":{"value":stat.mean(image_text[2]), "stdev":stat.stdev(image_text[2])},
                    "Joint Strict":{"value":stat.mean(joint[0]), "stdev":stat.stdev(joint[0])},
-                   "Joint Featres":{"value":stat.mean(joint[1]), "stdev":stat.stdev(joint[1])}}
+                   "Joint Features":{"value":stat.mean(joint[1]), "stdev":stat.stdev(joint[1])}}
     print_save_stats(output_dict, parent_dir)
 
 
 if __name__ == "__main__":
+    from eval.infer import MultimodalVAEInfer
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", type=str, help="path to the model directory")
-    parser.add_argument("-multi", "--model_multi", type=str, help="path to a directory containing multiple trained models. will eval all and produce mean statistics" )
-    parser.add_argument("-l", "--level", type=int, help="difficulty level: 1-5", required=True)
-    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("-p", "--mpath", type=str, help="path to the .ckpt model file. Relative or absolute")
+    parser.add_argument("-m", "--multieval", type=str, help="path to parent directory with mutliple models")
     args = parser.parse_args()
-    assert args.model or args.model_multi, "Provide either path to a single model directory or a parent directory " \
-                                           "containing multiple models"
-    if args.model:
-        p = define_path(args.model)
-        eval_single_model(p)
-    elif args.model_multi:
-        assert os.path.exists(args.model_multi) and os.path.isdir(args.model_multi)
-        eval_over_seeds(args.model_multi)
+    assert not (args.mpath and args.multieval), "You can only provide one of these arguments: mpath or mutlieval (not both)"
+    if args.mpath:
+        exp = MultimodalVAEInfer(args.mpath)
+        model = exp.get_wrapped_model()
+        eval_single_model(model)
+    else:
+        eval_gebid_over_seeds(args.multieval)

@@ -24,7 +24,7 @@ class DataModule(LightningDataModule):
         self.dataset_train = []
         self.dataset_val = []
         self.dataset_test = []
-        self.datasets = []
+        self.datasets = self.prepare_data_classes()
         self.labels = self.config.labels
         self.labels_test = self.config.labels_test
         self.labels_val, self.labels_train = None, None
@@ -40,35 +40,32 @@ class DataModule(LightningDataModule):
         assert hasattr(datasets, self.dataset_name.upper()), "Did not find dataset with name {}".format(self.dataset_name.upper())
         return getattr(datasets, self.dataset_name.upper())
 
+    def prepare_data_classes(self):
+        datasets = []
+        for i, p in enumerate(self.pths):
+            datasets.append(self.get_dataset_class()(p, self.testpths[i], self.mod_types[i]))
+        return datasets
+
     def setup(self, stage: Optional[str] = None) -> None:
         """ Loads appropriate dataset classes and makes data splits """
-        if all([isinstance(x, TensorDataset) for x in [self.dataset_test, self.dataset_val]]):
+        if all([isinstance(x, TensorDataset) for x in [self.dataset_train, self.dataset_val]]):
             return
-        for i, p in enumerate(self.pths):
-            self.datasets.append(self.get_dataset_class()(p, self.testpths[i], self.mod_types[i]))
-        shuffle, shuffle_test = None, None
+        shuffle = None
         for dataset in self.datasets:
             d = dataset.get_data()
-            d_test = dataset.get_test_data()
             if shuffle is None:
                 shuffle = np.random.permutation(len(d))
-                shuffle_test = np.random.permutation(len(d_test)) if d_test is not None else None
             d = d[shuffle]
             self.dataset_train.append(d[:int(len(d) * (1 - self.val_split))])
             self.dataset_val.append(d[int(len(d) * (1 - self.val_split)):])
-            if d_test is not None:
-                self.dataset_test.append(d_test[shuffle_test])
         self.labels_train = list(np.asarray(self.get_labels())[shuffle])[:int(len(d) * (1 - self.val_split))] if self.get_labels() is not None else None
         self.labels_val = list(np.asarray(self.get_labels())[shuffle])[int(len(d) * (1 - self.val_split)):] if self.get_labels() is not None else None
-        self.labels_test = list(np.asarray(self.get_labels(split="test"))[shuffle_test]) if self.get_labels(split="test") is not None else None
         if len(self.dataset_train) == 1:
             self.dataset_train = TensorDataset(self.dataset_train[0])
             self.dataset_val = TensorDataset(self.dataset_val[0])
-            self.dataset_test = TensorDataset(self.dataset_test[0]) if self.dataset_test[0] is not None else None
         else:
             self.dataset_train = TensorDataset(self.dataset_train)
             self.dataset_val = TensorDataset(self.dataset_val)
-            self.dataset_test = TensorDataset(self.dataset_test) if len(self.dataset_test) > 0 else None
 
     def make_masks(self, batch):
         """
@@ -122,27 +119,54 @@ class DataModule(LightningDataModule):
             b_dict.update(self.prepare_singlemodal(torch.stack(batch), 1))
         return b_dict
 
-
     def train_dataloader(self) -> DataLoader:
         """Return Train DataLoader"""
         return DataLoader(self.dataset_train, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=0)
+                          num_workers=6)
 
     def val_dataloader(self) -> DataLoader:
         """Return Val DataLoader"""
         return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=0)
+                          num_workers=6)
 
-    def predict_dataloader(self, batch_size) -> DataLoader:
+    def predict_dataloader(self, batch_size, split="val") -> DataLoader:
         """Return Val DataLoader with custom batch size"""
-        return DataLoader(self.dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=0)
+        dataset = {"val":self.dataset_val, "test": self.dataset_test}[split]
+        if split == "test":
+            self.check_load_testdata()
+            dataset = self.dataset_val if len(self.dataset_test) == 0 else dataset
+        return DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
+                              num_workers=0)
+
+    def check_load_testdata(self):
+        if len(self.dataset_test) == 0:
+            shuffle = None
+            self.dataset_test = []
+            for dataset in self.datasets:
+                d = dataset.get_test_data()
+                if shuffle is None:
+                    shuffle = np.random.permutation(len(d)) if d is not None else None
+                if d is not None:
+                    d = d[shuffle]
+                    self.dataset_test.append(d[shuffle])
+            self.labels_test = list(np.asarray(self.get_labels(split="test"))[shuffle]) if self.get_labels(
+                split="test") is not None else None
+            if len(self.dataset_train) == 1:
+                self.dataset_test = TensorDataset(self.dataset_test[0]) if self.dataset_test[0] is not None else []
+            else:
+                self.dataset_test = TensorDataset(self.dataset_test) if len(self.dataset_test) > 0 else []
 
     def test_dataloader(self):
         """Return Test DataLoader"""
-        return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
-                          num_workers=1)
-
+        self.check_load_testdata()
+        if len(self.dataset_test) > 0:
+            return DataLoader(self.dataset_test, batch_size=self.batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
+                              num_workers=6)
+        else:
+            print("Note: final testing with validation dataloader because test data was not provided.")
+            return DataLoader(self.dataset_val, batch_size=self.batch_size, shuffle=False, pin_memory=True,
+                              collate_fn=self.collate_fn,
+                              num_workers=0)
 
     def get_labels(self, split="all"):
         """
@@ -167,7 +191,11 @@ class DataModule(LightningDataModule):
                     elif split == "train":
                         return labels[:int(len(labels) * (1 - self.val_split))]
                     elif split == "test":
-                        return d.get_labels(split="test")
+                        l = d.get_labels(split="test")
+                        if l is not None:
+                            return d.get_labels(split="test")
+                        else:
+                            return labels[int(len(labels) * (1 - self.val_split)):]
         return None
 
     def get_label_for_indices(self, indices, split):
@@ -178,8 +206,8 @@ class DataModule(LightningDataModule):
         """Returns batch of the predict_dataloader together with the indices"""
         while True:
             try:
-                data = next(iter(self.trainer.datamodule.predict_dataloader(num_samples)))
-                index = iter(self.trainer.datamodule.predict_dataloader(num_samples))._next_index()
+                data = next(iter(self.predict_dataloader(num_samples, split=split)))
+                index = iter(self.predict_dataloader(num_samples, split=split))._next_index()
                 labels = self.get_label_for_indices(index, split)
                 return data, labels
             except:

@@ -182,6 +182,36 @@ class Logger(object):
             writer.writerow({**self.dic, **val_d})
         self.dic = {}
 
+def traverse_line(bounds, num_samples, latent_dim, idx):
+    samples = torch.zeros(num_samples, latent_dim)
+    traversals = torch.linspace(*bounds, steps=num_samples)
+    for i in range(num_samples):
+        samples[i, idx] = traversals[i]
+    return samples
+
+def get_traversal_matrix(num_samples, latent_dim):
+    latent_samples = [traverse_line((-30,30), num_samples, latent_dim, dim)
+                      for dim in range(latent_dim)]
+    return latent_samples
+
+def last_letter(word):
+    return word[::-1]
+
+def listdirs(rootdir):
+    """
+    Lists all the subdirectories within a directory
+
+    :param rootdir: path to the root dir
+    :type rootdir: str
+    :return: list of subdirectories
+    :rtype: str
+    """
+    dirs = []
+    for file in os.listdir(rootdir):
+        d = os.path.join(rootdir, file)
+        if os.path.isdir(d):
+            dirs.append(d)
+    return dirs
 
 # Functions
 def save_vars(vs, filepath):

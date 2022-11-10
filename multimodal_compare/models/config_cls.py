@@ -105,8 +105,11 @@ class Config():
         :return: dict; config
         :rtype: dict
         """
-        args = self.parser.parse_args()
-        config = self._load_config(args.cfg)
+        if isinstance(self.parser, argparse.ArgumentParser):
+            args = self.parser.parse_args()
+            config = self._load_config(args.cfg)
+        else:
+            config = self._load_config(self.parser)
         for name, value in vars(args).items():
             if value is not None and name != "cfg" and name in config.keys():
                 config[name] = value

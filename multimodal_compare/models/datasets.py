@@ -4,6 +4,7 @@ import numpy as np
 import math, copy
 from utils import one_hot_encode, output_onehot2text, lengths_to_mask, turn_text2image, load_data, add_recon_title
 from torchvision.utils import make_grid
+from eval.eval_gebid import eval_single_model
 import imageio
 
 class BaseDataset():
@@ -48,6 +49,10 @@ class BaseDataset():
         self.current_path = self.path if split == "train" else self.testdata
         return self.labels()
 
+    def eval_statistics_fn(self):
+        """(optional) Returns a dataset-specific function that runs systematic evaluation"""
+        return None
+
     def current_datatype(self):
         """Returns whther the current path to data points to test data or train data"""
         if self.current_path == self.testdata:
@@ -77,6 +82,17 @@ class BaseDataset():
         """
         assert self.mod_type in self._mod_specific_savers().keys(), "Unsupported modality type for {}".format(self.current_path)
         return self._mod_specific_savers()[self.mod_type](output_data)
+
+    def get_processed_recons(self, recons_raw):
+        """
+        Returns the postprocessed data that came from the decoders
+
+        :param recons_raw: tensor with output reconstructions
+        :type recons_raw: torch.tensor
+        :return: postprocessed data as returned by the specific _postprocess function
+        :rtype: list
+        """
+        return self._postprocess(recons_raw)
 
     def get_data_raw(self):
         """
@@ -165,7 +181,7 @@ class BaseDataset():
         :param path: path to save the traversal to
         :type path: str
         """
-        output_processed = torch.tensor(self._postprocess_all2img(recons)).transpose(1, 3)
+        output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
         grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
         cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
 
@@ -181,6 +197,9 @@ class GEBID(BaseDataset):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
         self.text2img_size = (64,192,3)
+
+    def eval_statistics_fn(self):
+        return eval_single_model
 
     def _mod_specific_loaders(self):
         return {"image": self._preprocess_images, "text": self._preprocess_text}
