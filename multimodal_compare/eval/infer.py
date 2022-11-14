@@ -3,8 +3,6 @@ from models.config_cls import Config
 import os, argparse, torch
 from models.dataloader import DataModule
 import pytorch_lightning as pl
-from utils import listdirs, last_letter
-import statistics as stat
 
 class MultimodalVAEInfer():
     """
@@ -24,7 +22,7 @@ class MultimodalVAEInfer():
         self.config = self.get_config()
         self.datamodule = self.get_datamodule()
         self.model = MultimodalVAE(self.config, self.datamodule.get_dataset_class().feature_dims)
-        self.model.load_from_checkpoint(self.path, cfg=self.config)
+        self.model = MultimodalVAE.load_from_checkpoint(self.path, cfg=self.config, feature_dims=self.datamodule.get_dataset_class().feature_dims)
         self.model.model = self.model.model.eval().to(torch.device("cuda"))
 
     def get_base_path(self, path):
