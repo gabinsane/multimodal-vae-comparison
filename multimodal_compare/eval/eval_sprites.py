@@ -2,7 +2,7 @@
 import argparse
 import glob, yaml
 import numpy as np
-import pickle
+import statistics as stat
 from eval.sprites_classifier import VideoGPT
 import torch
 import os, glob
@@ -181,48 +181,52 @@ def eval_single_model(m_exp):
                    "Total Average Accuracy":{"value":(sum(list(output_cross.values())) + sum(list(output_joint.values())))/6, "stdev":None}
                    }
     print_save_stats(output_dict, m_exp.config.mPath, "sprites")
+    return output_cross, output_joint
 
-def fill_cats(text_image, image_text, joint, data):
-    for i, x in enumerate(data["text_image"]):
-        text_image[i].append(x)
-    for i, x in enumerate(data["image_text"]):
-        image_text[i].append(x)
-    for i, x in enumerate(data["joint"]):
-        joint[i].append(x)
-    return text_image, image_text, joint
-
+def fill_cats(output_dict):
+    for key in output_dict.keys():
+        vals = [x[0] for x in output_dict[key]]
+        mean = stat.mean(vals)
+        stdev = stat.stdev(vals)
+        output_dict[key] = {"value":mean, "stdev":stdev}
+    return output_dict
 
 def eval_over_seeds(parent_dir):
     all_models = listdirs(parent_dir)
     all_models = sorted(all_models, key=last_letter)
-    text_image = [[], []]
-    image_text = [[], [], []]
-    joint = [[], []]
+    output_dict = {"Frames to Action Cross-Coherency": [],
+                   "Action to Frames Cross-Coherency": [],
+                   "Frames to Attributes Cross-Coherency": [],
+                   "Attributes to Frames Cross-Coherency": [],
+                   "Frames and Action Joint-Coherency": [],
+                   "Frames and Attributes Joint-Coherency": [],
+                   "Total Average Accuracy": []
+                   }
     for m in all_models:
-        if os.path.exists(os.path.join(m, "gebid_stats.txt")):
+        if os.path.exists(os.path.join(m, "sprites_stats.txt")):
             print("Model: {} already has the statistics".format(m))
-            with open(os.path.join(m, "gebid_stats.txt"), 'r') as stream:
+            with open(os.path.join(m, "sprites_stats.txt"), 'r') as stream:
                 d = yaml.safe_load(stream)
-                ls = [["Text-Image", "Image-Text", "Joint"], ["Strict", "Features", "Letters"]]
+                ls = ["Frames to Action Cross-Coherency", "Action to Frames Cross-Coherency", "Frames to Attributes Cross-Coherency", "Attributes to Frames Cross-Coherency",
+                      "Frames and Action Joint-Coherency", "Frames and Attributes Joint-Coherency", "Total Average Accuracy"]
                 output = {}
-                for a in ls[0]:
-                    key = a.lower().replace("-", "_")
-                    output[key] = []
-                    for b in ls[1]:
-                        valname =  " ".join((a, b))
-                        if valname in d.keys():
-                            value = d[valname] if not isinstance(d[valname], str) else float(d[valname].split(" (")[0])
-                            output[key].append(value)
+                for a in ls:
+                     output[a] = []
+                     if a in d.keys():
+                        value = d[a] if not isinstance(d[a], str) else float(d[a].split(" (")[0])
+                        output[a].append(value)
         else:
             latest_version = max(glob.glob(os.path.join(m, "lightning_logs/" '*/')), key=os.path.getmtime)
             latest_ckpt = max(glob.glob(os.path.join(latest_version, "checkpoints",'*')), key=os.path.getmtime)
             print("Model: {}".format(latest_ckpt))
             exp = MultimodalVAEInfer(latest_ckpt)
             model = exp.get_wrapped_model()
-            eval_single_model(model)
-            output, output_joint = eval_all(model)
-            output["joint"] = output_joint["joint"]
-        text_image, image_text, joint = fill_cats(text_image, image_text, joint, output)
+            output_c, output_joint = eval_all(model)
+            output = output_c.copy()
+            output.update(output_joint)
+        for key in output_dict.keys():
+            output_dict[key].append(output[key])
+    output_dict = fill_cats(output_dict)
     print_save_stats(output_dict, parent_dir, "sprites")
 
 
@@ -230,7 +234,7 @@ if __name__ == "__main__":
     from eval.infer import MultimodalVAEInfer
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--mpath", type=str, help="path to the .ckpt model file. Relative or absolute")
-    parser.add_argument("-m", "--multieval", type=str, help="path to parent directory with mutliple models")
+    parser.add_argument("-m", "--multieval", type=str, help="path to parent directory with multiple models")
     args = parser.parse_args()
     assert not (args.mpath and args.multieval), "You can only provide one of these arguments: mpath or mutlieval (not both)"
     if args.mpath:
