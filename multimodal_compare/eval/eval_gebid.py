@@ -8,7 +8,7 @@ import numpy as np
 import pickle
 import torch
 import os, glob
-from utils import listdirs, last_letter
+from utils import listdirs, last_letter, print_save_stats
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -459,8 +459,8 @@ def text_to_image(text, model_exp):
         inp = {"mod_1":{"data":None, "masks":None}, "mod_2":{"data":txt_inp.unsqueeze(0).to(torch.device("cuda")), "masks":None}}
         recons = model_exp.model.to(torch.device("cuda")).forward(inp)
         recons1, recons2 = recons.mods["mod_1"].decoder_dist.loc[0], recons.mods["mod_2"].decoder_dist.loc
-        image, recon_text = model_exp.datamodule.datasets[0].get_processed_recons(recons1), \
-                            model_exp.datamodule.datasets[1].get_processed_recons(recons2)
+        image, recon_text = model_exp.datamod.datasets[0].get_processed_recons(recons1), \
+                            model_exp.datamod.datasets[1].get_processed_recons(recons2)
         txtoutputs.append(recon_text[0])
         img_outputs.append(image)
         #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -485,7 +485,7 @@ def image_to_text(imgs, model_exp):
                    "mod_2": {"data": None, "masks": None}}
             recons = model_exp.model.to(torch.device("cuda")).forward(inp)
             recons1, recons2 = recons.mods["mod_1"].decoder_dist.loc[0], recons.mods["mod_2"].decoder_dist.loc
-            image, recon_text = model_exp.datamodule.datasets[0].get_processed_recons(recons1),  model_exp.datamodule.datasets[1].get_processed_recons(recons2)
+            image, recon_text = model_exp.datamod.datasets[0].get_processed_recons(recons1),  model_exp.datamodule.datasets[1].get_processed_recons(recons2)
             txt_outputs.append(recon_text[0])
             img_outputs.append(image)
             #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -600,7 +600,7 @@ def labelled_tsne(model_exp):
     :param model: multimodal VAE
     :type model: object
     """
-    testset, _ = model_exp.datamodule.get_num_samples(250, split="test")
+    testset, _ = model_exp.datamod.get_num_samples(250, split="test")
     labels = prepare_labels(testset["mod_2"], model_exp)
     for i, label in enumerate(labels):
         model_exp.analyse_data(testset, label, path_name="eval_{}".format(i), savedir=os.path.join(model_exp.config.mPath, "visuals"))
@@ -617,19 +617,6 @@ def eval_all(model_exp):
     output_joint = calculate_joint_coherency(model_exp)
     return output_cross, output_joint
 
-def print_save_stats(stats_dict, path):
-    print("Final results:")
-    with open(os.path.join(path,'gebid_stats.txt'), 'w') as f:
-        for key, value_dict in stats_dict.items():
-            if value_dict["stdev"] is not None:
-                stat = "{}: {:.2f} ({:.2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
-            else:
-                stat = "{}: {:.2f}".format(key, round(value_dict["value"], 2))
-            print(stat)
-            f.write(stat)
-            f.write('\n')
-    print("\n GeBiD statistics printed in {} \n".format(os.path.join(path,'gebid_stats.txt')))
-
 def eval_single_model(m_exp):
     print("\nCalculating GeBiD automatic statistics")
     level = int(os.path.dirname(m_exp.config.mods[0]["path"])[-1])
@@ -642,7 +629,7 @@ def eval_single_model(m_exp):
                    "Image-Text Letters":{"value":output_cross["image_text"][2], "stdev":None},
                    "Joint Strict":{"value":output_joint["joint"][0], "stdev":None},
                    "Joint Features":{"value":output_joint["joint"][1], "stdev":None}}
-    print_save_stats(output_dict, m_exp.config.mPath)
+    print_save_stats(output_dict, m_exp.config.mPath, "gebid")
 
 def fill_cats(text_image, image_text, joint, data):
     for i, x in enumerate(data["text_image"]):
@@ -691,7 +678,7 @@ def eval_gebid_over_seeds(parent_dir):
                    "Image-Text Letters":{"value":stat.mean(image_text[2]), "stdev":stat.stdev(image_text[2])},
                    "Joint Strict":{"value":stat.mean(joint[0]), "stdev":stat.stdev(joint[0])},
                    "Joint Features":{"value":stat.mean(joint[1]), "stdev":stat.stdev(joint[1])}}
-    print_save_stats(output_dict, parent_dir)
+    print_save_stats(output_dict, parent_dir, "gebid")
 
 
 if __name__ == "__main__":

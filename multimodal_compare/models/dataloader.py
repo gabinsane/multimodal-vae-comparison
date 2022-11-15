@@ -149,12 +149,13 @@ class DataModule(LightningDataModule):
                 if d is not None:
                     d = d[shuffle]
                     self.dataset_test.append(d[shuffle])
-            self.labels_test = list(np.asarray(self.get_labels(split="test"))[shuffle]) if self.get_labels(
+            if shuffle is not None:
+                self.labels_test = list(np.asarray(self.get_labels(split="test"))[shuffle]) if self.get_labels(
                 split="test") is not None else None
-            if len(self.dataset_train) == 1:
-                self.dataset_test = TensorDataset(self.dataset_test[0]) if self.dataset_test[0] is not None else []
-            else:
-                self.dataset_test = TensorDataset(self.dataset_test) if len(self.dataset_test) > 0 else []
+                if len(self.dataset_train) == 1:
+                    self.dataset_test = TensorDataset(self.dataset_test[0]) if self.dataset_test[0] is not None else []
+                else:
+                    self.dataset_test = TensorDataset(self.dataset_test) if len(self.dataset_test) > 0 else []
 
     def test_dataloader(self):
         """Return Test DataLoader"""
@@ -204,11 +205,14 @@ class DataModule(LightningDataModule):
 
     def get_num_samples(self, num_samples, split="val"):
         """Returns batch of the predict_dataloader together with the indices"""
+        c = 0
         while True:
             try:
+                c += 1
                 data = next(iter(self.predict_dataloader(num_samples, split=split)))
                 index = iter(self.predict_dataloader(num_samples, split=split))._next_index()
                 labels = self.get_label_for_indices(index, split)
                 return data, labels
             except:
-                continue
+                if c == 3:
+                    return None, None

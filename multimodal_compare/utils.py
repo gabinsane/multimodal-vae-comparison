@@ -13,6 +13,20 @@ from visualization import tensors_to_df
 from itertools import combinations
 
 
+def print_save_stats(stats_dict, path, dataset_name):
+    print("Final results:")
+    with open(os.path.join(path,'{}_stats.txt'.format(dataset_name)), 'w') as f:
+        for key, value_dict in stats_dict.items():
+            if value_dict["stdev"] is not None:
+                stat = "{}: {:.2f} ({:.2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
+            else:
+                stat = "{}: {:.2f}".format(key, round(value_dict["value"], 2))
+            print(stat)
+            f.write(stat)
+            f.write('\n')
+    print("\n {} statistics printed in {} \n".format(dataset_name, os.path.join(path,'gebid_stats.txt')))
+
+
 def find_out_batch_size(inputs):
     batch_size = None
     for key in inputs.keys():

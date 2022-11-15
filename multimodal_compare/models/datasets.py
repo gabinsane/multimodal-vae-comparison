@@ -4,7 +4,8 @@ import numpy as np
 import math, copy
 from utils import one_hot_encode, output_onehot2text, lengths_to_mask, turn_text2image, load_data, add_recon_title
 from torchvision.utils import make_grid
-from eval.eval_gebid import eval_single_model
+from eval.eval_gebid import eval_single_model as gebid_eval
+from eval.eval_sprites import eval_single_model as sprites_eval
 import imageio
 
 class BaseDataset():
@@ -199,7 +200,7 @@ class GEBID(BaseDataset):
         self.text2img_size = (64,192,3)
 
     def eval_statistics_fn(self):
-        return eval_single_model
+        return gebid_eval
 
     def _mod_specific_loaders(self):
         return {"image": self._preprocess_images, "text": self._preprocess_text}
@@ -374,6 +375,9 @@ class SPRITES(BaseDataset):
             labels.append(self.label_map[int(a)])
         return labels
 
+    def eval_statistics_fn(self):
+        return sprites_eval
+
     def get_frames(self):
         X_train = []
         for act in range(len(self.actions)):
@@ -487,7 +491,7 @@ class SPRITES(BaseDataset):
         :type path: str
         """
         if self.mod_type != "frames":
-            output_processed = torch.tensor(self._postprocess_all2img(recons)).transpose(1, 3)
+            output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
             grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
             cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
         else:

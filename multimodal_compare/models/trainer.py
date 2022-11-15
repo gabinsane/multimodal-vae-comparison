@@ -234,7 +234,7 @@ class MultimodalVAE(pl.LightningModule):
         :rtype: list
         """
         if not data:
-            data, labels = self.datamodule.get_num_samples(num_samples, split=split)
+            data, labels = self.datamod.get_num_samples(num_samples, split=split)
         data_i = check_input_unpacked(data_to_device(data, self.device))
         output = self.model.forward(data_i)
         output_dic = output.unpack_values()
