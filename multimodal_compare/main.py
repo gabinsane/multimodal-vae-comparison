@@ -45,11 +45,10 @@ def main():
     data_module = DataModule(config)
     model_wrapped = MultimodalVAE(config, data_module.get_dataset_class().feature_dims)
     profiler = SimpleProfiler(dirpath=config.mPath, filename="profiler_output")
-    logger = TensorBoardLogger("lightning_logs", name="VAEmodel", log_graph=True)
-    trainer_kwargs = {"profiler": profiler, "logger": logger, "accelerator":"gpu",
+    #logger = TensorBoardLogger("lightning_logs", name="VAEmodel", log_graph=True)
+    trainer_kwargs = {"profiler": profiler, "accelerator":"gpu",
                       "default_root_dir": config.mPath, "max_epochs": config.epochs, "check_val_every_n_epoch": 1,
-                      "callbacks": [EarlyStopping(monitor="val_loss", mode="min"),
-                                    StochasticWeightAveraging(swa_lrs=1e-2)]}
+                      "callbacks": [StochasticWeightAveraging(swa_lrs=1e-2)]}
     pl_trainer = pl.Trainer(**trainer_kwargs)
     pl_trainer.fit(model_wrapped, datamodule=data_module)
     pl_trainer.test(ckpt_path="best", datamodule=data_module)
