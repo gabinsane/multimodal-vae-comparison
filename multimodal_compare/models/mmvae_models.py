@@ -25,8 +25,6 @@ class MOE(TorchMMVAE):
         self.model_config = model_config
         self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'moe'
-        self.prior_dist = dist.Normal
-        self.pz = dist.Normal
 
     def objective(self, data):
         """
@@ -47,7 +45,7 @@ class MOE(TorchMMVAE):
             lpx_z = (self.obj_fn.recon_loss_fn(out_d["decoder_dist"][r], data["mod_{}".format(r + 1)]).view(*out_d["decoder_dist"][r].batch_shape[:1], -1)
                      * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
             lpx_zs.append((torch.tensor(0.0).cuda().exp() * lpx_z))
-            for key, cros_l in output.mods["mod_{}".format(r+1)].cross_decoder_dists.items():
+            for key, cros_l in output.mods["mod_{}".format(r+1)].cross_decoder_dist.items():
                 lpx_z = (self.obj_fn.recon_loss_fn(cros_l, data["mod_{}".format(r + 1)]).view(
                     *cros_l.batch_shape[:1], -1)
                          * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
@@ -97,7 +95,7 @@ class MOE(TorchMMVAE):
             for mod_vae, vae in self.vaes.items():
                 if mod_vae != modality:  # fill-in off-diagonal
                     cross_px_zs[mod_vae] = {modality:vae.px_z(*vae.dec(z))}
-        return self.make_output_dict(qzs, px_zs, zs, cross_decoder_dists=cross_px_zs)
+        return self.make_output_dict(qzs, px_zs, zs, cross_decoder_dist=cross_px_zs)
 
     def reconstruct(self, data, runPath, epoch, N=8):
         """
@@ -134,8 +132,6 @@ class POE(TorchMMVAE):
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'poe'
-        self.pz = dist.Normal
-        self.prior_dist = dist.Normal
 
     def objective(self, mods):
         """
@@ -246,9 +242,7 @@ class MoPOE(TorchMMVAE):
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'mopoe'
-        self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
-        self.prior_dist = dist.Normal
         self.subsets = self.set_subsets()
         self.weights = None
 
@@ -424,7 +418,7 @@ class DMVAE(TorchMMVAE):
             lpx_z_poe = (self.obj_fn.recon_loss_fn(output.joint_decoder_dist, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1)
             lpx_zs_cross = []
             klds_priv = []
-            for k, r in output.cross_decoder_dists.items():
+            for k, r in output.cross_decoder_dist.items():
                 lpx_zs_cross.append((self.obj_fn.recon_loss_fn(r, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1))
                 klds_priv.append(self.obj_fn.calc_kld(output.enc_dist_private, self.pz(*self.vaes[mod].pz_params_private)))
             loss = self.obj_fn.calculate_loss({"lpx_z": lpx_z, "kld": kld.sum(-1)})["loss"] + self.obj_fn.calculate_loss({"lpx_z": lpx_z_poe, "kld": kld_poe})["loss"] \

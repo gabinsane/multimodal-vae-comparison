@@ -72,22 +72,22 @@ class MultimodalVAE(pl.LightningModule):
         """
         if self.config.pre_trained:
             self.model = self.load_from_checkpoint(self.config.pre_trained, cfg=self.config)
+            return self.model
+        vaes = {}
+        for i, m in enumerate(self.config.mods):
+            vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], self.feature_dims[m["mod_type"]],
+                                               self.config.n_latents, m["recon_loss"], m["private_latents"],
+                                               obj_fn=self.config.obj,
+                                               beta=self.config.beta, id_name="mod_{}".format(i + 1))
+        if len(self.config.mods) > 1:
+            vaes = nn.ModuleDict(vaes)
+            obj_cfg = {"obj": self.config.obj, "beta": self.config.beta}
+            self.model = getattr(models, self.config.mixing.lower())(vaes, self.config.n_latents, obj_cfg,
+                                                                     self.config.model_cfg)
+            assert isinstance(self.model, TorchMMVAE)
         else:
-            vaes = {}
-            for i, m in enumerate(self.config.mods):
-                vaes["mod_{}".format(i + 1)] = VAE(m["encoder"], m["decoder"], self.feature_dims[m["mod_type"]],
-                                                   self.config.n_latents, m["recon_loss"], m["private_latents"],
-                                                   obj_fn=self.config.obj,
-                                                   beta=self.config.beta, id_name="mod_{}".format(i + 1))
-            if len(self.config.mods) > 1:
-                vaes = nn.ModuleDict(vaes)
-                obj_cfg = {"obj": self.config.obj, "beta": self.config.beta}
-                self.model = getattr(models, self.config.mixing.lower())(vaes, self.config.n_latents, obj_cfg,
-                                                                         self.config.model_cfg)
-                assert isinstance(self.model, TorchMMVAE)
-            else:
-                self.model = vaes["mod_1"]  # unimodal VAE scenario
-            self.save_hyperparameters()
+            self.model = vaes["mod_1"]  # unimodal VAE scenario
+        self.save_hyperparameters()
         return self.model
 
     def training_step(self, train_batch, batch_idx):
@@ -153,9 +153,9 @@ class MultimodalVAE(pl.LightningModule):
 
     def save_reconstructions(self, num_samples=24, savedir=None, split="val"):
         """
-        Save reconstructed data
+        Reconstructs data and saves output, also iterates over missing modalities on the input to cross-generate
 
-        :param num_samples: number of samples to take for reconstruction
+        :param num_samples: number of samples to take from the dataloader for reconstruction
         :type num_samples: int
         :param savedir: where to save the reconstructions
         :type savedir: str
@@ -216,7 +216,7 @@ class MultimodalVAE(pl.LightningModule):
 
     def analyse_data(self, data=None, labels=None, num_samples=250, path_name="", savedir=None, split="val"):
         """
-        Encodes data and plots T-SNE.
+        Encodes data and plots T-SNE. If no data is passed, a dataloader (based on split="val"/"test") will be used.
 
         :param data: test data
         :type data: torch.tensor
@@ -224,14 +224,12 @@ class MultimodalVAE(pl.LightningModule):
         :type labels: list
         :param num_samples: number of samples to use for visualization
         :type num_samples: int
-        :param path_label: label under which to save the visualizations
-        :type path_label: str
+        :param path_name: label under which to save the visualizations
+        :type path_name: str
         :param savedir: where to save the reconstructions
         :type savedir: str
         :param split: val/test, whether to take samples from test or validation dataloader
         :type split: str
-        :return: returns K latent samples for each input
-        :rtype: list
         """
         if not data:
             data, labels = self.datamod.get_num_samples(num_samples, split=split)
