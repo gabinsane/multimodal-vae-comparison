@@ -61,27 +61,34 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--modality", type=str, help="whether to train action or attribute classifier")
     args = parser.parse_args()
     from models.datasets import SPRITES
-    epochs = 30
+    epochs = 5
     batch_size = 64
 
     dataset = SPRITES("./data/sprites", "./data/sprites/test", "frames")
     print("Loading data....")
     d = dataset.get_data()
-    loss = torch.nn.CrossEntropyLoss(reduction="none")
     if args.modality == "action":
         labels = dataset.get_actions()
     else:
         labels = dataset.get_attributes()
+    d_val = dataset.get_test_data()
+    if args.modality == "action":
+        labels_val = dataset.get_actions()
+    else:
+        labels_val = dataset.get_attributes()
+    loss = torch.nn.CrossEntropyLoss(reduction="sum")
+
     shuffle = np.random.permutation(len(d))
+    shuffle_val = np.random.permutation(len(d_val))
     d = d[shuffle]
-    dataset_train = d[:int(len(d) * (1 - 0.1))]
-    dataset_val = d[int(len(d) * (1 - 0.1)):]
-    labels_train = torch.tensor(np.asarray(labels)[shuffle])[:int(len(d) * (1 - 0.1))].to("cuda")
-    labels_val = torch.tensor(np.asarray(labels)[shuffle])[int(len(d) * (1 - 0.1)):].to("cuda")
-    dataset_train = TensorDataset(dataset_train)
-    dataset_val = TensorDataset(dataset_val)
+    d_val = d_val[shuffle_val]
+    labels_train = torch.tensor(np.asarray(labels)[shuffle]).to("cuda")
+    labels_val = torch.tensor(np.asarray(labels_val)[shuffle_val]).to("cuda")
+    dataset_train = TensorDataset(d)
+    dataset_val = TensorDataset(d_val)
     trainloader = DataLoader(dataset_train, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0)
     testloader = DataLoader(dataset_val, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0)
+
 
     print("Initializing network...")
     net = VideoGPT(args.modality).to("cuda")
@@ -98,7 +105,7 @@ if __name__ == "__main__":
             output = net(data.to("cuda"))
             bs = data.shape[0]
             target = labels_train[i*bs:(i*bs)+bs]
-            l = loss(output, target.cuda()).mean()
+            l = loss(output, target.cuda())/bs
             print("Epoch {}, Iteration {}, Train Loss: {:.3f}".format(e, i, l))
             trainloss.append(l)
             l.backward()
@@ -129,6 +136,8 @@ if __name__ == "__main__":
         average_loss = sum(valaccur) / len(valaccur)
         print("Final test accuracy: {:.3f}".format(average_loss))
         if len(valaccur_e) > 0 and average_loss > max(valaccur_e):
+            torch.save(net.state_dict(), "sprites_images_to_{}.pth".format(args.modality))
+        elif len(valaccur_e) == 0:
             torch.save(net.state_dict(), "sprites_images_to_{}.pth".format(args.modality))
         valaccur_e.append(average_loss)
     print("Accuracy history per epoch: {}".format(valaccur_e))

@@ -99,7 +99,7 @@ def eval_with_classifier(testset, model_exp, mod_name, mod_idx):
     output = model_exp.model.forward(i)
     out_frames = output.mods["mod_1"].decoder_dist.loc * 255
     clsf = load_classifier(mod_name)
-    recognized = torch.argmax(clsf.forward(out_frames), dim=-1)
+    recognized = torch.argmax(clsf.forward(out_frames/255), dim=-1)
     gt = torch.argmax(i["mod_{}".format(mod_idx)]["data"], dim=-1)
     correct_frames = 0
     for i, a in enumerate(recognized):
@@ -139,8 +139,7 @@ def calculate_joint_coherency(model_exp):
         action_matching = LABEL_MAP[recognized_action[i]] == d2[i]
         if action_matching:
             action_frame += 1
-        if matching_atts == 4:
-            att_frame += 1
+        att_frame += matching_atts/4
     output = {"joint_action_frame":action_frame/len(d3), "joint_att_frame": att_frame/len(d3)}
     return output
 
@@ -207,8 +206,10 @@ def eval_over_seeds(parent_dir):
             print("Model: {} already has the statistics".format(m))
             with open(os.path.join(m, "sprites_stats.txt"), 'r') as stream:
                 d = yaml.safe_load(stream)
-                ls = ["Frames to Action Cross-Coherency", "Action to Frames Cross-Coherency", "Frames to Attributes Cross-Coherency", "Attributes to Frames Cross-Coherency",
-                      "Frames and Action Joint-Coherency", "Frames and Attributes Joint-Coherency", "Total Average Accuracy"]
+                ls = ["Frames to Action Cross-Coherency", "Action to Frames Cross-Coherency",
+                      "Frames to Attributes Cross-Coherency", "Attributes to Frames Cross-Coherency",
+                      "Frames and Action Joint-Coherency", "Frames and Attributes Joint-Coherency",
+                      "Total Average Accuracy"]
                 output = {}
                 for a in ls:
                      output[a] = []
