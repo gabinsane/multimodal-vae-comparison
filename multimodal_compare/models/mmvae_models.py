@@ -275,7 +275,8 @@ class MoPOE(TorchMMVAE):
         output = self.forward(mods)
         out_unpacked = output.unpack_values()
         lpx_zs, klds = [], []
-        group_divergence = self.obj_fn.weighted_group_kld(out_unpacked["encoder_dist"] + [out_unpacked["joint_dist"][0]], self, self.weights)
+        dists = out_unpacked["encoder_dist"] + [out_unpacked["joint_dist"][0]]
+        group_divergence = self.obj_fn.weighted_group_kld(dists, self,  (1/len(dists))*torch.ones(len(dists)).to("cuda"))
         for r, px_z in enumerate(out_unpacked["decoder_dist"]):
              tag = "mod_{}".format(r + 1)
              self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
