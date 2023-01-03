@@ -90,7 +90,7 @@ We show an example training config in _./multimodal_compare/configs/config1.yml_
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python main.py --cfg configs/config1.yml
+python main.py --cfg ./configs/config1.yml
 ```
 
 The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
