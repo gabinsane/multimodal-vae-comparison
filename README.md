@@ -90,7 +90,7 @@ We show an example training config in _./multimodal_compare/configs/config1.yml_
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python main.py --cfg configs/config1.yml
+python main.py --cfg ./configs/config1.yml
 ```
 
 The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
@@ -321,7 +321,7 @@ First download the dataset (30 MB in total) before the training. You can run the
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # download mnist_svhn dataset
 unzip mnist_svhn.zip -d ./data/
-python main.py --cfg configs/config_mnistsvhn.yml
+python main.py --cfg ./configs/config_mnistsvhn.yml
 ```
 
 #### CUB
@@ -332,23 +332,21 @@ We provide our preprocessed and cleaned version of the dataset (106 MB in total)
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # download CUB dataset
 unzip cub.zip -d ./data/
-python main.py --cfg configs/config_cub.yml
+python main.py --cfg ./configs/config_cub.yml
 ```
 
 #### Sprites
- 
+
+![Sprites](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif)
+
 You can download the sorted version (4.6 GB) with 3 modalities (image sequences, actions and attributes) and train:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.zip   # download Sprites dataset
 unzip sprites.zip -d ./data/
-python main.py --cfg configs/config_sprites.yml
+python main.py --cfg ./configs/config_sprites.yml
 ```
-
-<div style="text-align: left">
- <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif" width="300"  alt="UML class diagram"/>
-</div>
 
 
 [How to train on your own dataset](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/adddataset.html)
