@@ -28,6 +28,7 @@ evaluation of the generated samples. For more info, see below.
 * [GeBiD leaderboard](#gebid-leaderboard)<br>
 * [Training on other datasets](#training-on-other-datasets) <br>
 * [Add own model](#extending-for-own-models-and-networks)<br>
+* [Common installation problems](#common-installation-problems)<br>
 * [License & Acknowledgement](#license)<br>
 * [Contact](#contact)<br>
 ---
@@ -377,6 +378,29 @@ We provide a set of unit tests to check whether any newly-added implementations 
 cd ~/multimodal-vae-comparison/
 py.test .
 ```
+
+## Common installation problems
+
+For some env configurations, the training might fail on the following:
+
+```
+qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "/home/user/miniconda3/envs/multivae/lib/python3.8/site-packages/cv2/qt/plugins" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+Available platform plugins are: xcb, eglfs, minimal, minimalegl, offscreen, vnc, webgl.
+
+Aborted (core dumped)
+```
+
+In that case, try reinstalling opencv:
+
+```pip uninstall opencv-python```
+
+```pip install opencv-python-headless```
+
+If your torch version does not see CUDA (```print(torch.cuda.is_available())``` is False), try installing pytorch specifically for your CUDA toolkit version, e.g.:
+
+```mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia```
 
 
 ## License
