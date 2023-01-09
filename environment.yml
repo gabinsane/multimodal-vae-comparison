@@ -47,3 +47,4 @@ dependencies:
     - sounddevice
     - soundfile
     - torchnet
+    - tensorboard
