@@ -145,6 +145,12 @@ python eval/eval_gebid.py --model model_dir_name --level 2  # specify the level 
 The trained model is expected to be placed in the results folder. The script will print the statistics in the terminal 
 and also save them in the model folder as gebid_stats.txt 
 
+You can also view the tensorboard logs by running:
+
+```tensorboard --logdir path_to_model_dir```
+
+Then CTRL + click on the localhost address. If you wish to compare multiple models, put them in one parent directory and provide path to it instead.
+
 
 ## GeBiD leaderboard
 
