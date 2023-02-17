@@ -28,6 +28,7 @@ evaluation of the generated samples. For more info, see below.
 * [GeBiD leaderboard](#gebid-leaderboard)<br>
 * [Training on other datasets](#training-on-other-datasets) <br>
 * [Add own model](#extending-for-own-models-and-networks)<br>
+* [Common installation problems](#common-installation-problems)<br>
 * [License & Acknowledgement](#license)<br>
 * [Contact](#contact)<br>
 ---
@@ -90,7 +91,7 @@ We show an example training config in _./multimodal_compare/configs/config1.yml_
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python main.py --cfg configs/config1.yml
+python main.py --cfg ./configs/config1.yml
 ```
 
 The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
@@ -143,6 +144,12 @@ python eval/eval_gebid.py --model model_dir_name --level 2  # specify the level 
 
 The trained model is expected to be placed in the results folder. The script will print the statistics in the terminal 
 and also save them in the model folder as gebid_stats.txt 
+
+You can also view the tensorboard logs by running:
+
+```tensorboard --logdir path_to_model_dir```
+
+Then CTRL + click on the localhost address. If you wish to compare multiple models, put them in one parent directory and provide path to it instead.
 
 
 ## GeBiD leaderboard
@@ -321,7 +328,7 @@ First download the dataset (30 MB in total) before the training. You can run the
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # download mnist_svhn dataset
 unzip mnist_svhn.zip -d ./data/
-python main.py --cfg configs/config_mnistsvhn.yml
+python main.py --cfg ./configs/config_mnistsvhn.yml
 ```
 
 #### CUB
@@ -332,23 +339,21 @@ We provide our preprocessed and cleaned version of the dataset (106 MB in total)
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # download CUB dataset
 unzip cub.zip -d ./data/
-python main.py --cfg configs/config_cub.yml
+python main.py --cfg ./configs/config_cub.yml
 ```
 
 #### Sprites
- 
+
+![Sprites](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif)
+
 You can download the sorted version (4.6 GB) with 3 modalities (image sequences, actions and attributes) and train:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.zip   # download Sprites dataset
 unzip sprites.zip -d ./data/
-python main.py --cfg configs/config_sprites.yml
+python main.py --cfg ./configs/config_sprites.yml
 ```
-
-<div style="text-align: left">
- <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif" width="300"  alt="UML class diagram"/>
-</div>
 
 
 [How to train on your own dataset](https://gabinsane.github.io/multimodal-vae-comparison/docs/html/tutorials/adddataset.html)
@@ -379,6 +384,29 @@ We provide a set of unit tests to check whether any newly-added implementations 
 cd ~/multimodal-vae-comparison/
 py.test .
 ```
+
+## Common installation problems
+
+For some env configurations, the training might fail on the following:
+
+```
+qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "/home/user/miniconda3/envs/multivae/lib/python3.8/site-packages/cv2/qt/plugins" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+Available platform plugins are: xcb, eglfs, minimal, minimalegl, offscreen, vnc, webgl.
+
+Aborted (core dumped)
+```
+
+In that case, try reinstalling opencv:
+
+```pip uninstall opencv-python```
+
+```pip install opencv-python-headless```
+
+If your torch version does not see CUDA (```print(torch.cuda.is_available())``` is False), try installing pytorch specifically for your CUDA toolkit version, e.g.:
+
+```mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia```
 
 
 ## License
