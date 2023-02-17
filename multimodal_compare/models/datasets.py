@@ -173,7 +173,7 @@ class BaseDataset():
             if self.mod_type == "text" else output_processed
         return output_processed
 
-    def save_traversals(self, recons, path):
+    def save_traversals(self, recons, path, num_dims):
         """
         Makes a grid of traversals and saves as image
 
@@ -181,10 +181,21 @@ class BaseDataset():
         :type recons: torch.tensor
         :param path: path to save the traversal to
         :type path: str
+        :param num_dims: number of latent dimensions
+        :type num_dims: int
         """
-        output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
-        grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
-        cv2.imwrite(path, cv2.cvtColor(grid.astype("uint8"), cv2.COLOR_BGR2RGB))
+        if len(recons.shape) < 3:
+            output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
+            grid = np.asarray(make_grid(output_processed, padding=1, nrow=num_dims))
+            cv2.imwrite(path, cv2.cvtColor(np.transpose(grid, (1,2,0)).astype("uint8"), cv2.COLOR_BGR2RGB))
+        else:
+            output_processed = torch.stack([torch.tensor(np.array(self._postprocess_all2img(x.unsqueeze(0)))) for x in recons])
+            output_processed = output_processed.reshape(num_dims, -1, *output_processed.shape[1:]).squeeze()
+            rows = []
+            for ind, dim in enumerate(output_processed):
+                rows.append(np.asarray(torch.hstack([x for x in dim]).type(torch.uint8).detach().cpu()))
+            cv2.imwrite(path, cv2.cvtColor(np.vstack(np.asarray(rows)), cv2.COLOR_BGR2RGB))
+
 
 
 # ----- Multimodal Datasets ---------

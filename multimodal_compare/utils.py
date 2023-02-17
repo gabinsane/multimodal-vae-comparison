@@ -440,6 +440,18 @@ def batch_sum(v, sample_dims=None, batch_dims=None):
     else:
         return v_sum
 
+def make_joint_samples(model, index, datamod, latents, traversals, savedir, num_samples, trav_range=(-1,1), current_vae=None):
+    m = model.vaes[current_vae] if current_vae is not None else model
+    samples = m.generate_samples(num_samples, traversals, traversal_range=trav_range)
+    recon = m.decode({"latents": samples, "masks": None})[0]
+    data_class = datamod.datasets[index]
+    tag = "traversals_range{}".format(str(trav_range[0]).replace("-", "").replace(".", "")) if traversals else "samples"
+    p = os.path.join(savedir, "{}_{}.png".format(tag, data_class.mod_type))
+    rows = latents if traversals else int(math.sqrt(num_samples))
+    data_class.save_traversals(recon, p, rows)
+    return data_class.get_processed_recons(recon.detach().cpu()), recon
+
+
 
 def log_batch_marginal(dists, zs, sample_dim=None, batch_dim=None, bias=1.0):
     """Computes log batch marginal probabilities. Returns the log marginal joint

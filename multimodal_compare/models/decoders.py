@@ -617,6 +617,7 @@ class Dec_TxtTransformer(VaeDecoder):
                                                                            num_layers=self.num_layers))
         self.finallayer = torch.nn.DataParallel(nn.Linear(self.out_dim, self.input_feats))
 
+
     def forward(self, batch):
         """
         Forward pass

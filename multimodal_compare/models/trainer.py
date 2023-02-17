@@ -5,7 +5,7 @@ import models
 from models.config_cls import Config
 from models.vae import VAE
 import os, copy
-from utils import make_kl_df, data_to_device, check_input_unpacked
+from utils import make_kl_df, data_to_device, check_input_unpacked, make_joint_samples
 from models.mmvae_base import TorchMMVAE
 from visualization import plot_kls_df
 from visualization import t_sne
@@ -31,6 +31,7 @@ class MultimodalVAE(pl.LightningModule):
         self.feature_dims = feature_dims
         self.get_model()
         self.example_input_array = None
+        self.latents = cfg.n_latents
 
     def check_config(self, cfg):
         if not isinstance(cfg, models.config_cls.Config):
@@ -187,7 +188,7 @@ class MultimodalVAE(pl.LightningModule):
             output = self.model.forward(check_input_unpacked(mods))
             save(output, copy.deepcopy(mods), mod_name)
 
-    def save_joint_samples(self, num_samples=36, savedir=None):
+    def save_joint_samples(self, num_samples=16, savedir=None, traversals=False):
         """
         Generate joint samples from random vectors and save them
 
@@ -195,24 +196,21 @@ class MultimodalVAE(pl.LightningModule):
         :type num_samples: int
         :param savedir: where to save the reconstructions
         :type savedir: str
+        :param traversals: whether to make traversals for each dimension (True) or randomly sample latents (False)
+        :type traversals: bool
         """
         recons = {}
-        if len(self.config.mods) > 1:
-            for i, vae in enumerate(self.model.vaes):
-                samples = self.model.vaes[vae].generate_samples(num_samples)
-                recons_i = self.model.vaes[vae].decode({"latents": samples, "masks": None})[0]
-                data_class = self.datamod.datasets[i]
-                p = os.path.join(savedir, "traversals_{}.png".format(data_class.mod_type))
-                data_class.save_traversals(recons_i, p)
-                recons["mod_{}".format(i+1)] = data_class.get_processed_recons(recons_i)
-        else:
-            samples = self.model.generate_samples(num_samples)
-            recons = self.model.decode({"latents": samples, "masks": None})[0]
-            data_class = self.datamod.datasets[0]
-            p = os.path.join(savedir, "traversals_{}.png".format(data_class.mod_type))
-            data_class.save_traversals(recons, p)
-            recons["mod_1"] = data_class.get_processed_recons(recons)
+        traversal_ranges = [(-6,6), (-4,4), (-2,2), (-1,1)]
+        for rng in traversal_ranges:
+            if len(self.config.mods) > 1:
+                for i, vae in enumerate(self.model.vaes):
+                    recons["mod_{}".format(i+1)], recons["mod_{}_raw".format(i+1)] = make_joint_samples(self.model, i, self.datamod, self.latents, traversals,
+                                                                      savedir, num_samples, trav_range=rng, current_vae=vae)
+            else:
+                recons["mod_1"], recons["mod_1_raw"] = make_joint_samples(self.model, 0, self.datamod, self.latents, traversals,
+                                                     savedir, num_samples, trav_range=rng)
         return recons
+
 
     def analyse_data(self, data=None, labels=None, num_samples=250, path_name="", savedir=None, split="val"):
         """
