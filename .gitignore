@@ -1,4 +1,5 @@
 ./multimodal_compare/data/*
 ./multimodal_compare/results/
 .idea
+__pycache__/
 builddocs.txt
