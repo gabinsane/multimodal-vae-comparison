@@ -1,0 +1,28 @@
+batch_size: 12
+epochs: 600
+exp_name: celeba
+labels: ./data/celeba/celeba50k_att_strings.npy
+lr: 1e-3
+mixing: poe
+iterseeds: 1
+n_latents: 32
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+beta: 1
+viz_freq: 1
+test_split: 0.1
+dataset_name: celeba
+modality_1:
+  decoder: CNN
+  encoder: CNN
+  mod_type: image
+  recon_loss:  bce
+  path: ./data/celeba/celeba50k.npy
+modality_2:
+  decoder: FNN
+  encoder: FNN
+  mod_type: atts
+  recon_loss:  bce
+  path: ./data/celeba/celeba50k_atts.npy

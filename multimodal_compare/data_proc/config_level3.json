@@ -1,0 +1,13 @@
+{
+	"data_generation" : {
+		"train" : {
+			"spec" : {
+				"scale" : ["small", "big"],
+			   	"colors" : ["red", "green", "yellow","blue", "pink"],
+				"shapes" : ["square", "ellipse", "heart"],
+				"textured": ["shapes"]
+			}
+		}
+	},
+		"samples_num" : 1000
+}

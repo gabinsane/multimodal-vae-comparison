@@ -1,0 +1,46 @@
+batch_size: 32
+epochs: 600
+exp_name: polymnist
+labels: ./data/MMNIST/train/labels.pt
+lr: 1e-3
+mixing: poe
+iterseeds: 1
+n_latents: 32
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+beta: 1
+viz_freq: 1
+test_split: 0.1
+dataset_name: polymnist
+modality_1:
+  decoder: PolyMNIST
+  encoder: PolyMNIST
+  mod_type: m0
+  recon_loss:  bce
+  path: ./data/MMNIST/train/m0.pt
+modality_2:
+  decoder: PolyMNIST
+  encoder: PolyMNIST
+  mod_type: m1
+  recon_loss:  bce
+  path: ./data/MMNIST/train/m1.pt
+modality_3:
+  decoder: PolyMNIST
+  encoder: PolyMNIST
+  mod_type: m2
+  recon_loss:  bce
+  path: ./data/MMNIST/train/m2.pt
+modality_4:
+  decoder: PolyMNIST
+  encoder: PolyMNIST
+  mod_type: m3
+  recon_loss:  bce
+  path: ./data/MMNIST/train/m3.pt
+modality_5:
+  decoder: PolyMNIST
+  encoder: PolyMNIST
+  mod_type: m4
+  recon_loss:  bce
+  path: ./data/MMNIST/train/m4.pt
