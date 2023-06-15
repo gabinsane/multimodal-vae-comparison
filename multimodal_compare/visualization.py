@@ -20,29 +20,34 @@ def custom_cmap(n):
     cmap = colors.LinearSegmentedColormap.from_list('mmdgm_cmap', cmap_array)
     return cmap, cmap_array
 
+def is_iterable(o):
+    try:
+        _ = iter(o)
+        return True
+    except TypeError as te:
+       return False
 
-def t_sne(data, path, labels, K=1):
-    tsne = TSNE(n_components=2, verbose=0, random_state=123, init='random', learning_rate="auto")
-    z = tsne.fit_transform(np.concatenate([x.detach().cpu().numpy() for x in data]))
-    df = pd.DataFrame()
-    df["comp-1"] = z[:, 0]
-    df["comp-2"] = z[:, 1]
+def t_sne_ploting(df, data, path, labels, mod_names, K=1):
     data_labels = []
+    mod_names_list = []
     for ind, mod in enumerate(data):
         if not labels:
             palette = sns.color_palette("hls", len(data))
             data_labels.append(["Modality {} ".format(ind+1) if len(data) > 1 else "Encoded latent vector"]*len(mod))
+            mod_names_list.append(mod_names["mod_{}".format(ind+1)])
         else:
             palette = (sns.color_palette("hls", len(set(labels))))
             if len(data) > 1:
                 l = ["{} Modality {} ".format(str(i), ind +1) for i in list(labels)]
             else:
                 l = ["{}".format(str(i)) for i in list(labels)]
-            data_labels.append([val for val in l for _ in range(K)])
+            K_times = [val for val in l for _ in range(K)]
+            data_labels.append(K_times)
+            mod_names_list += [mod_names["mod_{}".format(ind+1)] for _ in range(len(K_times))]
     if labels:
         labels = np.concatenate(data_labels)
         df["y"] = labels
-        df["Classes"] = [x[-11:] for x in df.y.to_list()] if len(data) > 1 else ["Modality 1"] * len(labels)
+        df["Classes"] = mod_names_list if len(data) > 1 else mod_names["mod_1"] * len(labels)
         ax = sns.scatterplot(x="comp-1", y="comp-2", hue=[x[:-11] for x in df.y.to_list()], palette=palette, data=df,
                              style='Classes', markers=marker_styles[:len(data)])
     else:
@@ -54,6 +59,19 @@ def t_sne(data, path, labels, K=1):
     plt.savefig(path, bbox_inches='tight')
     plt.clf()
 
+def t_sne(data, path, dlabels, mod_names, K=1):
+    tsne = TSNE(n_components=2, verbose=0, random_state=123, init='random', learning_rate="auto")
+    z = tsne.fit_transform(np.concatenate([x.detach().cpu().numpy() for x in data]))
+    df = pd.DataFrame()
+    df["comp-1"] = z[:, 0]
+    df["comp-2"] = z[:, 1]
+    if dlabels is not None and is_iterable(dlabels[0]) and not isinstance(dlabels[0], str):
+        for i, _ in enumerate(dlabels[0]):
+            labels = [x[i] for x in dlabels]
+            dpath = path.replace(".png", "_labels{}.png".format(i))
+            t_sne_ploting(df, data, dpath, labels, mod_names, K)
+    else:
+        t_sne_ploting(df, data, path, dlabels, mod_names, K)
 
 def tensor_to_df(tensor, ax_names=None):
     """Taken from https://github.com/iffsid/mmvae"""

@@ -1,9 +1,8 @@
 # objectives of choice
 import torch
-import torch.distributions as dist
-from utils import kl_divergence, is_multidata, log_mean_exp, log_joint, get_all_pairs, log_batch_marginal
-from torch.autograd import Variable
+from utils import kl_divergence, is_multidata, log_mean_exp, log_joint, get_all_pairs, log_batch_marginal, softclip
 from numpy import prod
+import numpy as np
 import copy
 
 
@@ -212,7 +211,7 @@ class UnimodalObjective(BaseObjective):
         :return: calculated losses
         :rtype: dict
         """
-        assert hasattr(self, self.obj_name), "Objective {} is not implemented in unimodal scenario".format(obj)
+        assert hasattr(self, self.obj_name), "Objective {} is not implemented in unimodal scenario".format(self.obj_name)
         self.objective = getattr(self, self.obj_name)
         data = {"px_z":px_z, "target":target, "qz_x": qz_x, "prior_dist":prior_dist, "zs":zs, "K": K, "pz_params":pz_params}
         output = self.objective(data)
@@ -318,11 +317,11 @@ class MultimodalObjective(BaseObjective):
         for r, qz_x in enumerate(data["qz_x"]):
             lpz = data["pz"](*data["pz_params"].cuda()).log_prob(data["zs"][r]["latents"]).sum(-1)
             lqz_x = log_mean_exp(torch.stack([qz_x.log_prob(data["zs"][r]["latents"]).sum(-1) for qz_x in data["qz_x"]]))
-            lpx_z = data["lpx_z"][r]
-            lw = lpz + lpx_z - lqz_x
+            lpx_z = torch.stack(data["lpx_z"][r]).sum(0)
+            lw = lpz + lpx_z.reshape(*lpz.shape) - self.beta * lqz_x
             lws.append(lw)
         loss = -log_mean_exp(torch.cat(lws)).sum()
-        return {"loss": loss, "kld": torch.tensor(0), "reconstruction_loss": data["lpx_z"]}
+        return {"loss": loss, "kld": torch.tensor(0), "reconstruction_loss": torch.stack([torch.stack(x)for x in data["lpx_z"]])}
 
 
 class ReconLoss():
@@ -410,4 +409,12 @@ class ReconLoss():
         """
         l = torch.nn.CrossEntropyLoss(reduction="none")
         return l(output.loc.cuda(), target.float().cuda().detach()).reshape(bs, -1)
+
+    @staticmethod
+    def gaussian_nll(output, target, bs):
+        """Calculate Gaussian NLL with optimal sigma as in Sigma VAE https://github.com/orybkin/sigma-vae-pytorch"""
+        log_sigma = ((target.float().cuda().detach().cpu() - output.loc.cpu()) ** 2).mean([0,1,2,3], keepdim=True).sqrt().log()[0][0][0][0]
+        log_sigma = softclip(log_sigma, -6)
+        return (torch.pow((target.float().cuda().detach() - output.loc) / log_sigma.exp(), 2).clone().detach() + log_sigma + 0.5 * np.log(2 * np.pi)).reshape(bs, -1)
+
 

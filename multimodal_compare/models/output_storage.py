@@ -2,7 +2,7 @@ import inspect
 import torch
 
 fields = ["encoder_dist", "joint_dist", "joint_decoder_dist", "decoder_dist", "dec_dist_private","latent_samples",
-          "enc_dist_private", "cross_decoder_dists"]
+          "enc_dist_private", "cross_decoder_dist"]
 
 
 class ModalityOutput:
@@ -22,7 +22,7 @@ class ModalityOutput:
         self.latent_samples = None
         self.enc_dist_private = None
         self.joint_decoder_dist = None
-        self.cross_decoder_dists = None
+        self.cross_decoder_dist = None
 
     def set_value(self, field:str, val):
         """
@@ -34,7 +34,7 @@ class ModalityOutput:
         """
         if val is not None:
             self.check_field_valid(field)
-            if field not in ["latent_samples", "cross_decoder_dists"]:
+            if field not in ["latent_samples", "cross_decoder_dist"]:
                 self.check_is_distribution(val, field)
             else:
                 assert isinstance(val, dict), "Expected {} to be a dict! Got {}".format(field, val)

@@ -4,6 +4,7 @@ exp_name: cub
 labels:
 beta: 1
 lr: 1e-3
+iterseeds: 1
 mixing: moe
 n_latents: 16
 obj: elbo

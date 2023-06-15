@@ -3,14 +3,14 @@ epochs: 400
 exp_name: poe_sprites
 labels:
 beta: 1
-lr: 1e-3
+lr: 1e-4
 mixing: poe
-n_latents: 16
+n_latents: 10
 obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
-viz_freq: 5
+viz_freq: 1
 test_split: 0.1
 dataset_name: sprites
 modality_1:
@@ -19,16 +19,19 @@ modality_1:
   mod_type: frames
   recon_loss:  bce
   path: ./data/sprites
+  test_datapath: ./data/sprites/test
 modality_2:
   decoder: FNN
   encoder: FNN
   recon_loss: category_ce
   mod_type: actions
   path: ./data/sprites
+  test_datapath: ./data/sprites/test
 modality_3:
   decoder: FNN
   encoder: FNN
   recon_loss: category_ce
   mod_type: attributes
   path: ./data/sprites
+  test_datapath: ./data/sprites/test
 

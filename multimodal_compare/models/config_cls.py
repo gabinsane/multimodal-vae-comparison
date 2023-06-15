@@ -2,7 +2,7 @@ import os
 import pickle
 import yaml
 import argparse
-from utils import get_root_folder
+from utils import get_root_folder, load_data
 
 
 class Config():
@@ -18,6 +18,7 @@ class Config():
         self.num_mods = None
         self.model_cfg = {}
         self.mPath = None
+        self.labels_test = None
         self.parser = parser
         self.eval_only = eval_only
         self.mods = []
@@ -34,9 +35,11 @@ class Config():
         :return: parsed parameters
         :rtype: dict
         """
-        assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str))
+        assert (isinstance(parser, argparse.ArgumentParser) or isinstance(parser, str) or isinstance(parser, dict))
         if isinstance(parser, argparse.ArgumentParser):
             self.params = self._parse_args()
+        elif isinstance(parser, dict):
+            self.params = parser
         elif isinstance(parser, str) and os.path.isfile(parser):
             self.params = self._load_config(parser)
         elif isinstance(parser, str) and os.path.isdir(parser):
@@ -65,6 +68,10 @@ class Config():
             setattr(self, p, self.params[p])
         self._get_mods_config(self.params)
 
+    def change_seed(self, seednum):
+        self.seed = seednum
+        self.params["seed"] = seednum
+
     def _get_mods_config(self, config):
         """
         Makes a list of all modality-specific dicts (self.modality_1, ..., self.modality_n), loads labels if provided
@@ -76,19 +83,32 @@ class Config():
                 d["private_latents"] = None
             self.mods.append(d)
         if config["labels"]:
-            with open(config["labels"], 'rb') as handle:
-                self.labels = pickle.load(handle)
+            self.labels = load_data(config["labels"])
+
+    def find_version(self):
+        version = 0
+        while True:
+            versiondir = os.path.join(self.mPath, "version_{}".format(version))
+            if os.path.exists(versiondir):
+                version += 1
+            else:
+                return version
 
     def _setup_savedir(self):
         """
         Creates the model directory in the results folder and saves the config copy
         """
         self.mPath = os.path.join('results/', self.exp_name)
+        version = self.find_version()
+        self.mPath = os.path.join("results/", self.exp_name, "version_{}".format(version))
         if not self.eval_only:
             os.makedirs(self.mPath, exist_ok=True)
             os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
             print('Experiment path:', self.mPath)
-            with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
+            self.dump_config()
+
+    def dump_config(self):
+         with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
                 yaml.dump(self.params, yaml_file, default_flow_style=False)
 
     def _load_config(self, pth):
@@ -102,8 +122,11 @@ class Config():
         :return: dict; config
         :rtype: dict
         """
-        args = self.parser.parse_args()
-        config = self._load_config(args.cfg)
+        if isinstance(self.parser, argparse.ArgumentParser):
+            args = self.parser.parse_args()
+            config = self._load_config(args.cfg)
+        else:
+            config = self._load_config(self.parser)
         for name, value in vars(args).items():
             if value is not None and name != "cfg" and name in config.keys():
                 config[name] = value

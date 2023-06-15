@@ -2,8 +2,10 @@
 import torch
 import torch.distributions as dist
 import torch.nn as nn
+import numpy as np
 import torch.nn.functional as F
 from models import encoders, decoders
+from utils import get_traversal_matrix
 from models.decoders import VaeDecoder
 from models.encoders import VaeEncoder
 from models.output_storage import VAEOutput
@@ -125,7 +127,7 @@ class VAE(BaseVae):
         enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim)
         super(VAE, self).__init__(enc_net, dec_net, prior_dist, likelihood_dist, post_dist)
         self._qz_x_params, self._pz_params_private = None, None
-        self.llik_scaling = 1.0
+        self.llik_scaling = 1
         self.data_dim = feature_dim
         self.private_latents = private_latents
         self.n_latents = n_latents
@@ -181,19 +183,27 @@ class VAE(BaseVae):
             return obj
         return None
 
-    def generate_samples(self, N):
+    def generate_samples(self, N, traversals=False, traversal_range=(-1,1)):
         """
         Generates samples from the latent space
         :param N: How many samples to make
         :type N: int
+        :param traversals: whether to make latent traversals (True) or random samples (False)
+        :type traversals: bool
+        :param traversal_range: range of the traversals (if plausible)
+        :type traversal_range: tuple
         :return: output reconstructions
         :rtype: torch.tensor
         """
         self.eval()
         with torch.no_grad():
-            pz = self.pz(*self.pz_params)
-            latents = pz.rsample(torch.Size([N]))
+            if not traversals:
+                pz = self.pz(*self.pz_params)
+                latents = pz.rsample(torch.Size([N]))
+            else:
+                latents = torch.stack(get_traversal_matrix(N, self.total_latents, trav_range=traversal_range))
         return latents
+
 
     def objective(self, data):
         """

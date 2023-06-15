@@ -4,13 +4,14 @@ exp_name: mnistsvhn
 labels: ./data/mnist_svhn/labels.pkl
 lr: 1e-3
 mixing: moe
-n_latents: 16
+iterseeds: 1
+n_latents: 32
 obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 2
 beta: 1
-viz_freq: 10
+viz_freq: 1
 test_split: 0.1
 dataset_name: mnist_svhn
 modality_1:

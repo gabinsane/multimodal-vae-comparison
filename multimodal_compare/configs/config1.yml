@@ -1,27 +1,30 @@
-batch_size: 32
-epochs: 600
-dataset_name: gebid
-exp_name: gebidlevel5_mvae
-labels: null
+batch_size: 24
 beta: 1
+dataset_name: cdspritesplus
+epochs: 250
+exp_name: dmvae
+iterseeds: 3
+labels: null
 lr: 1e-4
-mixing: poe
+mixing: dmvae
 modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
-  recon_loss:  bce
-  path: ./data/level5/image
+  private_latents: 10
+  path: ./data/CdSpritesplus/level5/traindata.h5
+  recon_loss: bce
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  private_latents: 10
+  path: ./data/CdSpritesplus/level5/traindata.h5
   recon_loss: category_ce
-  path: ./data/level5/attrs.pkl
-n_latents: 32
+n_latents: 24
 obj: elbo
 optimizer: adam
 pre_trained: null
 seed: 1
 test_split: 0.1
-viz_freq: 20
+viz_freq: 1

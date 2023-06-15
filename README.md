@@ -1,6 +1,6 @@
 # Multimodal VAE Comparison
 
-This is the official code for the submitted NIPS 2022 Datasets and Benchmarks paper "Benchmarking Multimodal Variational Autoencoders: GeBiD Dataset and Toolkit".
+This is the official code for the submitted NIPS 2023 Datasets and Benchmarks paper "Benchmarking Multimodal Variational Autoencoders: CdSprites+ Dataset and Toolkit".
 
 The purpose of this toolkit is to offer a systematic and unified way to train, evaluate and compare the state-of-the-art
 multimodal variational autoencoders. The toolkit can be used with arbitrary datasets and both uni/multimodal settings.
@@ -10,9 +10,9 @@ By default, we provide implementations of the [MVAE](https://github.com/mhw32/mu
 ([paper](https://openreview.net/forum?id=5Y21V0RDBV)) and [DMVAE](https://github.com/seqam-lab/DMVAE) ([paper](https://github.com/seqam-lab/DMVAE)) models, but anyone is free to contribute with their own
 implementation. 
 
-We also provide a custom synthetic bimodal dataset, called **GeBiD**, designed specifically for comparison of the
+We also provide a custom synthetic bimodal dataset, called **CdSprites+**, designed specifically for comparison of the
 joint- and cross-generative capabilities of multimodal VAEs. You can read about the utilities of the dataset in the proposed 
-paper (link will be added soon). This dataset offers 5 levels of difficulty (based on the number of attributes)
+paper (link will be added soon). This dataset extends the [dSprites dataset](https://github.com/deepmind/dsprites-dataset) with natural language captions and additional features and offers 5 levels of difficulty (based on the number of attributes)
 to find the minimal functioning scenario for each model. Moreover, its rigid structure enables automatic qualitative
 evaluation of the generated samples. For more info, see below. 
 
@@ -22,13 +22,12 @@ evaluation of the generated samples. For more info, see below.
 ### **List of contents**
 
 * [Preliminaries](#preliminaries) <br>
-* [GeBiD dataset](#get-the-gebid-dataset) <br>
+* [CdSprites+ dataset](#get-the-cdsprites-dataset) <br>
 * [Setup & Training](#setup-and-training) <br>
 * [Evaluation](#evaluation)<br>
-* [GeBiD leaderboard](#gebid-leaderboard)<br>
+* [CdSprites+ leaderboard](#cdsprites&#43;-leaderboard)<br>
 * [Training on other datasets](#training-on-other-datasets) <br>
 * [Add own model](#extending-for-own-models-and-networks)<br>
-* [Common installation problems](#common-installation-problems)<br>
 * [License & Acknowledgement](#license)<br>
 * [Contact](#contact)<br>
 ---
@@ -51,38 +50,44 @@ conda activate multivae
 Please note that the framework depends on the [Pytorch Lightning](https://www.pytorchlightning.ai/) framework which manages the model training and evaluation. 
 
 
-## Get the GeBiD dataset
+## Get the CdSprites&#43; dataset
 
-We provide a bimodal image-text dataset GeBiD (Geometric shapes Bimodal Dataset) for systematic multimodal VAE comparison. There are 5 difficulty levels 
+We provide a bimodal image-text dataset CdSprites+ (Geometric shapes Bimodal Dataset) for systematic multimodal VAE comparison. There are 5 difficulty levels 
 based on the number of featured attributes (shape, size, color, position and background color). You can either generate
 the dataset on your own, or download a ready-to-go version.
 
 ### Dataset download 
-You can download any of the following difficulty levels: [Level 1](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level1.zip),
-[Level 2](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level2.zip), [Level 3](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level3.zip),
-[Level 4](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level4.zip), [Level 5](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level5.zip).
+You can download any of the following difficulty levels: [Level 1](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/level1.zip),
+[Level 2](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/level2.zip), [Level 3](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/level3.zip),
+[Level 4](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/level4.zip), [Level 5](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/level5.zip).
 
-The dataset should be placed in the ./data directory. For downloading, unzipping and moving the chosen dataset, run:
+The dataset should be placed in the ./data/CdSpritesplus directory. For downloading, unzipping and moving the chosen dataset, run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/level2.zip   # replace level2 with any of the 1-5 levels
-unzip level2.zip -d ./data/
+wget https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/level2.zip   # replace level2 with any of the 1-5 levels
+unzip level2.zip -d ./data/CdSpritesplus
 ```
 
-![Examples of GeBiD levels](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/gebid_dataset.png "GeBiD dataset")
+![Examples of CdSprites+ levels](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/cdsprites.png "CdSprites+ dataset")
 
 ### Dataset generation
 
-Alternatively, you can generate a dataset on your own. For the default configuration, run for example:
+You can also generate the dataset on your own. To generate all levels at once, run:
 
  ```
-cd ~/multimodal-vae-comparison/multimodal_compare
-python ./data_proc/generate_dataset.py --dir ./data/level2 --level 2 --size 10000 
+cd ~/multimodal-vae-comparison/multimodal_compare/data_proc
+python ./cdSprites.py 
 ```
 
-The code will make an _./image_ folder in the target directory that includes the _.png_ images. The text is stored in 
-_attrs.pkl_ file and is in the same order as the images. 
+Alternatively, to generate only one level:
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare/data_proc
+python ./cdSprites.py --level 4
+```
+
+The code will create the _./CdSpritesplus_ folder in the _./data_ directory. The folder includes subfolders with different levels (or the one level that you have chosen). Each level contains images sorted in directories according to their captions. There is also the _traindata.h5_ file containing the whole dataset - you can then use this file in the config.
 
 ## Setup and training
 
@@ -91,7 +96,7 @@ We show an example training config in _./multimodal_compare/configs/config1.yml_
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python main.py --cfg ./configs/config1.yml
+python main.py --cfg configs/config1.yml
 ```
 
 The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
@@ -111,7 +116,7 @@ cd ~/multimodal-vae-comparison/multimodal_compare
 python data_proc/generate_configs.py --path ./configs/my_experiment  --cfg ./configs/config1.yml --n-latents 24 32 64 --mixing moe poe --seed 1 2 3 
 ```
 
-The script will make 18 configs (2 models x 3 seeds x 3 latent dimensionalities) within the chosen directory. To see the full 
+The script will make 36 configs (4 models x 3 seeds x 3 latent dimensionalities) within the chosen directory. To see the full 
 spectrum of parameters that can be adjusted, run:
 
 ```python data_proc/generate_configs.py -h```
@@ -127,7 +132,7 @@ run:
 ```./iterate_configs.sh "./configs/reproduce_paper/" ```
 (This is 550 experiments)
 
-Or, to reproduce for example only the latent dimensionality experiments for GeBiD level 5 and the MMVAE model, run:
+Or, to reproduce for example only the latent dimensionality experiments for CdSprites+ level 5 and the MMVAE model, run:
 
 ```./iterate_configs.sh "./configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mmvae"```
 (This is 40 experiments)
@@ -143,20 +148,14 @@ python eval/eval_gebid.py --model model_dir_name --level 2  # specify the level 
 ```
 
 The trained model is expected to be placed in the results folder. The script will print the statistics in the terminal 
-and also save them in the model folder as gebid_stats.txt 
-
-You can also view the tensorboard logs by running:
-
-```tensorboard --logdir path_to_model_dir```
-
-Then CTRL + click on the localhost address. If you wish to compare multiple models, put them in one parent directory and provide path to it instead.
+and also save them in the model folder as cdsprites_stats.txt 
 
 
-## GeBiD leaderboard
+## CdSprites&#43; leaderboard
 
-Here we show a leaderboard of the state-of-the-art models evaluated on our GeBiD benchmark dataset. The experiments can be 
+Here we show a leaderboard of the state-of-the-art models evaluated on our CdSprites+ benchmark dataset. The experiments can be 
 reproduced by running the configs specified in the Config column (those are linked to a corresponding subfoder in ./configs/reproduce_paper which contains the 5 seeds). For example, to reproduce the leaderboard results
-for GeBiD Level 1 and the MVAE model, run:
+for CdSprites+ Level 1 and the MVAE model, run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
@@ -316,7 +315,7 @@ Please feel free to propose your own model and training config so that we can ad
 ### Training on other datasets
 
 By default, we also support training on MNIST_SVHN (or MNIST/SVHN only), Caltech-UCSD Birds 200 (CUB) dataset as 
-used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf) and Sprites (as in [this repository](https://github.com/YingzhenLi/Sprites)). We provide the default training configs which
+used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf), Sprites (as in [this repository](https://github.com/YingzhenLi/Sprites)), CelebA, FashionMNIST and PolyMNIST. We provide the default training configs which
  you can adjust according to your needs (e.g. change the model, loss objective etc.). 
 
 
@@ -328,7 +327,7 @@ First download the dataset (30 MB in total) before the training. You can run the
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # download mnist_svhn dataset
 unzip mnist_svhn.zip -d ./data/
-python main.py --cfg ./configs/config_mnistsvhn.yml
+python main.py --cfg configs/config_mnistsvhn.yml
 ```
 
 #### CUB
@@ -339,20 +338,46 @@ We provide our preprocessed and cleaned version of the dataset (106 MB in total)
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # download CUB dataset
 unzip cub.zip -d ./data/
-python main.py --cfg ./configs/config_cub.yml
+python main.py --cfg configs/config_cub.yml
 ```
 
 #### Sprites
-
-![Sprites](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.gif)
-
+ 
 You can download the sorted version (4.6 GB) with 3 modalities (image sequences, actions and attributes) and train:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
 wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.zip   # download Sprites dataset
 unzip sprites.zip -d ./data/
-python main.py --cfg ./configs/config_sprites.yml
+python main.py --cfg configs/config_sprites.yml
+```
+
+#### CelebA
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/celeba.zip   # download CelebA dataset
+unzip celeba.zip -d ./data/
+python main.py --cfg configs/config_celeba.yml
+```
+
+#### FashionMNIST
+
+For FashionMNIST, we use the torchvision.datasets class to handle the download automatically, you thus do not need to download anything. 
+You can train directly by running:
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+python main.py --cfg configs/config_fashionmnist.yml
+```
+
+#### PolyMNIST
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+wget https://zenodo.org/record/4899160/files/PolyMNIST.zip?download=1   # download PolyMNIST dataset
+unzip PolyMNIST.zip?download=1 -d ./data/
+python main.py --cfg configs/config_polymnist.yml
 ```
 
 
@@ -384,29 +409,6 @@ We provide a set of unit tests to check whether any newly-added implementations 
 cd ~/multimodal-vae-comparison/
 py.test .
 ```
-
-## Common installation problems
-
-For some env configurations, the training might fail on the following:
-
-```
-qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "/home/user/miniconda3/envs/multivae/lib/python3.8/site-packages/cv2/qt/plugins" even though it was found.
-This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
-
-Available platform plugins are: xcb, eglfs, minimal, minimalegl, offscreen, vnc, webgl.
-
-Aborted (core dumped)
-```
-
-In that case, try reinstalling opencv:
-
-```pip uninstall opencv-python```
-
-```pip install opencv-python-headless```
-
-If your torch version does not see CUDA (```print(torch.cuda.is_available())``` is False), try installing pytorch specifically for your CUDA toolkit version, e.g.:
-
-```mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia```
 
 
 ## License

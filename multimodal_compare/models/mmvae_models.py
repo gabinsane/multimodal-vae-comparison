@@ -25,8 +25,7 @@ class MOE(TorchMMVAE):
         self.model_config = model_config
         self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'moe'
-        self.prior_dist = dist.Normal
-        self.pz = dist.Normal
+        self.K = 1
 
     def objective(self, data):
         """
@@ -37,26 +36,32 @@ class MOE(TorchMMVAE):
         :return obj: dictionary with the obligatory "loss" key on which the model is optimized, plus any other keys that you wish to log
         :rtype obj: dict
         """
-        output = self.forward(data)
+        output = self.forward(data, K=self.K)
         out_d = output.unpack_values()
         lpx_zs, klds = [], []
         for r, qz_x in enumerate(out_d["encoder_dist"]):
             kld = self.obj_fn.calc_kld(qz_x, self.pz(*self.vaes["mod_{}".format(r + 1)]._pz_params.cuda()))
             klds.append(kld.sum(-1))
             self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
-            lpx_z = (self.obj_fn.recon_loss_fn(out_d["decoder_dist"][r], data["mod_{}".format(r + 1)]).view(*out_d["decoder_dist"][r].batch_shape[:1], -1)
+            lpx_z = (self.obj_fn.recon_loss_fn(out_d["decoder_dist"][r], data["mod_{}".format(r + 1)], K=self.K).view(*out_d["decoder_dist"][r].batch_shape[:1], -1)
                      * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
-            lpx_zs.append((torch.tensor(0.0).cuda().exp() * lpx_z))
-            for key, cros_l in output.mods["mod_{}".format(r+1)].cross_decoder_dists.items():
-                lpx_z = (self.obj_fn.recon_loss_fn(cros_l, data["mod_{}".format(r + 1)]).view(
+            lpx1 = (torch.tensor(0.0).cuda().exp() * lpx_z)
+            for key, cros_l in output.mods["mod_{}".format(r+1)].cross_decoder_dist.items():
+                lpx_z = (self.obj_fn.recon_loss_fn(cros_l, data["mod_{}".format(r + 1)], K=self.K).view(
                     *cros_l.batch_shape[:1], -1)
                          * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
                 zs = out_d["latent_samples"][int(key.split("_")[-1])-1]["latents"].detach()
                 q = out_d["encoder_dist"][int(key.split("_")[-1])-1]
                 qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
-                lwt = (qz_x.log_prob(zs) - q.log_prob(zs).detach()).sum(-1)[0][0]
-                lpx_zs.append((lwt.exp() * lpx_z))
-        d = {"lpx_z":torch.stack([lp for lp in lpx_zs if lp.sum() != 0]), "kld": torch.stack(klds), "qz_x":out_d["encoder_dist"], "zs": out_d["latent_samples"], "pz":self.pz, "pz_params":self.pz_params}
+                lwt = (qz_x.log_prob(zs) - q.log_prob(zs).detach()).sum(-1).reshape(-1)
+                lwt = lwt #/abs(torch.max(lwt))
+                if self.obj_fn.obj_name == "elbo":
+                    lpx_zs.append(lpx1)
+                    lpx_zs.append((lwt.exp() * lpx_z))
+                else:
+                    lpx_zs.append([lpx1, lpx_z])
+        lpx = torch.stack([lp for lp in lpx_zs if lp.sum() != 0]) if not isinstance(lpx_zs[0], list) else lpx_zs
+        d = {"lpx_z":lpx, "kld": torch.stack(klds), "qz_x":out_d["encoder_dist"], "zs": out_d["latent_samples"], "pz":self.pz, "pz_params":self.pz_params}
         obj = self.obj_fn.calculate_loss(d)
         if self.obj_fn.obj_name == "elbo":
             obj["loss"] = (1 / len(self.vaes)) * obj["loss"]
@@ -84,7 +89,7 @@ class MOE(TorchMMVAE):
                 z = self.vaes[modality].qz_x(*qz["shared"]).rsample(torch.Size([K]))
                 zs[modality] = {"latents": z, "masks": x[modality]["masks"]}
             else:
-                zs[modality] = {"latents": None, "masks": None}
+                zs[modality] = {"latents": None, "masks": x[modality]["masks"]}
         # decode the samples
         px_zs = self.decode(zs)
         for modality, px_z in px_zs.items():
@@ -92,12 +97,14 @@ class MOE(TorchMMVAE):
                 px_zs[modality] = dist.Normal(*px_z)
         for mod_name in missing:
             zs[mod_name] = zs[filled[0]]
+            zs[mod_name]["masks"] = x[mod_name]["masks"]
             px_zs[mod_name] = dist.Normal(*self.vaes[mod_name].dec(zs[filled[0]]))
         for modality, z in zs.items():
             for mod_vae, vae in self.vaes.items():
                 if mod_vae != modality:  # fill-in off-diagonal
+                    z["masks"] = x[mod_vae]["masks"]
                     cross_px_zs[mod_vae] = {modality:vae.px_z(*vae.dec(z))}
-        return self.make_output_dict(qzs, px_zs, zs, cross_decoder_dists=cross_px_zs)
+        return self.make_output_dict(qzs, px_zs, zs, cross_decoder_dist=cross_px_zs)
 
     def reconstruct(self, data, runPath, epoch, N=8):
         """
@@ -134,8 +141,6 @@ class POE(TorchMMVAE):
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'poe'
-        self.pz = dist.Normal
-        self.prior_dist = dist.Normal
 
     def objective(self, mods):
         """
@@ -246,9 +251,7 @@ class MoPOE(TorchMMVAE):
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
         self.modelName = 'mopoe'
-        self.pz = dist.Normal
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
-        self.prior_dist = dist.Normal
         self.subsets = self.set_subsets()
         self.weights = None
 
@@ -281,7 +284,8 @@ class MoPOE(TorchMMVAE):
         output = self.forward(mods)
         out_unpacked = output.unpack_values()
         lpx_zs, klds = [], []
-        group_divergence = self.obj_fn.weighted_group_kld(out_unpacked["encoder_dist"] + [out_unpacked["joint_dist"][0]], self, self.weights)
+        dists = out_unpacked["encoder_dist"] + [out_unpacked["joint_dist"][0]]
+        group_divergence = self.obj_fn.weighted_group_kld(dists, self,  (1/len(dists))*torch.ones(len(dists)).to("cuda"))
         for r, px_z in enumerate(out_unpacked["decoder_dist"]):
              tag = "mod_{}".format(r + 1)
              self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
@@ -338,8 +342,8 @@ class MoPOE(TorchMMVAE):
         for mod, vae in self.vaes.items():
             qz_d[mod] = dist.Normal(*latents["modalities"][mod]["shared"]) if latents["modalities"][mod]["shared"] is not None else None
             qz_joint[mod] = dist.Normal(*latents["joint"])
-            z = qz_d[mod].rsample(torch.Size([1])) if latents["modalities"][mod]["shared"] is not None \
-                else qz_joint[mod].rsample(torch.Size([1]))
+            z = qz_joint[mod].rsample(torch.Size([1]))#qz_d[mod].rsample(torch.Size([1])) if latents["modalities"][mod]["shared"] is not None \
+                #else qz_joint[mod].rsample(torch.Size([1]))
             z_d[mod] = {"latents": z, "masks": inputs[mod]["masks"]}
             px_d[mod] = vae.px_z(*vae.dec(z_d[mod]))
         return self.make_output_dict(qz_d, px_d, z_d, qz_joint)
@@ -424,7 +428,7 @@ class DMVAE(TorchMMVAE):
             lpx_z_poe = (self.obj_fn.recon_loss_fn(output.joint_decoder_dist, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1)
             lpx_zs_cross = []
             klds_priv = []
-            for k, r in output.cross_decoder_dists.items():
+            for k, r in output.cross_decoder_dist.items():
                 lpx_zs_cross.append((self.obj_fn.recon_loss_fn(r, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1))
                 klds_priv.append(self.obj_fn.calc_kld(output.enc_dist_private, self.pz(*self.vaes[mod].pz_params_private)))
             loss = self.obj_fn.calculate_loss({"lpx_z": lpx_z, "kld": kld.sum(-1)})["loss"] + self.obj_fn.calculate_loss({"lpx_z": lpx_z_poe, "kld": kld_poe})["loss"] \
