@@ -104,7 +104,7 @@ The paths to all modalities are expected to have the data ordered so that they a
 
 The usage and possible options for all the config arguments are below:
 
-![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/config.png "config documentation")
+![Config documentation](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/config.png "config documentation")
 
 ### Set of experiments
 
@@ -206,9 +206,9 @@ In brackets we show standard deviations over the 5 seeds.
     <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
-       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">97 (1)</td><td style="text-align:center;white-space:nowrap">N/A</td><td style="text-align:center;white-space:nowrap">16 (1)</td><td style="text-align:center;white-space:nowrap">N/A</td><td style="text-align:center;white-space:nowrap">25 (1)</td><td style="text-align:center;white-space:nowrap">7 (1)</td><td style="text-align:center;white-space:nowrap">N/A</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/1/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel1/mvae/64/bce">Link</a></td>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">97 (1)</td><td style="text-align:center;white-space:nowrap">N/A</td><td style="text-align:center;white-space:nowrap">16 (1)</td><td style="text-align:center;white-space:nowrap">N/A</td><td style="text-align:center;white-space:nowrap">25 (1)</td><td style="text-align:center;white-space:nowrap">7 (1)</td><td style="text-align:center;white-space:nowrap">N/A</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/1/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel1/mvae/64/bce">Link</a></td>
   </tr>
-         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">18 (6)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">0 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">16 (5)</td><td style="text-align:center ">21 (7)</td><td style="text-align:center ">N/A</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/1/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel1/mmvae/64/bce">Link</a></td>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">18 (6)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">0 (1)</td><td style="text-align:center ">N/A</td><td style="text-align:center ">16 (5)</td><td style="text-align:center ">21 (7)</td><td style="text-align:center ">N/A</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/1/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel1/mmvae/64/bce">Link</a></td>
 
 </table>
 
@@ -229,9 +229,9 @@ In brackets we show standard deviations over the 5 seeds.
     <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
-       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">70 (0)</td><td style="text-align:center;white-space:nowrap">84 (0)</td><td style="text-align:center;white-space:nowrap">7 (0)</td><td style="text-align:center;white-space:nowrap">27 (2)</td><td style="text-align:center;white-space:nowrap">41 (3)</td><td style="text-align:center;white-space:nowrap">6 (1)</td><td style="text-align:center;white-space:nowrap">49 (0)</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/2/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel2/mvae/32/bce">Link</a></td>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">70 (0)</td><td style="text-align:center;white-space:nowrap">84 (0)</td><td style="text-align:center;white-space:nowrap">7 (0)</td><td style="text-align:center;white-space:nowrap">27 (2)</td><td style="text-align:center;white-space:nowrap">41 (3)</td><td style="text-align:center;white-space:nowrap">6 (1)</td><td style="text-align:center;white-space:nowrap">49 (0)</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/2/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel2/mvae/32/bce">Link</a></td>
   </tr>
-         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">6 (2)</td><td style="text-align:center ">28 (6)</td><td style="text-align:center ">6 (2)</td><td style="text-align:center ">32 (2)</td><td style="text-align:center ">43 (1)</td><td style="text-align:center ">3 (1)</td><td style="text-align:center ">20 (3)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/2/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel2/mmvae/128/bce">Link</a></td>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">6 (2)</td><td style="text-align:center ">28 (6)</td><td style="text-align:center ">6 (2)</td><td style="text-align:center ">32 (2)</td><td style="text-align:center ">43 (1)</td><td style="text-align:center ">3 (1)</td><td style="text-align:center ">20 (3)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/2/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel2/mmvae/128/bce">Link</a></td>
 
 </table>
 
@@ -253,9 +253,9 @@ In brackets we show standard deviations over the 5 seeds.
     <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
-       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">49 (2)</td><td style="text-align:center;white-space:nowrap">72 (1)</td><td style="text-align:center;white-space:nowrap">0 (1)</td><td style="text-align:center;white-space:nowrap">20 (1)</td><td style="text-align:center;white-space:nowrap">27 (0)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center;white-space:nowrap">31 (1)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/3/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel3/mvae/128/bce">Link</a></td>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">49 (2)</td><td style="text-align:center;white-space:nowrap">72 (1)</td><td style="text-align:center;white-space:nowrap">0 (1)</td><td style="text-align:center;white-space:nowrap">20 (1)</td><td style="text-align:center;white-space:nowrap">27 (0)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center;white-space:nowrap">31 (1)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/3/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel3/mvae/128/bce">Link</a></td>
   </tr>
-         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">22 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">12 (4)</td><td style="text-align:center ">26 (3)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">12 (2)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/3/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel3/mmvae/128/bce">Link</a></td>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">22 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">12 (4)</td><td style="text-align:center ">26 (3)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">12 (2)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/3/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel3/mmvae/128/bce">Link</a></td>
 
 </table>
 
@@ -276,9 +276,9 @@ In brackets we show standard deviations over the 5 seeds.
     <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
-       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">1 (1)</td><td style="text-align:center;white-space:nowrap">38 (5)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center ">24 (1)</td><td style="text-align:center;white-space:nowrap">26 (2)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/4/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel4/mvae/128/bce">Link</a></td>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">1 (1)</td><td style="text-align:center;white-space:nowrap">38 (5)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center ">24 (1)</td><td style="text-align:center;white-space:nowrap">26 (2)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/4/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel4/mvae/128/bce">Link</a></td>
   </tr>
-         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">23 (8)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">8 (7)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">7 (10)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/4/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel4/mmvae/128/bce">Link</a></td>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">23 (8)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">8 (7)</td><td style="text-align:center ">20 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">7 (10)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/4/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel4/mmvae/128/bce">Link</a></td>
 
 </table>
 
@@ -300,9 +300,9 @@ In brackets we show standard deviations over the 5 seeds.
     <td> </td><td> </td><td> </td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td><b>Letters</b></td><td><b>Strict</b></td><td><b>Feats</b></td><td> </td> <td> </td> 
     </tr>
   <tr>
-       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">1 (0)</td><td style="text-align:center;white-space:nowrap">35 (1)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap">8 (0)</td><td style="text-align:center;white-space:nowrap">20 (1)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap">2 (0)</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/5/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mvae/32/bce">Link</a></td>
+       <td style="text-align:center ">1.</td> <td style="text-align:center ">MVAE</td><td>ELBO</td><td style="text-align:center;white-space:nowrap">1 (0)</td><td style="text-align:center;white-space:nowrap">35 (1)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap">8 (0)</td><td style="text-align:center;white-space:nowrap">20 (1)</td><td style="text-align:center;white-space:nowrap">0 (0)</td><td style="text-align:center;white-space:nowrap">2 (0)</td><td style="text-align:center;white-space:nowrap"><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/5/mvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mvae/32/bce">Link</a></td>
   </tr>
-         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">16 (2)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">15 (2)</td><td style="text-align:center ">18 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">9 (2)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/weights/5/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mmvae/64/bce">Link</a></td>
+         <td style="text-align:center ">2.</td> <td style="text-align:center ">MMVAE</td><td>ELBO</td><td style="text-align:center">0 (0)</td><td style="text-align:center ">16 (2)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">15 (2)</td><td style="text-align:center ">18 (1)</td><td style="text-align:center ">0 (0)</td><td style="text-align:center ">9 (2)</td><td style="text-align:center "><a href="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/weights/5/mmvae.zip">Link</a></td><td style="text-align:center;white-space:nowrap"><a href="https://github.com/gabinsane/multimodal-vae-comparison/tree/main/multimodal_compare/configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mmvae/64/bce">Link</a></td>
 
 </table>
 
@@ -325,7 +325,7 @@ First download the dataset (30 MB in total) before the training. You can run the
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/mnist_svhn.zip   # download mnist_svhn dataset
+wget https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/mnist_svhn.zip   # download mnist_svhn dataset
 unzip mnist_svhn.zip -d ./data/
 python main.py --cfg configs/config_mnistsvhn.yml
 ```
@@ -336,7 +336,7 @@ We provide our preprocessed and cleaned version of the dataset (106 MB in total)
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/cub.zip   # download CUB dataset
+wget https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/cub.zip   # download CUB dataset
 unzip cub.zip -d ./data/
 python main.py --cfg configs/config_cub.yml
 ```
@@ -347,7 +347,7 @@ You can download the sorted version (4.6 GB) with 3 modalities (image sequences,
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/sprites.zip   # download Sprites dataset
+wget https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/sprites.zip   # download Sprites dataset
 unzip sprites.zip -d ./data/
 python main.py --cfg configs/config_sprites.yml
 ```
@@ -356,7 +356,7 @@ python main.py --cfg configs/config_sprites.yml
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/celeba.zip   # download CelebA dataset
+wget https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/celeba.zip   # download CelebA dataset
 unzip celeba.zip -d ./data/
 python main.py --cfg configs/config_celeba.yml
 ```
@@ -391,7 +391,7 @@ python main.py --cfg configs/config_polymnist.yml
 
 The toolkit is designed so that it enables easy extension for new models, objectives, datasets or encoder/decoder networks. 
 <div style="text-align: left">
- <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/GeBiD/uml3.png" width="300"  alt="UML class diagram"/>
+ <img align="right" src="https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/uml3.png" width="300"  alt="UML class diagram"/>
 </div>
 
 Here you can see the UML diagram of the framework. The toolkit uses the [Pytorch Lightning](https://www.pytorchlightning.ai/) framework which enables automatic separation of the data, models and the training process. A new model (see NewMMVAE in the diagram) can be added as a new class derived from TorchMMVAE. The model constructor will automatically create a BaseVAE class instance for each modality defined in the config - these BaseVAE classes will handle the modality-dependent operations such as encoding and decoding the data, sampling etc. The NewMMVAE class thus only requires the mixing method which defines how the individual posteriors should be mixed, although it is as well possible to change the whole forward pass if needed. 
@@ -423,7 +423,7 @@ If you use our toolkit or dataset in your work, please, give us an attribution u
   url = {https://arxiv.org/abs/2209.03048},  
   author = {Sejnova, Gabriela and Vavrecka, Michal and Stepanova, Karla},  
   keywords = {Machine Learning (cs.LG), FOS: Computer and information sciences, FOS: Computer and information sciences},  
-  title = {Benchmarking Multimodal Variational Autoencoders: GeBiD Dataset and Toolkit},  
+  title = {Benchmarking Multimodal Variational Autoencoders: CdSprites Dataset and Toolkit},  
   publisher = {arXiv},  
   year = {2022},  
   copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
