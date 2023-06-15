@@ -133,10 +133,16 @@ class DataModule(LightningDataModule):
         """Return Val DataLoader with custom batch size"""
         dataset = {"val":self.dataset_val, "test": self.dataset_test}[split]
         if split == "test":
-            self.check_load_testdata()
-            dataset = self.dataset_val if len(self.dataset_test) == 0 else dataset
+            avail = self.check_testdata_avail()
+            dataset = self.dataset_val if not avail else self.dataset_test
         return DataLoader(dataset, batch_size=batch_size, shuffle=False, pin_memory=True, collate_fn=self.collate_fn,
                               num_workers=0)
+
+    def check_testdata_avail(self):
+        self.check_load_testdata()
+        if len(self.dataset_test) == 0:
+            return False
+        return True
 
     def check_load_testdata(self):
         if len(self.dataset_test) == 0:
@@ -211,6 +217,8 @@ class DataModule(LightningDataModule):
                 c += 1
                 data = next(iter(self.predict_dataloader(num_samples, split=split)))
                 index = iter(self.predict_dataloader(num_samples, split=split))._next_index()
+                if split == "test":
+                    split = "val" if not self.check_testdata_avail() else split
                 labels = self.get_label_for_indices(index, split)
                 return data, labels
             except:

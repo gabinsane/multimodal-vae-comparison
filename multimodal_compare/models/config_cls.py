@@ -2,7 +2,7 @@ import os
 import pickle
 import yaml
 import argparse
-from utils import get_root_folder
+from utils import get_root_folder, load_data
 
 
 class Config():
@@ -68,6 +68,10 @@ class Config():
             setattr(self, p, self.params[p])
         self._get_mods_config(self.params)
 
+    def change_seed(self, seednum):
+        self.seed = seednum
+        self.params["seed"] = seednum
+
     def _get_mods_config(self, config):
         """
         Makes a list of all modality-specific dicts (self.modality_1, ..., self.modality_n), loads labels if provided
@@ -79,19 +83,32 @@ class Config():
                 d["private_latents"] = None
             self.mods.append(d)
         if config["labels"]:
-            with open(config["labels"], 'rb') as handle:
-                self.labels = pickle.load(handle)
+            self.labels = load_data(config["labels"])
+
+    def find_version(self):
+        version = 0
+        while True:
+            versiondir = os.path.join(self.mPath, "version_{}".format(version))
+            if os.path.exists(versiondir):
+                version += 1
+            else:
+                return version
 
     def _setup_savedir(self):
         """
         Creates the model directory in the results folder and saves the config copy
         """
         self.mPath = os.path.join('results/', self.exp_name)
+        version = self.find_version()
+        self.mPath = os.path.join("results/", self.exp_name, "version_{}".format(version))
         if not self.eval_only:
             os.makedirs(self.mPath, exist_ok=True)
             os.makedirs(os.path.join(self.mPath, "visuals"), exist_ok=True)
             print('Experiment path:', self.mPath)
-            with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
+            self.dump_config()
+
+    def dump_config(self):
+         with open('{}/config.yml'.format(self.mPath), 'w') as yaml_file:
                 yaml.dump(self.params, yaml_file, default_flow_style=False)
 
     def _load_config(self, pth):

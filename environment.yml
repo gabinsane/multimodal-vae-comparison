@@ -10,6 +10,7 @@ dependencies:
   - pillow
   - pyparsing
   - pyqt
+  - h5py
   - python=3.8
   - pip
   - chainer
@@ -32,9 +33,12 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
+  - wget
+  - tarfile
   - pytorch
+  - tensorboard
   - torchvision
-  - pytorch-lightning>=1.7.7
+  - pytorch-lightning==1.7.7
   - umap-learn
   - pyyaml
   - pytest
@@ -44,7 +48,4 @@ dependencies:
     - opencv-python
     - pixyz
     - pyttsx3
-    - sounddevice
-    - soundfile
     - torchnet
-    - tensorboard

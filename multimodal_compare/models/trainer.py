@@ -11,6 +11,7 @@ from visualization import plot_kls_df
 from visualization import t_sne
 
 
+
 class MultimodalVAE(pl.LightningModule):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
@@ -46,6 +47,11 @@ class MultimodalVAE(pl.LightningModule):
 
     @property
     def datamod(self):
+        """
+        When the class is used for inference, there is no pl trainer module
+        :return: an instance of DataModule class
+        :rtype:
+        """
         try:
             return self.trainer.datamodule
         except:
@@ -119,7 +125,7 @@ class MultimodalVAE(pl.LightningModule):
 
     def test_step(self, test_batch, batch_idx):
         """
-        Iterates over the test loader
+        Iterates over the test loader (if test data is provided)
         """
         loss_d = self.model.objective(test_batch)
         for key in loss_d.keys():
@@ -143,6 +149,7 @@ class MultimodalVAE(pl.LightningModule):
             self.analyse_data(savedir=savepath)
             self.save_reconstructions(savedir=savepath)
             self.save_joint_samples(savedir=savepath)
+            self.save_joint_samples(savedir=savepath, num_samples=10, traversals=True)
 
     def test_epoch_end(self, outputs):
         savepath = os.path.join(self.config.mPath, "visuals/epoch_{}_test/".format(self.trainer.current_epoch))
@@ -182,13 +189,14 @@ class MultimodalVAE(pl.LightningModule):
         for m in range(len(data.keys())):
             mods = copy.deepcopy(data)
             for d in mods.keys():
-                mods[d]["data"], mods[d]["masks"] = None, None
+                 mods[d]["data"], mods[d]["masks"] = None, mods[d]["masks"]
             mods["mod_{}".format(m + 1)] = data["mod_{}".format(m + 1)]
             mod_name = self.config.mods[m]["mod_type"]
             output = self.model.forward(check_input_unpacked(mods))
-            save(output, copy.deepcopy(mods), mod_name)
+            md = copy.deepcopy(mods)
+            save(output, md, mod_name)
 
-    def save_joint_samples(self, num_samples=16, savedir=None, traversals=False):
+    def save_joint_samples(self, num_samples=64, savedir=None, traversals=False):
         """
         Generate joint samples from random vectors and save them
 
@@ -204,10 +212,11 @@ class MultimodalVAE(pl.LightningModule):
         for rng in traversal_ranges:
             if len(self.config.mods) > 1:
                 for i, vae in enumerate(self.model.vaes):
-                    recons["mod_{}".format(i+1)], recons["mod_{}_raw".format(i+1)] = make_joint_samples(self.model, i, self.datamod, self.latents, traversals,
-                                                                      savedir, num_samples, trav_range=rng, current_vae=vae)
+                    n_latents = self.model.vaes[vae].total_latents
+                    recons["mod_{}".format(i+1)], recons["mod_{}_raw".format(i+1)] = make_joint_samples(self.model, i, self.datamod, n_latents, traversals,
+                                                                          savedir, num_samples, trav_range=rng, current_vae=vae)
             else:
-                recons["mod_1"], recons["mod_1_raw"] = make_joint_samples(self.model, 0, self.datamod, self.latents, traversals,
+                recons["mod_1"], recons["mod_1_raw"] = make_joint_samples(self.model, 0, self.datamod, self.model.total_latents, traversals,
                                                      savedir, num_samples, trav_range=rng)
         return recons
 
@@ -243,3 +252,9 @@ class MultimodalVAE(pl.LightningModule):
         plot_kls_df(kl_df, os.path.join(savedir, 'kl_distance{}.png'.format(path_name)))
         t_sne([x for x in zss_sampled[1:]], os.path.join(savedir, 't_sne{}.png'.format(path_name)), labels,
               self.mod_names)
+
+    def eval_forward(self, data):
+        data_i = check_input_unpacked(data_to_device(data, self.device))
+        output = self.model.forward(data_i)
+        output_dic = output.unpack_values()
+        return output_dic

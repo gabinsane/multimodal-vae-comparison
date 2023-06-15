@@ -4,9 +4,10 @@ import numpy as np
 import math, copy
 from utils import one_hot_encode, output_onehot2text, lengths_to_mask, turn_text2image, load_data, add_recon_title
 from torchvision.utils import make_grid
-from eval.eval_gebid import eval_single_model as gebid_eval
 from eval.eval_sprites import eval_single_model as sprites_eval
+from eval.eval_cdsprites import eval_single_model as cdsprites_eval
 import imageio
+import torchvision
 
 class BaseDataset():
     """
@@ -200,18 +201,44 @@ class BaseDataset():
 
 # ----- Multimodal Datasets ---------
 
-class GEBID(BaseDataset):
+class CDSPRITESPLUS(BaseDataset):
     feature_dims = {"image": [64, 64, 3],
-                    "text": [52, 27, 1]
+                    "text": [45, 27, 1]
                     }  # these feature_dims are also used by the encoder and decoder networks
 
     def __init__(self, pth, testpth, mod_type):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
-        self.text2img_size = (64,192,3)
+        self.set_vis_image_shape()
+
+    def set_vis_image_shape(self):
+        width = 192
+        if "level1" in self.path:
+            width = 70
+        elif "level2" in self.path:
+            width = 120
+        self.text2img_size = (64,width,3)
+
+    def labels(self):
+        """
+        Extract text labels based on the dataset level
+        :return: list of labels as strings
+        :rtype: list
+        """
+        labels = [x.decode("utf8") for x in self.get_data_raw()["text"]]
+        if "level2" in self.path:
+            labels = [[x.split(" ")[0], x.split(" ")[1]] for x in labels]
+        if "level3" in self.path:
+            labels = [[x.split(" ")[0], x.split(" ")[1], x.split(" ")[2]] for x in labels]
+        if "level4" in self.path:
+            labels = [[x.split(" ")[0], x.split(" ")[1], x.split(" ")[2], " ".join(x.split(" ")[3:6])] for x in labels]
+        if "level5" in self.path:
+            labels = [[x.split(" ")[0], x.split(" ")[1], x.split(" ")[2], " ".join(x.split(" ")[3:6]),
+                       " ".join(x.split(" ")[6:])] for x in labels]
+        return labels
 
     def eval_statistics_fn(self):
-        return gebid_eval
+        return cdsprites_eval
 
     def _mod_specific_loaders(self):
         return {"image": self._preprocess_images, "text": self._preprocess_text}
@@ -220,7 +247,9 @@ class GEBID(BaseDataset):
         return {"image": self._postprocess_images, "text": self._postprocess_text}
 
     def _preprocess_images(self):
-        return super(GEBID, self)._preprocess_images([self.feature_dims["image"][i] for i in [2,0,1]])
+        d = self.get_data_raw()["image"][:].reshape(-1, *[self.feature_dims["image"][i] for i in [2,0,1]])
+        data = torch.tensor(d)/255
+        return data
 
     def _postprocess_images(self, data):
         if isinstance(data, dict):
@@ -240,7 +269,15 @@ class GEBID(BaseDataset):
             return output_onehot2text(data)
 
     def _preprocess_text(self):
-        return self._preprocess_text_onehot()
+        d = self.get_data_raw()["text"]
+        self.has_masks = True
+        self.categorical = True
+        data = [one_hot_encode(len(f), f.decode("utf8")) for f in d]
+        data = [torch.from_numpy(np.asarray(x)) for x in data]
+        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
+        data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
+        data_and_masks = torch.cat((data, masks), dim=-1)
+        return data_and_masks
 
     def save_recons(self, data, recons, path, mod_names):
         output_processed = self._postprocess_all2img(recons)
@@ -255,9 +292,9 @@ class GEBID(BaseDataset):
             input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
         inputs = np.hstack(input_processed).astype("uint8")
         final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
-        cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
+        cv2.imwrite(path, final)
 
-class CUB(GEBID):
+class CUB(BaseDataset):
     """Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
     represented as sequences of one-hot-encodings for each character (incl. spaces)"""
     feature_dims = {"image": [64, 64, 3],
@@ -267,7 +304,7 @@ class CUB(GEBID):
     def __init__(self, pth, testpth, mod_type):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
-        self.text2img_size = (64,256,3)
+        self.text2img_size = (64,380,3)
 
     def _preprocess_text_onehot(self):
         """
@@ -306,6 +343,49 @@ class CUB(GEBID):
                     stringcount = 0
             text[i] = (" ".join(newphr)).replace("\n  ", "\n ")
         return text
+
+    def labels(self):
+        """
+        No labels for T-SNAE available
+        """
+        return None
+
+    def _preprocess_text(self):
+        d = self.get_data_raw()
+        self.has_masks = True
+        self.categorical = True
+        data = [one_hot_encode(len(f), f) for f in d]
+        data = [torch.from_numpy(np.asarray(x)) for x in data]
+        masks = lengths_to_mask(torch.tensor(np.asarray([x.shape[0] for x in data]))).unsqueeze(-1)
+        data = torch.nn.utils.rnn.pad_sequence(data, batch_first=True, padding_value=0.0)
+        data_and_masks = torch.cat((data, masks), dim=-1)
+        return data_and_masks
+
+    def _preprocess_images(self):
+        d = self.get_data_raw().reshape(-1, *[self.feature_dims["image"][i] for i in [2,0,1]])
+        data = torch.tensor(d)
+        return data
+
+    def _mod_specific_loaders(self):
+        return {"image": self._preprocess_images, "text": self._preprocess_text}
+
+    def _mod_specific_savers(self):
+        return {"image": self._postprocess_images, "text": self._postprocess_text}
+
+    def save_recons(self, data, recons, path, mod_names):
+        output_processed = self._postprocess_all2img(recons)
+        outs = add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
+        input_processed = []
+        for key, d in data.items():
+            output = self._mod_specific_savers()[mod_names[key]](d)
+            images = turn_text2image(output, img_size=self.text2img_size) if mod_names[key] == "text" \
+                else np.reshape(output,(-1,*self.feature_dims["image"]))
+            images = add_recon_title(images, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            input_processed.append(np.vstack(images))
+            input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
+        inputs = np.hstack(input_processed).astype("uint8")
+        final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
+        cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
 
 
 class MNIST_SVHN(BaseDataset):
@@ -511,3 +591,200 @@ class SPRITES(BaseDataset):
             for i in output_processed:
                 grids.append(np.asarray(make_grid(i, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0)).astype("uint8"))
             imageio.mimsave(path.replace(".png", ".gif"), grids)
+
+class CELEBA(BaseDataset):
+    feature_dims = {"image": [64, 64, 3],
+                    "atts": [4],
+                    }  # these feature_dims are also used by the encoder and decoder networks
+
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
+        self.mod_type = mod_type
+        self.text2img_size = (64,192,3)
+
+    def _mod_specific_loaders(self):
+        return {"image": self._preprocess_images, "atts": self._preprocess_atts}
+
+    def _mod_specific_savers(self):
+        return {"image": self._postprocess_images, "atts": self._postproces_atts}
+
+    def _preprocess_images(self):
+        return super(CELEBA, self)._preprocess_images([self.feature_dims["image"][i] for i in [2,0,1]])
+
+    def _postprocess_images(self, data):
+        data = data["data"] if isinstance(data, dict) else data
+        return np.asarray(data.detach().cpu())*255
+
+    def _postprocess_atts(self, data):
+        if isinstance(data, dict):
+            data = data["data"]
+        data = (([np.asarray([round(s) for s in x]) for x in data]*2)-1)
+        return np.asarray(data).astype("uint8")
+
+    def _preprocess_atts(self):
+        d = (torch.tensor(self.get_data_raw().astype("float32"))+1)/2
+        return d
+
+    def save_recons(self, data, recons, path, mod_names):
+        output_processed = self._postprocess_all2img(recons)
+        outs = add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
+        input_processed = []
+        for key, d in data.items():
+            output = self._mod_specific_savers()[mod_names[key]](d)
+            images = turn_text2image(output, img_size=self.text2img_size) if mod_names[key] == "text" \
+                else np.reshape(output,(-1,*self.feature_dims["image"]))
+            images = add_recon_title(images, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            input_processed.append(np.vstack(images))
+            input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
+        inputs = np.hstack(input_processed).astype("uint8")
+        final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
+        cv2.imwrite(path, final)
+
+    def save_traversals(self, recons, path, num_dims):
+        """
+        Makes a grid of traversals and saves as image
+
+        :param recons: data to save
+        :type recons: torch.tensor
+        :param path: path to save the traversal to
+        :type path: str
+        :param num_dims: number of latent dimensions
+        :type num_dims: int
+        """
+        if len(recons.shape) < 3:
+            output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
+            grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
+            cv2.imwrite(path, grid.astype("uint8"))
+        else:
+            output_processed = torch.stack([torch.tensor(self._postprocess_all2img(x)) for x in recons])
+            output_processed = output_processed.reshape(num_dims, -1, *output_processed.shape[1:]).squeeze()
+            rows = []
+            for ind, dim in enumerate(output_processed):
+                rows.append(np.asarray(torch.hstack([x for x in dim]).type(torch.uint8).detach().cpu()))
+            cv2.imwrite(path, np.vstack(np.asarray(rows)))
+
+class FASHIONMNIST(BaseDataset):
+    """Dataset class for the FashionMNIST dataset"""
+    feature_dims = {"image": [28,28,1],
+                    "label": [10],
+                    }  # these feature_dims are also used by the encoder and decoder networks
+
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
+        self.mod_type = mod_type
+        self.labels_train = None
+
+    def labels(self):
+        return self.labels_train
+
+    def get_data_raw(self):
+        data = torchvision.datasets.FashionMNIST(root=self.path, train=True, download=True)
+        self.labels_train = [int(x) for x in data.targets]
+        return data.data.unsqueeze(-1)/255
+
+    def _mod_specific_loaders(self):
+        return {"image": self._process_image, "label": self._process_label}
+
+    def _mod_specific_savers(self):
+        return {"image": self._postprocess_image, "label": self._postprocess_label}
+
+    def _process_label(self, data):
+        self.get_data_raw()
+        d = np.zeros((self.labels_train.size, self.labels_train.max() + 1))
+        d[np.arange(self.labels_train.size), self.labels_train] = 1
+        return torch.tensor(d)
+
+    def _postprocess_label(self, data):
+        pass
+
+    def _postprocess_image(self, data):
+        data = data["data"] if isinstance(data, dict) else data
+        images = np.asarray(data.detach().cpu()).reshape(-1,*self.feature_dims["image"])*255
+        images_3chan = cv2.merge((images, images, images)).squeeze(-2)
+        return images_3chan
+
+    def _process_image(self):
+        return super(FASHIONMNIST, self)._preprocess_images([self.feature_dims["image"][i] for i in [2,0,1]])
+
+    def save_recons(self, data, recons, path, mod_names):
+        output_processed = self._postprocess(recons)
+        outs = add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
+        input_processed = []
+        for key, d in data.items():
+            output = self._mod_specific_savers()[mod_names[key]](d)
+            images = add_recon_title(output, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            input_processed.append(np.vstack(images))
+            input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
+        inputs = np.hstack(input_processed).astype("uint8")
+        final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
+        cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
+
+class POLYMNIST(BaseDataset):
+    """Dataset class for the POLYMNIST dataset"""
+    feature_dims = {"m0": [28,28,3],
+                    "m1": [28, 28, 3],
+                    "m2": [28, 28, 3],
+                    "m3": [28, 28, 3],
+                    "m4": [28, 28, 3],
+                    }  # these feature_dims are also used by the encoder and decoder networks
+
+    def __init__(self, pth, testpth, mod_type):
+        super().__init__(pth, testpth, mod_type)
+        self.mod_type = mod_type
+
+    def _mod_specific_loaders(self):
+        d = {}
+        for k in ["m0", "m1", "m2", "m3", "m4"]:
+            d[k] = self._process_mnist
+        return d
+
+    def _mod_specific_savers(self):
+        d = {}
+        for k in ["m0", "m1", "m2", "m3", "m4"]:
+            d[k] = self._postprocess_mnist
+        return d
+
+    def _postprocess_mnist(self, data):
+        if isinstance(data, dict):
+            data = data["data"]
+        images = np.asarray(data.view(-1, 3,28,28).detach().cpu().permute(0,2,3,1))*255
+        return images
+
+    def _process_mnist(self):
+        return self.get_data_raw()
+
+    def save_recons(self, data, recons, path, mod_names):
+        output_processed = self._postprocess(recons)
+        outs = add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
+        input_processed = []
+        for key, d in data.items():
+            output = self._mod_specific_savers()[mod_names[key]](d)
+            images = add_recon_title(output, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            input_processed.append(np.vstack(images))
+            input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
+        inputs = np.hstack(input_processed).astype("uint8")
+        final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
+        cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
+
+    def save_traversals(self, recons, path, num_dims):
+        """
+        Makes a grid of traversals and saves as image
+
+        :param recons: data to save
+        :type recons: torch.tensor
+        :param path: path to save the traversal to
+        :type path: str
+        :param num_dims: number of latent dimensions
+        :type num_dims: int
+        """
+        if len(recons.shape) < 5:
+            output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons)))
+            grid = np.asarray(make_grid(output_processed, padding=1, nrow=num_dims))
+            cv2.imwrite(path, cv2.cvtColor(np.transpose(grid, (1,2,0)).astype("uint8"), cv2.COLOR_BGR2RGB))
+        else:
+            output_processed = torch.stack([torch.tensor(np.array(self._postprocess_all2img(x))) for x in recons])
+            output_processed = output_processed.reshape(num_dims, -1, *output_processed.shape[1:]).squeeze()
+            rows = []
+            for ind, dim in enumerate(output_processed):
+                rows.append(np.asarray(torch.hstack([x for x in dim]).type(torch.uint8).detach().cpu()))
+            cv2.imwrite(path, cv2.cvtColor(np.vstack(np.asarray(rows)), cv2.COLOR_BGR2RGB))

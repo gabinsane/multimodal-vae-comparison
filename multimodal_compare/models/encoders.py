@@ -7,7 +7,7 @@ from torch.nn import Conv2d, BatchNorm3d, Sequential, TransformerEncoderLayer, E
 import torch.nn.functional as F
 from numpy import prod
 from models.NetworkTypes import NetworkTypes, NetworkRoles
-from models.nn_modules import PositionalEncoding, ConvNet, SamePadConv3d, AttentionResidualBlock
+from models.nn_modules import PositionalEncoding, ConvNet, SamePadConv3d, AttentionResidualBlock, Flatten
 from utils import Constants
 
 
@@ -82,7 +82,7 @@ class Enc_CNN(VaeEncoder):
         hid_channels = 32
         kernel_size = 4
         hidden_dim = 256
-        self.silu = SiLU()
+        self.relu = ReLU()
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         n_chan = 3
@@ -116,16 +116,15 @@ class Enc_CNN(VaeEncoder):
             x = x["data"]
         batch_size = x.size(0) if len(x.shape) == 4 else x.size(1)
         # Convolutional layers with ReLu activations
-        x = self.silu(self.conv1(x.float()))
-        x = self.silu(self.conv2(x))
-        x = self.silu(self.conv3(x))
-        x = self.silu(self.conv_64(x))
+        x = self.relu(self.conv1(x.float()))
+        x = self.relu(self.conv2(x))
+        x = self.relu(self.conv3(x))
+        x = self.relu(self.conv_64(x))
 
         # Fully connected layers with ReLu activations
         x = x.view((batch_size, -1))
-        x = self.silu(self.lin1(x))
-        x = (self.lin2(x))
-
+        x = self.relu(self.lin1(x))
+        #x = (self.lin2(x))
         # Fully connected layer for log variance and mean
         # Log std-dev in paper (bear in mind)
         mu = self.mu_layer(x)
@@ -180,7 +179,7 @@ def extra_hidden_layer(hidden_dim):
     return Sequential(Linear(hidden_dim, hidden_dim), ReLU(True))
 
 
-class Enc_MNISTMoE(VaeEncoder):
+class Enc_MNIST2(VaeEncoder):
     def __init__(self, latent_dim, data_dim, latent_private, num_hidden_layers=1):
         """
         Encoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -194,7 +193,7 @@ class Enc_MNISTMoE(VaeEncoder):
         :param latent_private: (optional) size of the private latent space in case of latent factorization
         :type latent_private: int
         """
-        super(Enc_MNISTMoE, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
+        super(Enc_MNIST2, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
         modules = []
         hidden_dim = 400
         self.net_type = "FNN"
@@ -219,8 +218,51 @@ class Enc_MNISTMoE(VaeEncoder):
         lv = self.fc22(e)
         return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
 
+class Enc_PolyMNIST(VaeEncoder):
+    def __init__(self, latent_dim, data_dim, latent_private):
+        """
+        Encoder for PolyMNIST image data.as originally implemented in https://github.com/gr8joo/MVTCAE/blob/master/mmnist/networks/ConvNetworksImgCMNIST.py
 
-class Enc_SVHNMoE(VaeEncoder):
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param latent_private: (optional) size of the private latent space in case of latent factorization
+        :type latent_private: int
+        """
+        super(Enc_PolyMNIST, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
+        hidden_dim = 400
+        self.net_type = "CNN"
+        self.encoder = torch.nn.Sequential(                          # input shape (3, 28, 28)
+            torch.nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),     # -> (32, 14, 14)
+            torch.nn.ReLU(),
+            torch.nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),    # -> (64, 7, 7)
+            torch.nn.ReLU(),
+            torch.nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),   # -> (128, 4, 4)
+            torch.nn.ReLU(),
+            Flatten(),                                                # -> (2048)
+            torch.nn.Linear(2048, hidden_dim),
+            torch.nn.ReLU(),
+        )
+        self.fc21 = Linear(hidden_dim, self.out_dim)
+        self.fc22 = Linear(hidden_dim, self.out_dim)
+
+    def forward(self, x):
+        """
+        Forward pass
+
+        :param x: data batch
+        :type x: list, torch.tensor
+        :return: tensor of means, tensor of log variances
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
+        x = x["data"]
+        e = self.encoder(x.float())
+        lv = self.fc22(e)
+        return self.fc21(e), F.softmax(lv, dim=-1) * lv.size(-1) + Constants.eta
+
+
+class Enc_SVHN2(VaeEncoder):
     def __init__(self, latent_dim, data_dim, latent_private):
         """
         Encoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -232,7 +274,7 @@ class Enc_SVHNMoE(VaeEncoder):
         :param latent_private: (optional) size of the private latent space in case of latent factorization
         :type latent_private: int
         """
-        super(Enc_SVHNMoE, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
+        super(Enc_SVHN2, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
         imgChans = 3
         fBase = 32
         self.net_type = "CNN"
@@ -352,43 +394,6 @@ class Enc_FNN(VaeEncoder):
         lv = self.fc22(e)
         lv = F.softmax(lv, dim=-1) + Constants.eta
         return self.fc21(e), lv
-
-
-class Enc_Audio(VaeEncoder):
-    def __init__(self, latent_dim, data_dim, latent_private):
-        """
-        Encoder for audio data
-
-        :param latent_dim: latent vector dimensionality
-        :type latent_dim: int
-        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
-        :type data_dim: list
-        :param latent_private: (optional) size of the private latent space in case of latent factorization
-        :type latent_private: int
-        """
-        super(Enc_Audio, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
-        self.net_type = "AudioConv"
-        self.TCN = ConvNet(data_dim[0], [128, 128, 96, 96, 64], dropout=0)
-        self.mu_layer = Sequential(Linear(64 * data_dim[-1], 32), ReLU(), Linear(32, self.out_dim))
-        self.logvar_layer = Sequential(Linear(64 * data_dim[-1], 32), ReLU(), Linear(32, self.out_dim))
-
-    def forward(self, x):
-        """
-        Forward pass
-
-        :param x: data batch
-        :type x: list, torch.tensor
-        :return: tensor of means, tensor of log variances
-        :rtype: tuple(torch.tensor, torch.tensor)
-        """
-        x = x["data"]
-        inputs = torch.stack(x).cuda() if isinstance(x, list) else x
-        output = self.TCN(inputs.float()).permute(0, 2, 1)
-        x = output.reshape(inputs.shape[0], -1)
-        mu = self.mu_layer(x)
-        logvar = self.logvar_layer(x)
-        # logvar = F.softmax(logvar, dim=-1) + Constants.eta
-        return mu, logvar
 
 
 class Enc_TransformerIMG(VaeEncoder):

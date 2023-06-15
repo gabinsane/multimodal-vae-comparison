@@ -8,9 +8,7 @@ from numpy import prod
 
 from models.NetworkTypes import NetworkTypes, NetworkRoles
 from models.encoders import VaeComponent
-from models.nn_modules import DeconvNet
-from models.nn_modules import PositionalEncoding, AttentionResidualBlock, \
-    SamePadConvTranspose3d
+from models.nn_modules import PositionalEncoding, AttentionResidualBlock, SamePadConvTranspose3d, Unflatten
 from utils import Constants
 
 
@@ -148,7 +146,7 @@ def extra_hidden_layer(hidden_dim):
     return nn.Sequential(nn.Linear(hidden_dim, hidden_dim), nn.ReLU(True))
 
 
-class Dec_MNISTMoE(VaeDecoder):
+class Dec_MNIST2(VaeDecoder):
     def __init__(self, latent_dim, data_dim, latent_private, num_hidden_layers=1):
         """
         Decoder for MNIST image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -162,7 +160,7 @@ class Dec_MNISTMoE(VaeDecoder):
         :param num_hidden_layers: how many hidden layers to add
         :type num_hidden_layers: int
         """
-        super(Dec_MNISTMoE, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
+        super(Dec_MNIST2, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
         modules = []
         self.data_dim = data_dim
         hidden_dim = 400
@@ -231,7 +229,52 @@ class Dec_MNIST(VaeDecoder):
         d = d.permute(0, 3, 1, 2) if len(d.shape) == 4 else d.permute(0, 1, 4, 2, 3)
         return d.squeeze(0), torch.tensor(0.75).to(z.device)
 
-class Dec_SVHNMoE(VaeDecoder):
+class Dec_PolyMNIST(VaeDecoder):
+    def __init__(self, latent_dim, data_dim, latent_private):
+        """
+        Image decoder for the PolyMNIST images from https://github.com/gr8joo/MVTCAE/blob/master/mmnist/networks/ConvNetworksImgCMNIST.py
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param latent_private: (optional) size of the private latent space in case of latent factorization
+        :type latent_private: int
+        """
+        super(Dec_PolyMNIST, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
+        self.data_dim = data_dim
+        self.net_type = "CNN"
+        self.hidden_dim = 400
+        self.decoder = nn.Sequential(
+            nn.Linear(self.out_dim, 2048),                                # -> (2048)
+            nn.ReLU(),
+            Unflatten((128, 4, 4)),                                                            # -> (128, 4, 4)
+            nn.ConvTranspose2d(128, 64, kernel_size=3, stride=2, padding=1),                   # -> (64, 7, 7)
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size=3, stride=2, padding=1, output_padding=1),  # -> (32, 14, 14)
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, 3, kernel_size=3, stride=2, padding=1, output_padding=1),   # -> (3, 28, 28)
+        )
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, z):
+        """
+        Forward pass
+
+        :param z: sampled latent vectors z
+        :type z: torch.tensor
+        :return: output reconstructions, log variance
+        :rtype: tuple(torch.tensor, torch.tensor)
+        """
+        z = z["latents"]
+        x_hat = self.decoder(z.view(-1, self.out_dim))
+        x_hat = self.sigmoid(x_hat)
+        d = x_hat.view(*z.size()[:-1], *self.data_dim).squeeze(0)
+        d = d.permute(0, 3, 1, 2) if len(d.shape) == 4 else d.permute(0, 1, 4, 2, 3)
+        return d.squeeze(0), torch.tensor(0.75).to(z.device)
+
+class Dec_SVHN2(VaeDecoder):
     def __init__(self, latent_dim, data_dim, latent_private):
         """
         Decoder for SVHN image data.as originally implemented in https://github.com/iffsid/mmvae
@@ -243,7 +286,7 @@ class Dec_SVHNMoE(VaeDecoder):
         :param latent_private: (optional) size of the private latent space in case of latent factorization
         :type latent_private: int
         """
-        super(Dec_SVHNMoE, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.CNN)
+        super(Dec_SVHN2, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.CNN)
         fBase = 32
         imgChans = 3
         self.net_type = "CNN"
@@ -316,44 +359,6 @@ class Dec_FNN(VaeDecoder):
         d = (self.fc3(p))  # reshape data
         d = d.reshape(-1, *self.data_dim)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
-
-
-class Dec_Audio(VaeDecoder):
-    def __init__(self, latent_dim, data_dim, latent_private):
-        """
-        Decoder for audio data
-
-        :param latent_dim: latent vector dimensionality
-        :type latent_dim: int
-        :param data_dim: dimensions of the data defined in config (e.g. [64,64,3] for 64x64x3 images)
-        :type data_dim: list
-        :param latent_private: (optional) size of the private latent space in case of latent factorization
-        :type latent_private: int
-        """
-        super(Dec_Audio, self).__init__(latent_dim, data_dim, latent_private, net_type=NetworkTypes.FNN)
-        self.net_type = "AudioConv"
-        self.latent_dim = latent_dim
-        self.reshape = (64, 3)
-        self.data_dim = data_dim
-        self.lin1 = torch.nn.DataParallel(nn.Linear(self.out_dim, np.product(self.reshape)))
-        self.TCN = DeconvNet(self.reshape[0], [64, 96, 96, 128, 128], dropout=0)
-        self.output_layer = nn.Sequential(nn.Linear(128 * 3, np.prod(data_dim)))
-
-    def forward(self, z):
-        """
-        Forward pass
-
-        :param z: sampled latent vectors z
-        :type z: torch.tensor
-        :return: output reconstructions, log variance
-        :rtype: tuple(torch.tensor, torch.tensor)
-        """
-        z = z["latents"]
-        out = torch.relu(self.lin1(z))
-        output = self.TCN(out.float().reshape(-1, *self.reshape))
-        x = output.reshape(-1, 128 * 3)
-        output = self.output_layer(x)
-        return output.reshape(-1, *self.data_dim), torch.tensor(0.75).to(z.device)
 
 
 class Dec_TransformerIMG(VaeDecoder):
@@ -572,7 +577,7 @@ class Dec_Transformer(VaeDecoder):
 
 
 class Dec_TxtTransformer(VaeDecoder):
-    def __init__(self, latent_dim, data_dim, latent_private, ff_size=1024, num_layers=2, num_heads=4, dropout=0.1, activation="gelu"):
+    def __init__(self, latent_dim, data_dim, latent_private, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer decoder configured for character-level text reconstructions
 

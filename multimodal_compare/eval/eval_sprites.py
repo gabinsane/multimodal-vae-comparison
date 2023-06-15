@@ -3,7 +3,7 @@ import argparse
 import glob, yaml
 import numpy as np
 import statistics as stat
-from eval.sprites_classifier import VideoGPT
+from eval.train_classifiers import VideoGPT
 import torch
 import os, glob
 from utils import listdirs, last_letter, print_save_stats

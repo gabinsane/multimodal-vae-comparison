@@ -3,6 +3,7 @@ import os, csv, copy
 import shutil
 import pathlib
 import cv2
+import h5py
 import glob, imageio
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -13,18 +14,31 @@ from visualization import tensors_to_df
 from itertools import combinations
 
 
-def print_save_stats(stats_dict, path, dataset_name):
+def print_save_stats(stats_dict, path, dataset_name, level):
     print("Final results:")
+    final_line = ""
     with open(os.path.join(path,'{}_stats.txt'.format(dataset_name)), 'w') as f:
         for key, value_dict in stats_dict.items():
             if value_dict["stdev"] is not None:
+                if "strict" in key.lower() or "letter" in key.lower():
+                    final_line += "{:.0f} ({:.0f}) & ".format(round(value_dict["value"], 0),
+                                                              round(value_dict["stdev"], 0))
+                else:
+                    final_line += "{:.1f}~({:.1f})/{} & ".format(round(value_dict["value"] * level / 100, 2),
+                                                                 round(value_dict["stdev"] * level / 100, 1), level)
                 stat = "{}: {:.2f} ({:.2f})".format(key, round(value_dict["value"],2), round(value_dict["stdev"], 2))
             else:
                 stat = "{}: {:.2f}".format(key, round(value_dict["value"], 2))
             print(stat)
             f.write(stat)
             f.write('\n')
-    print("\n {} statistics printed in {} \n".format(dataset_name, os.path.join(path,'gebid_stats.txt')))
+    print("\n {} statistics printed in {} \n".format(dataset_name, os.path.join(path,'{}_stats.txt'.format(dataset_name))))
+    print(final_line)
+
+def softclip(tensor, min):
+    """ Clips the tensor values at the minimum value min in a softway. Taken from Handful of Trials """
+    result_tensor = min + torch.nn.functional.softplus((tensor - min).float())
+    return result_tensor
 
 
 def find_out_batch_size(inputs):
@@ -126,6 +140,8 @@ def pad_seq_data(data, masks):
 
 def load_images(path):
     images = sorted(glob.glob(os.path.join(path, "*.png")))
+    if len(images) == 0:
+        images = sorted(glob.glob(os.path.join(path, "./*/*.png")))
     dataset = []
     for i, image_path in enumerate(images):
         image = imageio.imread(image_path)
@@ -149,10 +165,14 @@ def load_data(path):
     assert os.path.exists(path), "Path does not exist: {}".format(path)
     if os.path.isdir(path):
         return load_images(path)
-    if pathlib.Path(path).suffix == ".pth":
+    if pathlib.Path(path).suffix in [".pt",".pth"]:
         return torch.load(path)
     if pathlib.Path(path).suffix == ".pkl":
         return load_pickle(path)
+    if pathlib.Path(path).suffix == ".h5":
+        return h5py.File(path, 'r')
+    if pathlib.Path(path).suffix == ".npy":
+        return np.load(path)
     raise Exception("Unrecognized dataset format. Supported types are: .pkl, .pth or directory with images")
 
 def lengths_to_mask(lengths):
@@ -203,10 +223,11 @@ def traverse_line(bounds, num_samples, latent_dim, idx):
         samples[i, idx] = traversals[i]
     return samples
 
-def get_traversal_matrix(num_samples, latent_dim):
-    latent_samples = [traverse_line((-30,30), num_samples, latent_dim, dim)
+def get_traversal_matrix(num_samples, latent_dim, trav_range=(-1,1)):
+    latent_samples = [traverse_line(trav_range, num_samples, latent_dim, dim).cuda()
                       for dim in range(latent_dim)]
     return latent_samples
+
 
 def last_letter(word):
     return word[::-1]
@@ -356,7 +377,7 @@ def add_recon_title(recon_list, title, colour=(0,0,0)):
     return images
 
 def turn_text2image(string_list, img_size=(64,192,3)):
-        return [np.asarray(add_text_in_image(np.ones(img_size)*255, t, (5,8),12)) for t in string_list]
+        return [np.asarray(add_text_in_image(np.ones(img_size)*255, t, (5,8),16)) for t in string_list]
 
 def img_separators(imgs, thickness=2, horizontal=True):
     images = []
@@ -373,6 +394,12 @@ def add_text_in_image(img, text, position, size, colour=(0, 0, 0)):
     font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
     font = ImageFont.truetype(font_path, size=size)
     draw = ImageDraw.Draw(img)
+    words = text.split(" ")
+    if len(words[0]) > 1 and len(words) > 2:
+        words.insert(2, "\n")
+        if len(words) > 6:
+            words.insert(6, "\n")
+        text = " ".join(words)
     draw.text(position, text, font=font, fill=colour)
     return img
 
