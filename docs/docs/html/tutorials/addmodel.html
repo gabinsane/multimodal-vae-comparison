@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Add a new model &mdash; multimodal-vae-comparison 1.0 documentation</title>
@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,11 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -59,7 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../code/dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code/eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/config_cls.html">Config class</a></li>
 </ul>
 
@@ -76,8 +80,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Add a new model</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Add a new model</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/tutorials/addmodel.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -104,7 +108,7 @@ class defined in <code class="docutils literal notranslate"><span class="pre">mm
 <code class="docutils literal notranslate"><span class="pre">self.modelName</span></code> will be used for model selection from the config file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">POE</span><span class="p">(</span><span class="n">TorchMMVAE</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vaes</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span> <span class="n">n_latents</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">obj_config</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">model_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Multimodal Variaional Autoencoder with Product of Experts https://github.com/mhw32/multimodal-vae-public</span>
 
 <span class="sd">        :param vaes: list of modality-specific vae objects</span>
@@ -128,7 +132,7 @@ class defined in <code class="docutils literal notranslate"><span class="pre">mm
 The newly added model can override these methods or keep them as they are and only add the modality_mixing method. Here we add the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> pass and all methods necessary for the multimodal data integration. The first input parameter
 will be the multimodal data specified in a config where the keys label the modalities and values contain the data (and possibly masks where applicable).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="hll"> <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-</span>     <span class="sd">&quot;&quot;&quot;</span>
+</span><span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">     Forward pass that takes input data and outputs a dict with  posteriors, reconstructions and latent samples</span>
 <span class="sd">     :param inputs: input data, a dict of modalities where missing modalities are replaced with None</span>
 <span class="sd">     :type inputs: dict</span>
@@ -149,7 +153,7 @@ will be the multimodal data specified in a config where the keys label the modal
      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_output_dict</span><span class="p">(</span><span class="n">single_params</span><span class="p">,</span> <span class="n">px_d</span><span class="p">,</span> <span class="n">z_d</span><span class="p">,</span> <span class="n">joint_dist</span><span class="o">=</span><span class="n">qz_d</span><span class="p">)</span>
 
  <span class="k">def</span> <span class="nf">modality_mixing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">K</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-     <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">     Inference module, calculates the joint posterior</span>
 <span class="sd">     :param inputs: input data, a dict of modalities where missing modalities are replaced with None</span>
 <span class="sd">     :type inputs: dict</span>
@@ -174,7 +178,7 @@ will be the multimodal data specified in a config where the keys label the modal
 
 
  <span class="k">def</span> <span class="nf">prior_expert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-     <span class="sd">&quot;&quot;&quot;Universal prior expert. Here we use a spherical</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;Universal prior expert. Here we use a spherical</span>
 <span class="sd">     Gaussian: N(0, 1).</span>
 <span class="sd">     @param size: integer</span>
 <span class="sd">                  dimensionality of Gaussian</span>
@@ -193,7 +197,7 @@ will be the multimodal data specified in a config where the keys label the modal
 (depends on what your objective function will need) and must be dictionaries with modality names as keys (i.e. {“mod_1: data,, “mod_2”: data2}).</p>
 <p>Next, we need to specify the objective() function for this model which will define the training procedure.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="k">def</span> <span class="nf">objective</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mods</span><span class="p">):</span>
-     <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">     </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">     Objective function for PoE</span>
 
 <span class="sd">     :param data: input data with modalities as keys</span>
@@ -239,33 +243,33 @@ to the optimizer. You can also add other arbitrary keys that will be automatical
 </div>
 <p>If we need to, we can define specific encoder and decoder networks (although we can also re-use the existing ones).</p>
 <p>Now we should be able to train using this model. We need to create a <code class="docutils literal notranslate"><span class="pre">config.yml</span></code> file as follows:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w"></span>
-<span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">700</span><span class="w"></span>
-<span class="nt">exp_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">poe_exp</span><span class="w"></span>
-<span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/labels.pkl</span><span class="w"></span>
-<span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span><span class="w"></span>
-<span class="nt">beta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.5</span><span class="w"></span>
-<span class="hll"><span class="nt">mixing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">poe</span><span class="w"></span>
-</span><span class="nt">n_latents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w"></span>
-<span class="nt">obj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elbo</span><span class="w"></span>
-<span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adam</span><span class="w"></span>
-<span class="nt">pre_trained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w"></span>
-<span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w"></span>
-<span class="nt">viz_freq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span><span class="w"></span>
-<span class="nt">test_split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w"></span>
-<span class="nt">dataset_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mnist_svhn</span><span class="w"></span>
-<span class="nt">modality_1</span><span class="p">:</span><span class="w"></span>
-<span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MNIST</span><span class="w"></span>
-<span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MNIST</span><span class="w"></span>
-<span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
-<span class="w">   </span><span class="nt">recon_loss</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">bce</span><span class="w"></span>
-<span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/mnist</span><span class="w"></span>
-<span class="nt">modality_2</span><span class="p">:</span><span class="w"></span>
-<span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SVHN</span><span class="w"></span>
-<span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SVHN</span><span class="w"></span>
-<span class="w">   </span><span class="nt">recon_loss</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">bce</span><span class="w"></span>
-<span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span><span class="w"></span>
-<span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/svhn</span><span class="w"></span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span>
+<span class="nt">epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">700</span>
+<span class="nt">exp_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">poe_exp</span>
+<span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/labels.pkl</span>
+<span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1e-3</span>
+<span class="nt">beta</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.5</span>
+<span class="hll"><span class="nt">mixing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">poe</span>
+</span><span class="nt">n_latents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="nt">obj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">elbo</span>
+<span class="nt">optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adam</span>
+<span class="nt">pre_trained</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="nt">seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">viz_freq</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<span class="nt">test_split</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+<span class="nt">dataset_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mnist_svhn</span>
+<span class="nt">modality_1</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MNIST</span>
+<span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MNIST</span>
+<span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span>
+<span class="w">   </span><span class="nt">recon_loss</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">bce</span>
+<span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/mnist</span>
+<span class="nt">modality_2</span><span class="p">:</span>
+<span class="w">   </span><span class="nt">decoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SVHN</span>
+<span class="w">   </span><span class="nt">encoder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SVHN</span>
+<span class="w">   </span><span class="nt">recon_loss</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">bce</span>
+<span class="w">   </span><span class="nt">mod_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span>
+<span class="w">   </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./data/mnist_svhn/svhn</span>
 </pre></div>
 </div>
 <p>You can see that we specified “poe” as our multimodal mixing model. After configuring the experiment, we can run the training:</p>

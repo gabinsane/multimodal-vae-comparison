@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Objectives &mdash; multimodal-vae-comparison 1.0 documentation</title>
@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,11 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -51,11 +55,48 @@
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Objectives</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Objectives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective"><code class="docutils literal notranslate"><span class="pre">BaseObjective</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.calc_kld"><code class="docutils literal notranslate"><span class="pre">BaseObjective.calc_kld()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.calc_klds"><code class="docutils literal notranslate"><span class="pre">BaseObjective.calc_klds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.compute_microbatch_split"><code class="docutils literal notranslate"><span class="pre">BaseObjective.compute_microbatch_split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.elbo"><code class="docutils literal notranslate"><span class="pre">BaseObjective.elbo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.iwae"><code class="docutils literal notranslate"><span class="pre">BaseObjective.iwae()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.normalize"><code class="docutils literal notranslate"><span class="pre">BaseObjective.normalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.recon_loss_fn"><code class="docutils literal notranslate"><span class="pre">BaseObjective.recon_loss_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.reshape_for_loss"><code class="docutils literal notranslate"><span class="pre">BaseObjective.reshape_for_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.set_ltype"><code class="docutils literal notranslate"><span class="pre">BaseObjective.set_ltype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.BaseObjective.weighted_group_kld"><code class="docutils literal notranslate"><span class="pre">BaseObjective.weighted_group_kld()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.calculate_loss"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.calculate_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.elbo"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.elbo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.iwae"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.iwae()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss"><code class="docutils literal notranslate"><span class="pre">ReconLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss.bce"><code class="docutils literal notranslate"><span class="pre">ReconLoss.bce()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss.category_ce"><code class="docutils literal notranslate"><span class="pre">ReconLoss.category_ce()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss.gaussian_nll"><code class="docutils literal notranslate"><span class="pre">ReconLoss.gaussian_nll()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss.l1"><code class="docutils literal notranslate"><span class="pre">ReconLoss.l1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss.lprob"><code class="docutils literal notranslate"><span class="pre">ReconLoss.lprob()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.ReconLoss.mse"><code class="docutils literal notranslate"><span class="pre">ReconLoss.mse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.objectives.UnimodalObjective"><code class="docutils literal notranslate"><span class="pre">UnimodalObjective</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.UnimodalObjective.calculate_loss"><code class="docutils literal notranslate"><span class="pre">UnimodalObjective.calculate_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.UnimodalObjective.dreg"><code class="docutils literal notranslate"><span class="pre">UnimodalObjective.dreg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.UnimodalObjective.elbo"><code class="docutils literal notranslate"><span class="pre">UnimodalObjective.elbo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.UnimodalObjective.iwae"><code class="docutils literal notranslate"><span class="pre">UnimodalObjective.iwae()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
@@ -72,8 +113,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Objectives</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Objectives</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/code/objectives.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -106,16 +147,16 @@
 <span class="sig-name descname"><span class="pre">calc_klds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dists</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.calc_klds" title="Permalink to this definition"></a></dt>
 <dd><p>Calculated th KL-divergence between the distribution and posterior dist.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>latent_dists</strong> (<em>list</em>) – list of the two distributions</p></li>
 <li><p><strong>model</strong> (<em>object</em>) – model object</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of klds</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -138,17 +179,17 @@
 <span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lpx_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kld</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.elbo" title="Permalink to this definition"></a></dt>
 <dd><p>The most general elbo function</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lpx_z</strong> (<em>torch.tensor</em>) – reconstruction loss(es)</p></li>
 <li><p><strong>kld</strong> (<em>torch.tensor</em>) – KL divergence(s)</p></li>
 <li><p><strong>beta</strong> (<em>torch.float</em>) – disentangling factor</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>ELBO loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -159,17 +200,17 @@
 <span class="sig-name descname"><span class="pre">iwae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lp_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpx_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lqz_x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.iwae" title="Permalink to this definition"></a></dt>
 <dd><p>The most general iwae function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lp_z</strong> (<em>torch.tensor</em>) – log probability of latent samples coming from the prior</p></li>
 <li><p><strong>lpx_z</strong> (<em>torch.tensor</em>) – reconstruction loss(es)</p></li>
 <li><p><strong>lqz_x</strong> (<em>torch.tensor</em>) – log probability of latent samples coming from the learned posterior</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>IWAE loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -180,16 +221,16 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.normalize" title="Permalink to this definition"></a></dt>
 <dd><p>Normalize data between 0 and 1</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – target data</p></li>
 <li><p><strong>data</strong> (<em>torch.tensor</em>) – output data (optional)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>normalized data</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -200,17 +241,17 @@
 <span class="sig-name descname"><span class="pre">recon_loss_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.recon_loss_fn" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate reconstruction loss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.tensor</em>) – Output data, torch.dist or list</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – Target data</p></li>
 <li><p><strong>K</strong> (<em>int</em>) – K samples from posterior distribution</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>computed loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -221,7 +262,7 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reshape_for_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.reshape_for_loss" title="Permalink to this definition"></a></dt>
 <dd><p>Reshapes output and target to calculate reconstruction loss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.dist</em>) – output likelihood</p></li>
 <li><p><strong>target</strong> (<em>torch.dist</em>) – target likelihood</p></li>
@@ -229,10 +270,10 @@
 <li><p><strong>K</strong> (<em>int</em>) – K samples from posterior distribution</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>reshaped data</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor, str)</p>
 </dd>
 </dl>
@@ -249,17 +290,17 @@
 <span class="sig-name descname"><span class="pre">weighted_group_kld</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dists</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.BaseObjective.weighted_group_kld" title="Permalink to this definition"></a></dt>
 <dd><p>Calculated the weighted group KL-divergence.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>latent_dists</strong> (<em>list</em>) – list of the two distributions</p></li>
 <li><p><strong>model</strong> (<em>object</em>) – model object</p></li>
 <li><p><strong>weights</strong> (<em>torch.Tensor</em>) – tensor with weights for each distribution</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>group divergence, list of klds</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -276,13 +317,13 @@
 <span class="sig-name descname"><span class="pre">calculate_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective.calculate_loss" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the loss using self.objective</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>px_z</strong> (<em>dict</em>) – dictionary with the required data for loss calculation</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated losses</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -293,13 +334,13 @@
 <span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective.elbo" title="Permalink to this definition"></a></dt>
 <dd><p>Computes multimodal ELBO E_{p(x)}[ELBO]</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: lpx_z (recon losses) and kld (kl divergences)</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict with loss, kl divergence, reconstruction loss and kld</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -310,13 +351,13 @@
 <span class="sig-name descname"><span class="pre">iwae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective.iwae" title="Permalink to this definition"></a></dt>
 <dd><p>Computes multimodal IWAE</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: lpx_z (recon losses) and kld (kl divergences)</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict with loss, kl divergence, reconstruction loss and kld</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -333,17 +374,17 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.ReconLoss.bce" title="Permalink to this definition"></a></dt>
 <dd><p>Binary Cross-Entropy loss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.distributions</em>) – model output distribution</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – ground truth tensor</p></li>
 <li><p><strong>bs</strong> (<em>int</em>) – batch size</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor.float</p>
 </dd>
 </dl>
@@ -354,20 +395,26 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">category_ce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.ReconLoss.category_ce" title="Permalink to this definition"></a></dt>
 <dd><p>Categorical Cross-Entropy loss (for classification problems such as text)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.distributions</em>) – model output distribution</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – ground truth tensor</p></li>
 <li><p><strong>bs</strong> (<em>int</em>) – batch size</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor.float</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.objectives.ReconLoss.gaussian_nll">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gaussian_nll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.ReconLoss.gaussian_nll" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate Gaussian NLL with optimal sigma as in Sigma VAE <a class="reference external" href="https://github.com/orybkin/sigma-vae-pytorch">https://github.com/orybkin/sigma-vae-pytorch</a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -375,17 +422,17 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">l1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.ReconLoss.l1" title="Permalink to this definition"></a></dt>
 <dd><p>L1 loss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.distributions</em>) – model output distribution</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – ground truth tensor</p></li>
 <li><p><strong>bs</strong> (<em>int</em>) – batch size</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor.float</p>
 </dd>
 </dl>
@@ -396,17 +443,17 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lprob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.ReconLoss.lprob" title="Permalink to this definition"></a></dt>
 <dd><p>Log-likelihood loss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.distributions</em>) – model output distribution</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – ground truth tensor</p></li>
 <li><p><strong>bs</strong> (<em>int</em>) – batch size</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor.float</p>
 </dd>
 </dl>
@@ -417,17 +464,17 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.ReconLoss.mse" title="Permalink to this definition"></a></dt>
 <dd><p>Mean squared error (squared L2 norm) loss</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<em>torch.distributions</em>) – model output distribution</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – ground truth tensor</p></li>
 <li><p><strong>bs</strong> (<em>int</em>) – batch size</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated loss</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.Tensor.float</p>
 </dd>
 </dl>
@@ -444,7 +491,7 @@
 <span class="sig-name descname"><span class="pre">calculate_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">px_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pz_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.UnimodalObjective.calculate_loss" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the loss using self.objective</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>px_z</strong> (<em>torch.distributions</em>) – decoder distribution</p></li>
 <li><p><strong>target</strong> (<em>torch.tensor</em>) – ground truth</p></li>
@@ -454,10 +501,10 @@
 <li><p><strong>K</strong> (<em>int</em>) – how many samples were drawn from the posterior</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>calculated losses</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -468,13 +515,13 @@
 <span class="sig-name descname"><span class="pre">dreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.UnimodalObjective.dreg" title="Permalink to this definition"></a></dt>
 <dd><p>DREG estimate for log <a href="#id2"><span class="problematic" id="id3">p_</span></a>        heta(x) – fully vectorised. Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: px_z, target, qz_x, zs, K, prior_dist</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict with loss, reconstruction loss and kld</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -485,13 +532,13 @@
 <span class="sig-name descname"><span class="pre">elbo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.UnimodalObjective.elbo" title="Permalink to this definition"></a></dt>
 <dd><p>Computes unimodal ELBO E_{p(x)}[ELBO]</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: px_z, target, qz_x, prior_dist, K</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict with loss, kl divergence, reconstruction loss and kld</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
@@ -502,13 +549,13 @@
 <span class="sig-name descname"><span class="pre">iwae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.UnimodalObjective.iwae" title="Permalink to this definition"></a></dt>
 <dd><p>Computes an importance-weighted ELBO estimate for log <a href="#id4"><span class="problematic" id="id5">p_</span></a>        heta(x) Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: px_z, target, qz_x, zs, K</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict with loss, reconstruction loss and kld</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>

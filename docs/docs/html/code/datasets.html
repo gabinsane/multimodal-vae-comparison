@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dataset Classes &mdash; multimodal-vae-comparison 1.0 documentation</title>
@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,11 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -53,9 +57,122 @@
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Dataset Classes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dataset Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset"><code class="docutils literal notranslate"><span class="pre">BaseDataset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">BaseDataset._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">BaseDataset._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._postprocess"><code class="docutils literal notranslate"><span class="pre">BaseDataset._postprocess()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._postprocess_all2img"><code class="docutils literal notranslate"><span class="pre">BaseDataset._postprocess_all2img()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._preprocess"><code class="docutils literal notranslate"><span class="pre">BaseDataset._preprocess()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._preprocess_images"><code class="docutils literal notranslate"><span class="pre">BaseDataset._preprocess_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset._preprocess_text_onehot"><code class="docutils literal notranslate"><span class="pre">BaseDataset._preprocess_text_onehot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.current_datatype"><code class="docutils literal notranslate"><span class="pre">BaseDataset.current_datatype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.eval_statistics_fn"><code class="docutils literal notranslate"><span class="pre">BaseDataset.eval_statistics_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.get_data"><code class="docutils literal notranslate"><span class="pre">BaseDataset.get_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.get_data_raw"><code class="docutils literal notranslate"><span class="pre">BaseDataset.get_data_raw()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.get_labels"><code class="docutils literal notranslate"><span class="pre">BaseDataset.get_labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.get_processed_recons"><code class="docutils literal notranslate"><span class="pre">BaseDataset.get_processed_recons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.get_test_data"><code class="docutils literal notranslate"><span class="pre">BaseDataset.get_test_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.labels"><code class="docutils literal notranslate"><span class="pre">BaseDataset.labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset.save_traversals"><code class="docutils literal notranslate"><span class="pre">BaseDataset.save_traversals()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_images"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS._postprocess_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_text"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS._postprocess_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_images"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS._preprocess_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_text"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS._preprocess_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.eval_statistics_fn"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS.eval_statistics_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.feature_dims"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.labels"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS.labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.save_recons"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS.save_recons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.set_vis_image_shape"><code class="docutils literal notranslate"><span class="pre">CDSPRITESPLUS.set_vis_image_shape()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA"><code class="docutils literal notranslate"><span class="pre">CELEBA</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">CELEBA._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">CELEBA._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._postprocess_all2img"><code class="docutils literal notranslate"><span class="pre">CELEBA._postprocess_all2img()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._postprocess_atts"><code class="docutils literal notranslate"><span class="pre">CELEBA._postprocess_atts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._postprocess_images"><code class="docutils literal notranslate"><span class="pre">CELEBA._postprocess_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._preprocess_atts"><code class="docutils literal notranslate"><span class="pre">CELEBA._preprocess_atts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA._preprocess_images"><code class="docutils literal notranslate"><span class="pre">CELEBA._preprocess_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA.feature_dims"><code class="docutils literal notranslate"><span class="pre">CELEBA.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA.save_recons"><code class="docutils literal notranslate"><span class="pre">CELEBA.save_recons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CELEBA.save_traversals"><code class="docutils literal notranslate"><span class="pre">CELEBA.save_traversals()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB"><code class="docutils literal notranslate"><span class="pre">CUB</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">CUB._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">CUB._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB._postprocess_text"><code class="docutils literal notranslate"><span class="pre">CUB._postprocess_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB._preprocess_images"><code class="docutils literal notranslate"><span class="pre">CUB._preprocess_images()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB._preprocess_text"><code class="docutils literal notranslate"><span class="pre">CUB._preprocess_text()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB._preprocess_text_onehot"><code class="docutils literal notranslate"><span class="pre">CUB._preprocess_text_onehot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB.feature_dims"><code class="docutils literal notranslate"><span class="pre">CUB.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB.labels"><code class="docutils literal notranslate"><span class="pre">CUB.labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.CUB.save_recons"><code class="docutils literal notranslate"><span class="pre">CUB.save_recons()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST._postprocess_image"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST._postprocess_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST._postprocess_label"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST._postprocess_label()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST._process_image"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST._process_image()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST._process_label"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST._process_label()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST.feature_dims"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST.get_data_raw"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST.get_data_raw()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST.labels"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST.labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.FASHIONMNIST.save_recons"><code class="docutils literal notranslate"><span class="pre">FASHIONMNIST.save_recons()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._postprocess_mnist()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_svhn"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._postprocess_svhn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._process_mnist"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._process_mnist()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._process_svhn"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._process_svhn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN.feature_dims"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN.save_recons"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN.save_recons()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST"><code class="docutils literal notranslate"><span class="pre">POLYMNIST</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">POLYMNIST._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">POLYMNIST._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST._postprocess_mnist"><code class="docutils literal notranslate"><span class="pre">POLYMNIST._postprocess_mnist()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST._process_mnist"><code class="docutils literal notranslate"><span class="pre">POLYMNIST._process_mnist()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST.feature_dims"><code class="docutils literal notranslate"><span class="pre">POLYMNIST.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST.save_recons"><code class="docutils literal notranslate"><span class="pre">POLYMNIST.save_recons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.POLYMNIST.save_traversals"><code class="docutils literal notranslate"><span class="pre">POLYMNIST.save_traversals()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES"><code class="docutils literal notranslate"><span class="pre">SPRITES</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">SPRITES._mod_specific_loaders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">SPRITES._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES._postprocess_actions"><code class="docutils literal notranslate"><span class="pre">SPRITES._postprocess_actions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES._postprocess_all2img"><code class="docutils literal notranslate"><span class="pre">SPRITES._postprocess_all2img()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES._postprocess_attributes"><code class="docutils literal notranslate"><span class="pre">SPRITES._postprocess_attributes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES._postprocess_frames"><code class="docutils literal notranslate"><span class="pre">SPRITES._postprocess_frames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.eval_statistics_fn"><code class="docutils literal notranslate"><span class="pre">SPRITES.eval_statistics_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.feature_dims"><code class="docutils literal notranslate"><span class="pre">SPRITES.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.get_actions"><code class="docutils literal notranslate"><span class="pre">SPRITES.get_actions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.get_attributes"><code class="docutils literal notranslate"><span class="pre">SPRITES.get_attributes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.get_frames"><code class="docutils literal notranslate"><span class="pre">SPRITES.get_frames()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.iter_over_inputs"><code class="docutils literal notranslate"><span class="pre">SPRITES.iter_over_inputs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.labels"><code class="docutils literal notranslate"><span class="pre">SPRITES.labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.make_masks"><code class="docutils literal notranslate"><span class="pre">SPRITES.make_masks()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.save_recons"><code class="docutils literal notranslate"><span class="pre">SPRITES.save_recons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.SPRITES.save_traversals"><code class="docutils literal notranslate"><span class="pre">SPRITES.save_traversals()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
@@ -72,8 +189,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Dataset Classes</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Dataset Classes</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/code/datasets.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,7 +204,7 @@
 <span id="dataset-classes"></span><span id="datasets"></span><h1>Dataset Classes<a class="headerlink" href="#module-multimodal_compare.models.datasets" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">BaseDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">BaseDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract dataset class shared for all datasets</p>
 <dl class="py method">
@@ -107,10 +224,10 @@
 <span class="sig-name descname"><span class="pre">_postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._postprocess" title="Permalink to this definition"></a></dt>
 <dd><p>Postprocesses the output data according to modality type</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>postprocessed data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list</p>
 </dd>
 </dl>
@@ -121,13 +238,13 @@
 <span class="sig-name descname"><span class="pre">_postprocess_all2img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._postprocess_all2img" title="Permalink to this definition"></a></dt>
 <dd><p>Converts any kind of data to images to save traversal visualizations</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> (<em>torch.tensor</em>) – input data</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>processed images</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -138,10 +255,10 @@
 <span class="sig-name descname"><span class="pre">_preprocess</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._preprocess" title="Permalink to this definition"></a></dt>
 <dd><p>Preprocesses the loaded data according to modality type</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>preprocessed data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list</p>
 </dd>
 </dl>
@@ -152,13 +269,13 @@
 <span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dimensions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._preprocess_images" title="Permalink to this definition"></a></dt>
 <dd><p>General function for loading images and preparing them as torch tensors</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>preprocessed data</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -169,13 +286,25 @@
 <span class="sig-name descname"><span class="pre">_preprocess_text_onehot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset._preprocess_text_onehot" title="Permalink to this definition"></a></dt>
 <dd><p>General function for loading text strings and preparing them as torch one-hot encodings</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch with text encodings and masks</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>torch.tensor</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.current_datatype">
+<span class="sig-name descname"><span class="pre">current_datatype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.current_datatype" title="Permalink to this definition"></a></dt>
+<dd><p>Returns whther the current path to data points to test data or train data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.eval_statistics_fn">
+<span class="sig-name descname"><span class="pre">eval_statistics_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.eval_statistics_fn" title="Permalink to this definition"></a></dt>
+<dd><p>(optional) Returns a dataset-specific function that runs systematic evaluation</p>
 </dd></dl>
 
 <dl class="py method">
@@ -183,10 +312,10 @@
 <span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.get_data" title="Permalink to this definition"></a></dt>
 <dd><p>Returns processed data</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>processed data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list</p>
 </dd>
 </dl>
@@ -197,24 +326,239 @@
 <span class="sig-name descname"><span class="pre">get_data_raw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.get_data_raw" title="Permalink to this definition"></a></dt>
 <dd><p>Loads raw data from path</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>loaded raw data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'train'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns labels for the given split: train or test</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.get_processed_recons">
+<span class="sig-name descname"><span class="pre">get_processed_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons_raw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.get_processed_recons" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the postprocessed data that came from the decoders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recons_raw</strong> (<em>torch.tensor</em>) – tensor with output reconstructions</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>postprocessed data as returned by the specific _postprocess function</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.get_test_data">
+<span class="sig-name descname"><span class="pre">get_test_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.get_test_data" title="Permalink to this definition"></a></dt>
+<dd><p>Returns processed test data if available</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>processed data</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns labels for the whole dataset</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.BaseDataset.save_traversals">
-<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.save_traversals" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_dims</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.BaseDataset.save_traversals" title="Permalink to this definition"></a></dt>
 <dd><p>Makes a grid of traversals and saves as image</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>recons</strong> (<em>torch.tensor</em>) – data represented as images</p></li>
+<li><p><strong>recons</strong> (<em>torch.tensor</em>) – data to save</p></li>
 <li><p><strong>path</strong> (<em>str</em>) – path to save the traversal to</p></li>
+<li><p><strong>num_dims</strong> (<em>int</em>) – number of latent dimensions</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">CDSPRITESPLUS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_loaders" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_images">
+<span class="sig-name descname"><span class="pre">_postprocess_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_images" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_text">
+<span class="sig-name descname"><span class="pre">_postprocess_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_text" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_images">
+<span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_images" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading images and preparing them as torch tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>preprocessed data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_text">
+<span class="sig-name descname"><span class="pre">_preprocess_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_text" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS.eval_statistics_fn">
+<span class="sig-name descname"><span class="pre">eval_statistics_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.eval_statistics_fn" title="Permalink to this definition"></a></dt>
+<dd><p>(optional) Returns a dataset-specific function that runs systematic evaluation</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'image':</span> <span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">3],</span> <span class="pre">'text':</span> <span class="pre">[45,</span> <span class="pre">27,</span> <span class="pre">1]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.labels" title="Permalink to this definition"></a></dt>
+<dd><p>Extract text labels based on the dataset level
+:return: list of labels as strings
+:rtype: list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.save_recons" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CDSPRITESPLUS.set_vis_image_shape">
+<span class="sig-name descname"><span class="pre">set_vis_image_shape</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CDSPRITESPLUS.set_vis_image_shape" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">CELEBA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._mod_specific_loaders" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._postprocess_all2img">
+<span class="sig-name descname"><span class="pre">_postprocess_all2img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._postprocess_all2img" title="Permalink to this definition"></a></dt>
+<dd><p>Converts any kind of data to images to save traversal visualizations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>torch.tensor</em>) – input data</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>processed images</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._postprocess_atts">
+<span class="sig-name descname"><span class="pre">_postprocess_atts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._postprocess_atts" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._postprocess_images">
+<span class="sig-name descname"><span class="pre">_postprocess_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._postprocess_images" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._preprocess_atts">
+<span class="sig-name descname"><span class="pre">_preprocess_atts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._preprocess_atts" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA._preprocess_images">
+<span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA._preprocess_images" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading images and preparing them as torch tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>preprocessed data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'atts':</span> <span class="pre">[4,</span> <span class="pre">2],</span> <span class="pre">'image':</span> <span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">3]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA.save_recons" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CELEBA.save_traversals">
+<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_dims</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CELEBA.save_traversals" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a grid of traversals and saves as image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recons</strong> (<em>torch.tensor</em>) – data to save</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to save the traversal to</p></li>
+<li><p><strong>num_dims</strong> (<em>int</em>) – number of latent dimensions</p></li>
 </ul>
 </dd>
 </dl>
@@ -224,13 +568,47 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">CUB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.GEBID" title="multimodal_compare.models.datasets.GEBID"><code class="xref py py-class docutils literal notranslate"><span class="pre">GEBID</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">CUB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
 <p>Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
 represented as sequences of one-hot-encodings for each character (incl. spaces)</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._mod_specific_loaders" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._postprocess_text">
 <span class="sig-name descname"><span class="pre">_postprocess_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._postprocess_text" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._preprocess_images">
+<span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._preprocess_images" title="Permalink to this definition"></a></dt>
+<dd><p>General function for loading images and preparing them as torch tensors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>preprocessed data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB._preprocess_text">
+<span class="sig-name descname"><span class="pre">_preprocess_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._preprocess_text" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -238,10 +616,10 @@ represented as sequences of one-hot-encodings for each character (incl. spaces)<
 <span class="sig-name descname"><span class="pre">_preprocess_text_onehot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB._preprocess_text_onehot" title="Permalink to this definition"></a></dt>
 <dd><p>General function for loading text strings and preparing them as torch one-hot encodings</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch with text encodings and masks</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -252,71 +630,91 @@ represented as sequences of one-hot-encodings for each character (incl. spaces)<
 <span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'image':</span> <span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">3],</span> <span class="pre">'text':</span> <span class="pre">[246,</span> <span class="pre">27,</span> <span class="pre">1]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.CUB.feature_dims" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB.labels" title="Permalink to this definition"></a></dt>
+<dd><p>No labels for T-SNAE available</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.CUB.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.CUB.save_recons" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">GEBID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">FASHIONMNIST</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<p>Dataset class for the FashionMNIST dataset</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._mod_specific_loaders">
-<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._mod_specific_loaders" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_loaders" title="Permalink to this definition"></a></dt>
 <dd><p>Assigns the preprocessing function based on the mod_type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._mod_specific_savers">
-<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_savers" title="Permalink to this definition"></a></dt>
 <dd><p>Assigns the postprocessing function based on the mod_type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._postprocess_images">
-<span class="sig-name descname"><span class="pre">_postprocess_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._postprocess_images" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._postprocess_image">
+<span class="sig-name descname"><span class="pre">_postprocess_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._postprocess_image" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._postprocess_text">
-<span class="sig-name descname"><span class="pre">_postprocess_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._postprocess_text" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._postprocess_label">
+<span class="sig-name descname"><span class="pre">_postprocess_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._postprocess_label" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._preprocess_images">
-<span class="sig-name descname"><span class="pre">_preprocess_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._preprocess_images" title="Permalink to this definition"></a></dt>
-<dd><p>General function for loading images and preparing them as torch tensors</p>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._process_image">
+<span class="sig-name descname"><span class="pre">_process_image</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._process_image" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._process_label">
+<span class="sig-name descname"><span class="pre">_process_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._process_label" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'image':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">1],</span> <span class="pre">'label':</span> <span class="pre">[10]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST.get_data_raw">
+<span class="sig-name descname"><span class="pre">get_data_raw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST.get_data_raw" title="Permalink to this definition"></a></dt>
+<dd><p>Loads raw data from path</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>dimensions</strong> (<em>list</em>) – feature_dim for the image modality</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>loaded raw data</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>preprocessed data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>torch.tensor</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID._preprocess_text">
-<span class="sig-name descname"><span class="pre">_preprocess_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID._preprocess_text" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID.feature_dims">
-<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'image':</span> <span class="pre">[64,</span> <span class="pre">64,</span> <span class="pre">3],</span> <span class="pre">'text':</span> <span class="pre">[52,</span> <span class="pre">27,</span> <span class="pre">1]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID.feature_dims" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST.labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns labels for the whole dataset</p>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.datasets.GEBID.save_recons">
-<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.GEBID.save_recons" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST.save_recons" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">MNIST_SVHN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">MNIST_SVHN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
 <p>Dataset class for the MNIST-SVHN bimodal dataset (can be also used for unimodal training)</p>
 <dl class="py method">
@@ -360,6 +758,171 @@ represented as sequences of one-hot-encodings for each character (incl. spaces)<
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.save_recons">
 <span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN.save_recons" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">POLYMNIST</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<p>Dataset class for the POLYMNIST dataset</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST._mod_specific_loaders" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST._postprocess_mnist">
+<span class="sig-name descname"><span class="pre">_postprocess_mnist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST._postprocess_mnist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST._process_mnist">
+<span class="sig-name descname"><span class="pre">_process_mnist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST._process_mnist" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'m0':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">3],</span> <span class="pre">'m1':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">3],</span> <span class="pre">'m2':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">3],</span> <span class="pre">'m3':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">3],</span> <span class="pre">'m4':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">3]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST.save_recons" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.POLYMNIST.save_traversals">
+<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_dims</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.POLYMNIST.save_traversals" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a grid of traversals and saves as image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recons</strong> (<em>torch.tensor</em>) – data to save</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to save the traversal to</p></li>
+<li><p><strong>num_dims</strong> (<em>int</em>) – number of latent dimensions</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.datasets.</span></span><span class="sig-name descname"><span class="pre">SPRITES</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">testpth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.datasets.BaseDataset" title="multimodal_compare.models.datasets.BaseDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataset</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES._mod_specific_loaders">
+<span class="sig-name descname"><span class="pre">_mod_specific_loaders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES._mod_specific_loaders" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the preprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES._mod_specific_savers">
+<span class="sig-name descname"><span class="pre">_mod_specific_savers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES._mod_specific_savers" title="Permalink to this definition"></a></dt>
+<dd><p>Assigns the postprocessing function based on the mod_type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES._postprocess_actions">
+<span class="sig-name descname"><span class="pre">_postprocess_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES._postprocess_actions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES._postprocess_all2img">
+<span class="sig-name descname"><span class="pre">_postprocess_all2img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES._postprocess_all2img" title="Permalink to this definition"></a></dt>
+<dd><p>Converts any kind of data to images to save traversal visualizations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>torch.tensor</em>) – input data</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>processed images</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES._postprocess_attributes">
+<span class="sig-name descname"><span class="pre">_postprocess_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES._postprocess_attributes" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES._postprocess_frames">
+<span class="sig-name descname"><span class="pre">_postprocess_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES._postprocess_frames" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.eval_statistics_fn">
+<span class="sig-name descname"><span class="pre">eval_statistics_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.eval_statistics_fn" title="Permalink to this definition"></a></dt>
+<dd><p>(optional) Returns a dataset-specific function that runs systematic evaluation</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.feature_dims">
+<span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'actions':</span> <span class="pre">[9],</span> <span class="pre">'attributes':</span> <span class="pre">[4,</span> <span class="pre">6],</span> <span class="pre">'frames':</span> <span class="pre">[8,</span> <span class="pre">64,</span> <span class="pre">64,</span> <span class="pre">3]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.feature_dims" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.get_actions">
+<span class="sig-name descname"><span class="pre">get_actions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.get_actions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.get_attributes">
+<span class="sig-name descname"><span class="pre">get_attributes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.get_attributes" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.get_frames">
+<span class="sig-name descname"><span class="pre">get_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.get_frames" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.iter_over_inputs">
+<span class="sig-name descname"><span class="pre">iter_over_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.iter_over_inputs" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns labels for the whole dataset</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.make_masks">
+<span class="sig-name descname"><span class="pre">make_masks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.make_masks" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.save_recons">
+<span class="sig-name descname"><span class="pre">save_recons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.save_recons" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.SPRITES.save_traversals">
+<span class="sig-name descname"><span class="pre">save_traversals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.SPRITES.save_traversals" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a grid of traversals and saves as animated gif image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>recons</strong> (<em>torch.tensor</em>) – data to save</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to save the traversal to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

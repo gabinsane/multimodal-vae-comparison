@@ -10,11 +10,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -25,11 +25,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -52,7 +56,7 @@
 <li class="toctree-l1"><a class="reference internal" href="code/dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code/eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/config_cls.html">Config class</a></li>
 </ul>
 
@@ -69,8 +73,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Index</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Index</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -109,38 +113,6 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal._abc_cache">_abc_cache (multimodal_compare.eval.infer.EstimateLogMarginal attribute)</a>
-
-      <ul>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct._abc_cache">(multimodal_compare.eval.infer.EvalReconstruct attribute)</a>
-</li>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations._abc_cache">(multimodal_compare.eval.infer.Evaluations attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal._abc_negative_cache">_abc_negative_cache (multimodal_compare.eval.infer.EstimateLogMarginal attribute)</a>
-
-      <ul>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct._abc_negative_cache">(multimodal_compare.eval.infer.EvalReconstruct attribute)</a>
-</li>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations._abc_negative_cache">(multimodal_compare.eval.infer.Evaluations attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal._abc_negative_cache_version">_abc_negative_cache_version (multimodal_compare.eval.infer.EstimateLogMarginal attribute)</a>
-
-      <ul>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct._abc_negative_cache_version">(multimodal_compare.eval.infer.EvalReconstruct attribute)</a>
-</li>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations._abc_negative_cache_version">(multimodal_compare.eval.infer.Evaluations attribute)</a>
-</li>
-      </ul></li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal._abc_registry">_abc_registry (multimodal_compare.eval.infer.EstimateLogMarginal attribute)</a>
-
-      <ul>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct._abc_registry">(multimodal_compare.eval.infer.EvalReconstruct attribute)</a>
-</li>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations._abc_registry">(multimodal_compare.eval.infer.Evaluations attribute)</a>
-</li>
-      </ul></li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.VaeEncoder._backward_hooks">_backward_hooks (multimodal_compare.models.encoders.VaeEncoder attribute)</a>
 
       <ul>
@@ -169,20 +141,20 @@
       </ul></li>
       <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config._get_mods_config">_get_mods_config() (multimodal_compare.models.config_cls.Config method)</a>
 </li>
-      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Audio._is_full_backward_hook">_is_full_backward_hook (multimodal_compare.models.decoders.Dec_Audio attribute)</a>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN._is_full_backward_hook">_is_full_backward_hook (multimodal_compare.models.decoders.Dec_CNN attribute)</a>
 
       <ul>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_CNN attribute)</a>
-</li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_FNN._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_FNN attribute)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_MNIST attribute)</a>
 </li>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNISTMoE._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_MNISTMoE attribute)</a>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST2._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_MNIST2 attribute)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_PolyMNIST._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_PolyMNIST attribute)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_SVHN attribute)</a>
 </li>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHNMoE._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_SVHNMoE attribute)</a>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN2._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_SVHN2 attribute)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Transformer._is_full_backward_hook">(multimodal_compare.models.decoders.Dec_Transformer attribute)</a>
 </li>
@@ -194,19 +166,19 @@
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.VaeDecoder._is_full_backward_hook">(multimodal_compare.models.decoders.VaeDecoder attribute)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Audio._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_Audio attribute)</a>
-</li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_CNN._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_CNN attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_FNN._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_FNN attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_MNIST attribute)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNISTMoE._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_MNISTMoE attribute)</a>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST2._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_MNIST2 attribute)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_PolyMNIST._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_PolyMNIST attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_SVHN attribute)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHNMoE._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_SVHNMoE attribute)</a>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN2._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_SVHN2 attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Transformer._is_full_backward_hook">(multimodal_compare.models.encoders.Enc_Transformer attribute)</a>
 </li>
@@ -230,19 +202,19 @@
 </li>
         <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE._is_full_backward_hook">(multimodal_compare.models.mmvae_models.POE attribute)</a>
 </li>
-        <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE._is_full_backward_hook">(multimodal_compare.models.trainer.MultimodalVAE attribute)</a>
-</li>
         <li><a href="code/vae.html#multimodal_compare.models.vae.BaseVae._is_full_backward_hook">(multimodal_compare.models.vae.BaseVae attribute)</a>
 </li>
         <li><a href="code/vae.html#multimodal_compare.models.vae.VAE._is_full_backward_hook">(multimodal_compare.models.vae.VAE attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer._listdirs">_listdirs() (in module multimodal_compare.eval.infer)</a>
-</li>
       <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config._load_config">_load_config() (multimodal_compare.models.config_cls.Config method)</a>
 </li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.VaeEncoder._load_state_dict_post_hooks">_load_state_dict_post_hooks (multimodal_compare.models.encoders.VaeEncoder attribute)</a>
+
+      <ul>
+        <li><a href="code/vae.html#multimodal_compare.models.vae.VAE._load_state_dict_post_hooks">(multimodal_compare.models.vae.VAE attribute)</a>
+</li>
+      </ul></li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.VaeEncoder._load_state_dict_pre_hooks">_load_state_dict_pre_hooks (multimodal_compare.models.encoders.VaeEncoder attribute)</a>
 
       <ul>
@@ -252,17 +224,39 @@
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._mod_specific_loaders">_mod_specific_loaders() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
-        <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID._mod_specific_loaders">(multimodal_compare.models.datasets.GEBID method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_loaders">(multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._mod_specific_loaders">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._mod_specific_loaders">(multimodal_compare.models.datasets.CUB method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_loaders">(multimodal_compare.models.datasets.FASHIONMNIST method)</a>
 </li>
         <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_loaders">(multimodal_compare.models.datasets.MNIST_SVHN method)</a>
 </li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST._mod_specific_loaders">(multimodal_compare.models.datasets.POLYMNIST method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES._mod_specific_loaders">(multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._mod_specific_savers">_mod_specific_savers() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
-        <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID._mod_specific_savers">(multimodal_compare.models.datasets.GEBID method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS._mod_specific_savers">(multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._mod_specific_savers">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._mod_specific_savers">(multimodal_compare.models.datasets.CUB method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST._mod_specific_savers">(multimodal_compare.models.datasets.FASHIONMNIST method)</a>
 </li>
         <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_savers">(multimodal_compare.models.datasets.MNIST_SVHN method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST._mod_specific_savers">(multimodal_compare.models.datasets.POLYMNIST method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES._mod_specific_savers">(multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
       </ul></li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.VaeEncoder._modules">_modules (multimodal_compare.models.encoders.VaeEncoder attribute)</a>
@@ -285,44 +279,84 @@
       </ul></li>
       <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config._parse_args">_parse_args() (multimodal_compare.models.config_cls.Config method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer._plot_setup">_plot_setup() (in module multimodal_compare.eval.infer)</a>
-</li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._postprocess">_postprocess() (multimodal_compare.models.datasets.BaseDataset method)</a>
 </li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES._postprocess_actions">_postprocess_actions() (multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._postprocess_all2img">_postprocess_all2img() (multimodal_compare.models.datasets.BaseDataset method)</a>
-</li>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID._postprocess_images">_postprocess_images() (multimodal_compare.models.datasets.GEBID method)</a>
-</li>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist">_postprocess_mnist() (multimodal_compare.models.datasets.MNIST_SVHN method)</a>
-</li>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_svhn">_postprocess_svhn() (multimodal_compare.models.datasets.MNIST_SVHN method)</a>
-</li>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._postprocess_text">_postprocess_text() (multimodal_compare.models.datasets.CUB method)</a>
 
       <ul>
-        <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID._postprocess_text">(multimodal_compare.models.datasets.GEBID method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._postprocess_all2img">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES._postprocess_all2img">(multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
+      </ul></li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES._postprocess_attributes">_postprocess_attributes() (multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._postprocess_atts">_postprocess_atts() (multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES._postprocess_frames">_postprocess_frames() (multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST._postprocess_image">_postprocess_image() (multimodal_compare.models.datasets.FASHIONMNIST method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_images">_postprocess_images() (multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._postprocess_images">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+      </ul></li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST._postprocess_label">_postprocess_label() (multimodal_compare.models.datasets.FASHIONMNIST method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist">_postprocess_mnist() (multimodal_compare.models.datasets.MNIST_SVHN method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST._postprocess_mnist">(multimodal_compare.models.datasets.POLYMNIST method)</a>
+</li>
+      </ul></li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_svhn">_postprocess_svhn() (multimodal_compare.models.datasets.MNIST_SVHN method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS._postprocess_text">_postprocess_text() (multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._postprocess_text">(multimodal_compare.models.datasets.CUB method)</a>
 </li>
       </ul></li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._preprocess">_preprocess() (multimodal_compare.models.datasets.BaseDataset method)</a>
 </li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._preprocess_atts">_preprocess_atts() (multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._preprocess_images">_preprocess_images() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
-        <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID._preprocess_images">(multimodal_compare.models.datasets.GEBID method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_images">(multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA._preprocess_images">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._preprocess_images">(multimodal_compare.models.datasets.CUB method)</a>
 </li>
       </ul></li>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID._preprocess_text">_preprocess_text() (multimodal_compare.models.datasets.GEBID method)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS._preprocess_text">_preprocess_text() (multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._preprocess_text">(multimodal_compare.models.datasets.CUB method)</a>
 </li>
+      </ul></li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset._preprocess_text_onehot">_preprocess_text_onehot() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
         <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB._preprocess_text_onehot">(multimodal_compare.models.datasets.CUB method)</a>
 </li>
       </ul></li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST._process_image">_process_image() (multimodal_compare.models.datasets.FASHIONMNIST method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST._process_label">_process_label() (multimodal_compare.models.datasets.FASHIONMNIST method)</a>
+</li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._process_mnist">_process_mnist() (multimodal_compare.models.datasets.MNIST_SVHN method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST._process_mnist">(multimodal_compare.models.datasets.POLYMNIST method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer._process_recons">_process_recons() (in module multimodal_compare.eval.infer)</a>
-</li>
+      </ul></li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN._process_svhn">_process_svhn() (multimodal_compare.models.datasets.MNIST_SVHN method)</a>
 </li>
       <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config._setup_savedir">_setup_savedir() (multimodal_compare.models.config_cls.Config method)</a>
@@ -371,9 +405,9 @@
 </li>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.BaseObjective.calc_klds">calc_klds() (multimodal_compare.models.objectives.BaseObjective method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.calculate_cross_coherency">calculate_cross_coherency() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.calculate_cross_coherency">calculate_cross_coherency() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.calculate_joint_coherency">calculate_joint_coherency() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.calculate_joint_coherency">calculate_joint_coherency() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.MultimodalObjective.calculate_loss">calculate_loss() (multimodal_compare.models.objectives.MultimodalObjective method)</a>
 
@@ -383,15 +417,23 @@
       </ul></li>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.ReconLoss.category_ce">category_ce() (multimodal_compare.models.objectives.ReconLoss static method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.check_cross_sample_correct">check_cross_sample_correct() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS">CDSPRITESPLUS (class in multimodal_compare.models.datasets)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA">CELEBA (class in multimodal_compare.models.datasets)</a>
+</li>
+      <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config.change_seed">change_seed() (multimodal_compare.models.config_cls.Config method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.closest_color">closest_color() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.check_config">check_config() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
+</li>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.check_cross_sample_correct">check_cross_sample_correct() (in module multimodal_compare.eval.eval_cdsprites)</a>
+</li>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.check_load_testdata">check_load_testdata() (multimodal_compare.models.dataloader.DataModule method)</a>
+</li>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.check_testdata_avail">check_testdata_avail() (multimodal_compare.models.dataloader.DataModule method)</a>
 </li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.collate_fn">collate_fn() (multimodal_compare.models.dataloader.DataModule method)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.compare_loss">compare_loss() (in module multimodal_compare.eval.infer)</a>
 </li>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.BaseObjective.compute_microbatch_split">compute_microbatch_split() (multimodal_compare.models.objectives.BaseObjective static method)</a>
 </li>
@@ -399,9 +441,11 @@
 </li>
       <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.configure_optimizers">configure_optimizers() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.count_same_letters">count_same_letters() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.count_same_letters">count_same_letters() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB">CUB (class in multimodal_compare.models.datasets)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.current_datatype">current_datatype() (multimodal_compare.models.datasets.BaseDataset method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -409,9 +453,9 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule">DataModule (class in multimodal_compare.models.dataloader)</a>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.datamod">datamod (multimodal_compare.models.trainer.MultimodalVAE property)</a>
 </li>
-      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Audio">Dec_Audio (class in multimodal_compare.models.decoders)</a>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule">DataModule (class in multimodal_compare.models.dataloader)</a>
 </li>
       <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN">Dec_CNN (class in multimodal_compare.models.decoders)</a>
 </li>
@@ -419,12 +463,16 @@
 </li>
       <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST">Dec_MNIST (class in multimodal_compare.models.decoders)</a>
 </li>
-      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNISTMoE">Dec_MNISTMoE (class in multimodal_compare.models.decoders)</a>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST2">Dec_MNIST2 (class in multimodal_compare.models.decoders)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_PolyMNIST">Dec_PolyMNIST (class in multimodal_compare.models.decoders)</a>
 </li>
       <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN">Dec_SVHN (class in multimodal_compare.models.decoders)</a>
 </li>
-      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHNMoE">Dec_SVHNMoE (class in multimodal_compare.models.decoders)</a>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN2">Dec_SVHN2 (class in multimodal_compare.models.decoders)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Transformer">Dec_Transformer (class in multimodal_compare.models.decoders)</a>
 </li>
       <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_TransformerIMG">Dec_TransformerIMG (class in multimodal_compare.models.decoders)</a>
@@ -439,31 +487,13 @@
         <li><a href="code/vae.html#multimodal_compare.models.vae.BaseVae.decode">(multimodal_compare.models.vae.BaseVae method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.decode_latents">decode_latents() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.define_path">define_path() (in module multimodal_compare.eval.infer)</a>
-</li>
       <li><a href="code/vae.html#multimodal_compare.models.vae.DencoderFactory">DencoderFactory (class in multimodal_compare.models.vae)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_attribute">detect_attribute() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_background_color">detect_background_color() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_contour">detect_contour() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_shape">detect_shape() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_shape_color">detect_shape_color() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_shape_pos">detect_shape_pos() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.detect_shape_size">detect_shape_size() (in module multimodal_compare.eval.eval_gebid)</a>
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.DMVAE">DMVAE (class in multimodal_compare.models.mmvae_models)</a>
 </li>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.UnimodalObjective.dreg">dreg() (multimodal_compare.models.objectives.UnimodalObjective method)</a>
+</li>
+      <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config.dump_config">dump_config() (multimodal_compare.models.config_cls.Config method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -479,19 +509,19 @@
         <li><a href="code/objectives.html#multimodal_compare.models.objectives.UnimodalObjective.elbo">(multimodal_compare.models.objectives.UnimodalObjective method)</a>
 </li>
       </ul></li>
-      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Audio">Enc_Audio (class in multimodal_compare.models.encoders)</a>
-</li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_CNN">Enc_CNN (class in multimodal_compare.models.encoders)</a>
 </li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_FNN">Enc_FNN (class in multimodal_compare.models.encoders)</a>
 </li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST">Enc_MNIST (class in multimodal_compare.models.encoders)</a>
 </li>
-      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNISTMoE">Enc_MNISTMoE (class in multimodal_compare.models.encoders)</a>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST2">Enc_MNIST2 (class in multimodal_compare.models.encoders)</a>
+</li>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_PolyMNIST">Enc_PolyMNIST (class in multimodal_compare.models.encoders)</a>
 </li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN">Enc_SVHN (class in multimodal_compare.models.encoders)</a>
 </li>
-      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHNMoE">Enc_SVHNMoE (class in multimodal_compare.models.encoders)</a>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN2">Enc_SVHN2 (class in multimodal_compare.models.encoders)</a>
 </li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Transformer">Enc_Transformer (class in multimodal_compare.models.encoders)</a>
 </li>
@@ -499,37 +529,35 @@
 </li>
       <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_TxtTransformer">Enc_TxtTransformer (class in multimodal_compare.models.encoders)</a>
 </li>
-      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_VideoGPT">Enc_VideoGPT (class in multimodal_compare.models.encoders)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_VideoGPT">Enc_VideoGPT (class in multimodal_compare.models.encoders)</a>
+</li>
       <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.TorchMMVAE.encode">encode() (multimodal_compare.models.mmvae_base.TorchMMVAE method)</a>
 
       <ul>
         <li><a href="code/vae.html#multimodal_compare.models.vae.BaseVae.encode">(multimodal_compare.models.vae.BaseVae method)</a>
 </li>
       </ul></li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal">EstimateLogMarginal (class in multimodal_compare.eval.infer)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.eval_all">eval_all() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.eval_all">eval_all() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.eval_cdsprites_over_seeds">eval_cdsprites_over_seeds() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.eval_over_seeds">eval_over_seeds() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.eval_forward">eval_forward() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.eval_sample">eval_sample() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.eval_single_model">eval_single_model() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.eval_single_model">eval_single_model() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer.eval_statistics">eval_statistics() (multimodal_compare.eval.infer.MultimodalVAEInfer method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct">EvalReconstruct (class in multimodal_compare.eval.infer)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal.evaluation">evaluation() (multimodal_compare.eval.infer.EstimateLogMarginal class method)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.eval_statistics_fn">eval_statistics_fn() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct.evaluation">(multimodal_compare.eval.infer.EvalReconstruct class method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS.eval_statistics_fn">(multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
 </li>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations.evaluation">(multimodal_compare.eval.infer.Evaluations class method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.eval_statistics_fn">(multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
       </ul></li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations">Evaluations (class in multimodal_compare.eval.infer)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.eval_with_classifier">eval_with_classifier() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/decoders.html#multimodal_compare.models.decoders.extra_hidden_layer">extra_hidden_layer() (in module multimodal_compare.models.decoders)</a>
 
@@ -543,30 +571,44 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB.feature_dims">feature_dims (multimodal_compare.models.datasets.CUB attribute)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST">FASHIONMNIST (class in multimodal_compare.models.datasets)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS.feature_dims">feature_dims (multimodal_compare.models.datasets.CDSPRITESPLUS attribute)</a>
 
       <ul>
-        <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID.feature_dims">(multimodal_compare.models.datasets.GEBID attribute)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA.feature_dims">(multimodal_compare.models.datasets.CELEBA attribute)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB.feature_dims">(multimodal_compare.models.datasets.CUB attribute)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST.feature_dims">(multimodal_compare.models.datasets.FASHIONMNIST attribute)</a>
 </li>
         <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN.feature_dims">(multimodal_compare.models.datasets.MNIST_SVHN attribute)</a>
 </li>
-      </ul></li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.find_in_list">find_in_list() (in module multimodal_compare.eval.eval_gebid)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST.feature_dims">(multimodal_compare.models.datasets.POLYMNIST attribute)</a>
 </li>
-      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Audio.forward">forward() (multimodal_compare.models.decoders.Dec_Audio method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.feature_dims">(multimodal_compare.models.datasets.SPRITES attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.fill_cats">fill_cats() (in module multimodal_compare.eval.eval_cdsprites)</a>
+</li>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.find_in_list">find_in_list() (in module multimodal_compare.eval.eval_cdsprites)</a>
+</li>
+      <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config.find_version">find_version() (multimodal_compare.models.config_cls.Config method)</a>
+</li>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN.forward">forward() (multimodal_compare.models.decoders.Dec_CNN method)</a>
 
       <ul>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN.forward">(multimodal_compare.models.decoders.Dec_CNN method)</a>
-</li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_FNN.forward">(multimodal_compare.models.decoders.Dec_FNN method)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST.forward">(multimodal_compare.models.decoders.Dec_MNIST method)</a>
 </li>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNISTMoE.forward">(multimodal_compare.models.decoders.Dec_MNISTMoE method)</a>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST2.forward">(multimodal_compare.models.decoders.Dec_MNIST2 method)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_PolyMNIST.forward">(multimodal_compare.models.decoders.Dec_PolyMNIST method)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN.forward">(multimodal_compare.models.decoders.Dec_SVHN method)</a>
 </li>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHNMoE.forward">(multimodal_compare.models.decoders.Dec_SVHNMoE method)</a>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN2.forward">(multimodal_compare.models.decoders.Dec_SVHN2 method)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Transformer.forward">(multimodal_compare.models.decoders.Dec_Transformer method)</a>
 </li>
@@ -576,19 +618,19 @@
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_VideoGPT.forward">(multimodal_compare.models.decoders.Dec_VideoGPT method)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Audio.forward">(multimodal_compare.models.encoders.Enc_Audio method)</a>
-</li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_CNN.forward">(multimodal_compare.models.encoders.Enc_CNN method)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_FNN.forward">(multimodal_compare.models.encoders.Enc_FNN method)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST.forward">(multimodal_compare.models.encoders.Enc_MNIST method)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNISTMoE.forward">(multimodal_compare.models.encoders.Enc_MNISTMoE method)</a>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST2.forward">(multimodal_compare.models.encoders.Enc_MNIST2 method)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_PolyMNIST.forward">(multimodal_compare.models.encoders.Enc_PolyMNIST method)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN.forward">(multimodal_compare.models.encoders.Enc_SVHN method)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHNMoE.forward">(multimodal_compare.models.encoders.Enc_SVHNMoE method)</a>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN2.forward">(multimodal_compare.models.encoders.Enc_SVHN2 method)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Transformer.forward">(multimodal_compare.models.encoders.Enc_Transformer method)</a>
 </li>
@@ -619,59 +661,71 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID">GEBID (class in multimodal_compare.models.datasets)</a>
+      <li><a href="code/objectives.html#multimodal_compare.models.objectives.ReconLoss.gaussian_nll">gaussian_nll() (multimodal_compare.models.objectives.ReconLoss static method)</a>
 </li>
       <li><a href="code/vae.html#multimodal_compare.models.vae.VAE.generate_samples">generate_samples() (multimodal_compare.models.vae.VAE method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.get_attribute">get_attribute() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.get_actions">get_actions() (multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.get_attribute_from_recon">get_attribute_from_recon() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.get_all_classifiers">get_all_classifiers() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_base_path">get_base_path() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.get_attribute">get_attribute() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_config">get_config() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.get_attribute_from_recon">get_attribute_from_recon() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_data">get_data() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.get_attributes">get_attributes() (multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer.get_base_path">get_base_path() (multimodal_compare.eval.infer.MultimodalVAEInfer method)</a>
+</li>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer.get_config">get_config() (multimodal_compare.eval.infer.MultimodalVAEInfer method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_data">get_data() (multimodal_compare.models.datasets.BaseDataset method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_data_raw">get_data_raw() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
-        <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_data">(multimodal_compare.models.datasets.BaseDataset method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST.get_data_raw">(multimodal_compare.models.datasets.FASHIONMNIST method)</a>
 </li>
       </ul></li>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_data_raw">get_data_raw() (multimodal_compare.models.datasets.BaseDataset method)</a>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer.get_datamodule">get_datamodule() (multimodal_compare.eval.infer.MultimodalVAEInfer method)</a>
 </li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.get_dataset_class">get_dataset_class() (multimodal_compare.models.dataloader.DataModule method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_device">get_device() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.get_mean_stats">get_mean_stats() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.get_frames">get_frames() (multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.get_label_for_indices">get_label_for_indices() (multimodal_compare.models.dataloader.DataModule method)</a>
+</li>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.get_labels">get_labels() (multimodal_compare.models.dataloader.DataModule method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_labels">(multimodal_compare.models.datasets.BaseDataset method)</a>
+</li>
+      </ul></li>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.get_mean_stats">get_mean_stats() (in module multimodal_compare.eval.eval_cdsprites)</a>
+</li>
       <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.TorchMMVAE.get_missing_modalities">get_missing_modalities() (multimodal_compare.models.mmvae_base.TorchMMVAE method)</a>
+</li>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.get_mod_mappings">get_mod_mappings() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.get_mod_names">get_mod_names() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_model">get_model() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-
-      <ul>
-        <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.get_model">(multimodal_compare.models.trainer.MultimodalVAE method)</a>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.get_model">get_model() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
 </li>
-      </ul></li>
       <li><a href="code/vae.html#multimodal_compare.models.vae.DencoderFactory.get_nework_classes">get_nework_classes() (multimodal_compare.models.vae.DencoderFactory class method)</a>
 </li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.get_num_samples">get_num_samples() (multimodal_compare.models.dataloader.DataModule method)</a>
 </li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_processed_recons">get_processed_recons() (multimodal_compare.models.datasets.BaseDataset method)</a>
+</li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.DMVAE.get_remaining_mods_data">get_remaining_mods_data() (multimodal_compare.models.mmvae_models.DMVAE method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data">get_test_data() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_bs">get_test_data_bs() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_test_data_sample">get_test_data_sample() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.get_traversal_samples">get_traversal_samples() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.get_test_data">get_test_data() (multimodal_compare.models.datasets.BaseDataset method)</a>
 </li>
       <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config.get_vis_dir">get_vis_dir() (multimodal_compare.models.config_cls.Config method)</a>
+</li>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer.get_wrapped_model">get_wrapped_model() (multimodal_compare.eval.infer.MultimodalVAEInfer method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -679,18 +733,10 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.image_has_attribute_val">image_has_attribute_val() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.image_to_text">image_to_text() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.image_to_text">image_to_text() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.iter_over_inputs">iter_over_inputs() (multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.EstimateLogMarginal.isApplicable">isApplicable() (multimodal_compare.eval.infer.EstimateLogMarginal class method)</a>
-
-      <ul>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.EvalReconstruct.isApplicable">(multimodal_compare.eval.infer.EvalReconstruct class method)</a>
-</li>
-        <li><a href="code/infer.html#multimodal_compare.eval.infer.Evaluations.isApplicable">(multimodal_compare.eval.infer.Evaluations class method)</a>
-</li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.BaseObjective.iwae">iwae() (multimodal_compare.models.objectives.BaseObjective method)</a>
@@ -709,19 +755,25 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.ReconLoss.l1">l1() (multimodal_compare.models.objectives.ReconLoss static method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.labelled_tsne">labelled_tsne() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.labels">labels() (multimodal_compare.models.datasets.BaseDataset method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS.labels">(multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.last_letter">last_letter() (in module multimodal_compare.eval.eval_gebid)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB.labels">(multimodal_compare.models.datasets.CUB method)</a>
 </li>
-      <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.TorchMMVAE.latent_factorization">latent_factorization (multimodal_compare.models.mmvae_base.TorchMMVAE property)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST.labels">(multimodal_compare.models.datasets.FASHIONMNIST method)</a>
 </li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.labels">(multimodal_compare.models.datasets.SPRITES method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.listdirs">listdirs() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.TorchMMVAE.latent_factorization">latent_factorization (multimodal_compare.models.mmvae_base.TorchMMVAE property)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.load_images">load_images() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.load_classifier">load_classifier() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.load_model_ckpt">load_model_ckpt() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.load_images">load_images() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.DMVAE.logsumexp">logsumexp() (multimodal_compare.models.mmvae_models.DMVAE method)</a>
 </li>
@@ -733,17 +785,19 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.make_evals">make_evals() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer.make_dataloaders">make_dataloaders() (multimodal_compare.eval.infer.MultimodalVAEInfer method)</a>
 </li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.make_masks">make_masks() (multimodal_compare.models.dataloader.DataModule method)</a>
+
+      <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.make_masks">(multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
+      </ul></li>
       <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.TorchMMVAE.make_output_dict">make_output_dict() (multimodal_compare.models.mmvae_base.TorchMMVAE method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.manhattan_distance">manhattan_distance() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.manhattan_distance">manhattan_distance() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MoPOE.mixture_component_selection">mixture_component_selection() (multimodal_compare.models.mmvae_models.MoPOE method)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment">MMVAEExperiment (class in multimodal_compare.eval.infer)</a>
 </li>
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN">MNIST_SVHN (class in multimodal_compare.models.datasets)</a>
 </li>
@@ -759,7 +813,7 @@
     module
 
       <ul>
-        <li><a href="code/eval_gebid.html#module-multimodal_compare.eval.eval_gebid">multimodal_compare.eval.eval_gebid</a>
+        <li><a href="code/eval_cdsprites.html#module-multimodal_compare.eval.eval_cdsprites">multimodal_compare.eval.eval_cdsprites</a>
 </li>
         <li><a href="code/infer.html#module-multimodal_compare.eval.infer">multimodal_compare.eval.infer</a>
 </li>
@@ -790,15 +844,15 @@
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MoPOE">MoPOE (class in multimodal_compare.models.mmvae_models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.ReconLoss.mse">mse() (multimodal_compare.models.objectives.ReconLoss static method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
-    multimodal_compare.eval.eval_gebid
+    multimodal_compare.eval.eval_cdsprites
 
       <ul>
-        <li><a href="code/eval_gebid.html#module-multimodal_compare.eval.eval_gebid">module</a>
+        <li><a href="code/eval_cdsprites.html#module-multimodal_compare.eval.eval_cdsprites">module</a>
 </li>
       </ul></li>
       <li>
@@ -882,6 +936,8 @@
 </li>
       <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE">MultimodalVAE (class in multimodal_compare.models.trainer)</a>
 </li>
+      <li><a href="code/infer.html#multimodal_compare.eval.infer.MultimodalVAEInfer">MultimodalVAEInfer (class in multimodal_compare.eval.infer)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -918,21 +974,19 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/config_cls.html#multimodal_compare.models.config_cls.Config.parse_params">parse_params() (multimodal_compare.models.config_cls.Config method)</a>
 </li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.plot_loss">plot_loss() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
-</li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE">POE (class in multimodal_compare.models.mmvae_models)</a>
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MoPOE.poe_fusion">poe_fusion() (multimodal_compare.models.mmvae_models.MoPOE method)</a>
 </li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST">POLYMNIST (class in multimodal_compare.models.datasets)</a>
+</li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.predict_dataloader">predict_dataloader() (multimodal_compare.models.dataloader.DataModule method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.prepare_labels">prepare_labels() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.prepare_data_classes">prepare_data_classes() (multimodal_compare.models.dataloader.DataModule method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.prepare_singlemodal">prepare_singlemodal() (multimodal_compare.models.dataloader.DataModule method)</a>
-</li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.print_save_stats">print_save_stats() (in module multimodal_compare.eval.eval_gebid)</a>
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE.prior_expert">prior_expert() (multimodal_compare.models.mmvae_models.POE method)</a>
 </li>
@@ -944,6 +998,8 @@
         <li><a href="code/vae.html#multimodal_compare.models.vae.VAE.pz_params">(multimodal_compare.models.vae.VAE property)</a>
 </li>
       </ul></li>
+      <li><a href="code/vae.html#multimodal_compare.models.vae.VAE.pz_params_private">pz_params_private (multimodal_compare.models.vae.VAE property)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -978,10 +1034,22 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/datasets.html#multimodal_compare.models.datasets.GEBID.save_recons">save_recons() (multimodal_compare.models.datasets.GEBID method)</a>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.save_joint_samples">save_joint_samples() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS.save_recons">save_recons() (multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
 
       <ul>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA.save_recons">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CUB.save_recons">(multimodal_compare.models.datasets.CUB method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.FASHIONMNIST.save_recons">(multimodal_compare.models.datasets.FASHIONMNIST method)</a>
+</li>
         <li><a href="code/datasets.html#multimodal_compare.models.datasets.MNIST_SVHN.save_recons">(multimodal_compare.models.datasets.MNIST_SVHN method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST.save_recons">(multimodal_compare.models.datasets.POLYMNIST method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.save_recons">(multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
       </ul></li>
       <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.save_reconstructions">save_reconstructions() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
@@ -989,14 +1057,16 @@
       <li><a href="code/datasets.html#multimodal_compare.models.datasets.BaseDataset.save_traversals">save_traversals() (multimodal_compare.models.datasets.BaseDataset method)</a>
 
       <ul>
-        <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.save_traversals">(multimodal_compare.models.trainer.MultimodalVAE method)</a>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.CELEBA.save_traversals">(multimodal_compare.models.datasets.CELEBA method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.POLYMNIST.save_traversals">(multimodal_compare.models.datasets.POLYMNIST method)</a>
+</li>
+        <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES.save_traversals">(multimodal_compare.models.datasets.SPRITES method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.search_att">search_att() (in module multimodal_compare.eval.eval_gebid)</a>
-</li>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.set_data">set_data() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.search_att">search_att() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/objectives.html#multimodal_compare.models.objectives.BaseObjective.set_ltype">set_ltype() (multimodal_compare.models.objectives.BaseObjective method)</a>
 </li>
@@ -1004,7 +1074,11 @@
 </li>
       <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.MoPOE.set_subsets">set_subsets() (multimodal_compare.models.mmvae_models.MoPOE method)</a>
 </li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.CDSPRITESPLUS.set_vis_image_shape">set_vis_image_shape() (multimodal_compare.models.datasets.CDSPRITESPLUS method)</a>
+</li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.setup">setup() (multimodal_compare.models.dataloader.DataModule method)</a>
+</li>
+      <li><a href="code/datasets.html#multimodal_compare.models.datasets.SPRITES">SPRITES (class in multimodal_compare.models.datasets)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1012,26 +1086,32 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="code/infer.html#multimodal_compare.eval.infer.MMVAEExperiment.text_to_image">text_to_image() (multimodal_compare.eval.infer.MMVAEExperiment method)</a>
+      <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.test_dataloader">test_dataloader() (multimodal_compare.models.dataloader.DataModule method)</a>
+</li>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.test_epoch_end">test_epoch_end() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
+</li>
+      <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.test_step">test_step() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
+</li>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.text_to_image">text_to_image() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
       <li><a href="code/mmvae_base.html#multimodal_compare.models.mmvae_base.TorchMMVAE">TorchMMVAE (class in multimodal_compare.models.mmvae_base)</a>
 </li>
       <li><a href="code/dataloader.html#multimodal_compare.models.dataloader.DataModule.train_dataloader">train_dataloader() (multimodal_compare.models.dataloader.DataModule method)</a>
 </li>
-      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Audio.training">training (multimodal_compare.models.decoders.Dec_Audio attribute)</a>
+      <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN.training">training (multimodal_compare.models.decoders.Dec_CNN attribute)</a>
 
       <ul>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_CNN.training">(multimodal_compare.models.decoders.Dec_CNN attribute)</a>
-</li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_FNN.training">(multimodal_compare.models.decoders.Dec_FNN attribute)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST.training">(multimodal_compare.models.decoders.Dec_MNIST attribute)</a>
 </li>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNISTMoE.training">(multimodal_compare.models.decoders.Dec_MNISTMoE attribute)</a>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_MNIST2.training">(multimodal_compare.models.decoders.Dec_MNIST2 attribute)</a>
+</li>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_PolyMNIST.training">(multimodal_compare.models.decoders.Dec_PolyMNIST attribute)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN.training">(multimodal_compare.models.decoders.Dec_SVHN attribute)</a>
 </li>
-        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHNMoE.training">(multimodal_compare.models.decoders.Dec_SVHNMoE attribute)</a>
+        <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_SVHN2.training">(multimodal_compare.models.decoders.Dec_SVHN2 attribute)</a>
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.Dec_Transformer.training">(multimodal_compare.models.decoders.Dec_Transformer attribute)</a>
 </li>
@@ -1043,19 +1123,19 @@
 </li>
         <li><a href="code/decoders.html#multimodal_compare.models.decoders.VaeDecoder.training">(multimodal_compare.models.decoders.VaeDecoder attribute)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Audio.training">(multimodal_compare.models.encoders.Enc_Audio attribute)</a>
-</li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_CNN.training">(multimodal_compare.models.encoders.Enc_CNN attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_FNN.training">(multimodal_compare.models.encoders.Enc_FNN attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST.training">(multimodal_compare.models.encoders.Enc_MNIST attribute)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNISTMoE.training">(multimodal_compare.models.encoders.Enc_MNISTMoE attribute)</a>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_MNIST2.training">(multimodal_compare.models.encoders.Enc_MNIST2 attribute)</a>
+</li>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_PolyMNIST.training">(multimodal_compare.models.encoders.Enc_PolyMNIST attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN.training">(multimodal_compare.models.encoders.Enc_SVHN attribute)</a>
 </li>
-        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHNMoE.training">(multimodal_compare.models.encoders.Enc_SVHNMoE attribute)</a>
+        <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_SVHN2.training">(multimodal_compare.models.encoders.Enc_SVHN2 attribute)</a>
 </li>
         <li><a href="code/encoders.html#multimodal_compare.models.encoders.Enc_Transformer.training">(multimodal_compare.models.encoders.Enc_Transformer attribute)</a>
 </li>
@@ -1079,8 +1159,6 @@
 </li>
         <li><a href="code/mmvae_models.html#multimodal_compare.models.mmvae_models.POE.training">(multimodal_compare.models.mmvae_models.POE attribute)</a>
 </li>
-        <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.training">(multimodal_compare.models.trainer.MultimodalVAE attribute)</a>
-</li>
         <li><a href="code/vae.html#multimodal_compare.models.vae.BaseVae.training">(multimodal_compare.models.vae.BaseVae attribute)</a>
 </li>
         <li><a href="code/vae.html#multimodal_compare.models.vae.VAE.training">(multimodal_compare.models.vae.VAE attribute)</a>
@@ -1090,7 +1168,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="code/trainer.html#multimodal_compare.models.trainer.MultimodalVAE.training_step">training_step() (multimodal_compare.models.trainer.MultimodalVAE method)</a>
 </li>
-      <li><a href="code/eval_gebid.html#multimodal_compare.eval.eval_gebid.try_retrieve_atts">try_retrieve_atts() (in module multimodal_compare.eval.eval_gebid)</a>
+      <li><a href="code/eval_cdsprites.html#multimodal_compare.eval.eval_cdsprites.try_retrieve_atts">try_retrieve_atts() (in module multimodal_compare.eval.eval_cdsprites)</a>
 </li>
   </ul></td>
 </tr></table>

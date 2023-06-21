@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Encoders &mdash; multimodal-vae-comparison 1.0 documentation</title>
@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,11 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -48,14 +52,104 @@
 <li class="toctree-l1"><a class="reference internal" href="trainer.html">MultimodalVAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_base.html">Multimodal VAE Base Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Encoders</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Encoders</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_CNN"><code class="docutils literal notranslate"><span class="pre">Enc_CNN</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_CNN._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_CNN._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_CNN.forward"><code class="docutils literal notranslate"><span class="pre">Enc_CNN.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_CNN.training"><code class="docutils literal notranslate"><span class="pre">Enc_CNN.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_FNN"><code class="docutils literal notranslate"><span class="pre">Enc_FNN</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_FNN._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_FNN._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_FNN.forward"><code class="docutils literal notranslate"><span class="pre">Enc_FNN.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_FNN.training"><code class="docutils literal notranslate"><span class="pre">Enc_FNN.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST.forward"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST.training"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST2"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST2</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST2._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST2._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST2.forward"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST2.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_MNIST2.training"><code class="docutils literal notranslate"><span class="pre">Enc_MNIST2.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_PolyMNIST"><code class="docutils literal notranslate"><span class="pre">Enc_PolyMNIST</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_PolyMNIST._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_PolyMNIST._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_PolyMNIST.forward"><code class="docutils literal notranslate"><span class="pre">Enc_PolyMNIST.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_PolyMNIST.training"><code class="docutils literal notranslate"><span class="pre">Enc_PolyMNIST.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN.forward"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN.training"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN2"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN2</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN2._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN2._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN2.forward"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN2.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_SVHN2.training"><code class="docutils literal notranslate"><span class="pre">Enc_SVHN2.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_Transformer"><code class="docutils literal notranslate"><span class="pre">Enc_Transformer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_Transformer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_Transformer._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_Transformer.forward"><code class="docutils literal notranslate"><span class="pre">Enc_Transformer.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_Transformer.training"><code class="docutils literal notranslate"><span class="pre">Enc_Transformer.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TransformerIMG"><code class="docutils literal notranslate"><span class="pre">Enc_TransformerIMG</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TransformerIMG._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_TransformerIMG._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TransformerIMG.forward"><code class="docutils literal notranslate"><span class="pre">Enc_TransformerIMG.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TransformerIMG.training"><code class="docutils literal notranslate"><span class="pre">Enc_TransformerIMG.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TxtTransformer"><code class="docutils literal notranslate"><span class="pre">Enc_TxtTransformer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TxtTransformer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_TxtTransformer._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TxtTransformer.forward"><code class="docutils literal notranslate"><span class="pre">Enc_TxtTransformer.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_TxtTransformer.training"><code class="docutils literal notranslate"><span class="pre">Enc_TxtTransformer.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_VideoGPT"><code class="docutils literal notranslate"><span class="pre">Enc_VideoGPT</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_VideoGPT._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Enc_VideoGPT._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_VideoGPT.forward"><code class="docutils literal notranslate"><span class="pre">Enc_VideoGPT.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.Enc_VideoGPT.training"><code class="docutils literal notranslate"><span class="pre">Enc_VideoGPT.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeComponent"><code class="docutils literal notranslate"><span class="pre">VaeComponent</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeComponent._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VaeComponent._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeComponent.forward"><code class="docutils literal notranslate"><span class="pre">VaeComponent.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeComponent.training"><code class="docutils literal notranslate"><span class="pre">VaeComponent.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder"><code class="docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._backward_hooks"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._backward_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._buffers"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._buffers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._forward_hooks"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._forward_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._forward_pre_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._load_state_dict_post_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._load_state_dict_pre_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._modules"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._modules</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._non_persistent_buffers_set</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._parameters"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">VaeEncoder._state_dict_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder.training"><code class="docutils literal notranslate"><span class="pre">VaeEncoder.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.encoders.extra_hidden_layer"><code class="docutils literal notranslate"><span class="pre">extra_hidden_layer()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vae.html">VAE class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
@@ -72,8 +166,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Encoders</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Encoders</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/code/encoders.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -86,45 +180,12 @@
   <section id="encoders">
 <span id="id1"></span><h1>Encoders<a class="headerlink" href="#encoders" title="Permalink to this heading"></a></h1>
 <span class="target" id="module-multimodal_compare.models.encoders"></span><dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Audio">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_Audio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Audio._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio._is_full_backward_hook" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Audio.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio.forward" title="Permalink to this definition"></a></dt>
-<dd><p>Forward pass</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>tensor of means, tensor of log variances</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Audio.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Audio.training" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_CNN">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_CNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_CNN._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -132,13 +193,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_CNN.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -157,7 +218,7 @@
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_FNN._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -165,13 +226,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_FNN.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -190,7 +251,7 @@
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -198,13 +259,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -218,34 +279,67 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNISTMoE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_MNISTMoE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_MNIST2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_hidden_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST2" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNISTMoE._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST2._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST2._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNISTMoE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE.forward" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST2.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST2.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNISTMoE.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNISTMoE.training" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_MNIST2.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_MNIST2.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_PolyMNIST">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_PolyMNIST</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_PolyMNIST" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_PolyMNIST._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_PolyMNIST._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_PolyMNIST.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_PolyMNIST.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Forward pass</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tensor of means, tensor of log variances</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_PolyMNIST.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_PolyMNIST.training" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -256,7 +350,7 @@
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -264,13 +358,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -284,34 +378,34 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHNMoE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_SVHNMoE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.encoders.</span></span><span class="sig-name descname"><span class="pre">Enc_SVHN2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_private</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN2" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHNMoE._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN2._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN2._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHNMoE.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE.forward" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN2.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN2.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHNMoE.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHNMoE.training" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_SVHN2.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_SVHN2.training" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -323,7 +417,7 @@
 <p>Transformer VAE as implemented in <a class="reference external" href="https://github.com/Mathux/ACTOR">https://github.com/Mathux/ACTOR</a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_Transformer._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -331,13 +425,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_Transformer.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list of a data batch and boolean masks for the sequences</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -356,7 +450,7 @@
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_TransformerIMG._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -364,13 +458,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TransformerIMG.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list of a data batch and boolean masks for the sequences</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -389,7 +483,7 @@
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_TxtTransformer._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -397,13 +491,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_TxtTransformer.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>batch</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – list of a data batch and boolean masks for the sequences</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -422,7 +516,7 @@
 <dd><p>Bases: <a class="reference internal" href="#multimodal_compare.models.encoders.VaeEncoder" title="multimodal_compare.models.encoders.VaeEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">VaeEncoder</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.Enc_VideoGPT._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -430,13 +524,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.Enc_VideoGPT.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -455,7 +549,7 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.VaeComponent._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeComponent._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeComponent._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -463,13 +557,13 @@
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.encoders.VaeComponent.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>x</strong> (<em>list</em><em>, </em><em>torch.tensor</em>) – data batch</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>tensor of means, tensor of log variances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(torch.tensor, torch.tensor)</p>
 </dd>
 </dl>
@@ -493,7 +587,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.VaeEncoder._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._buffers" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._buffers" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -508,7 +602,12 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.VaeEncoder._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.encoders.VaeEncoder._load_state_dict_post_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._load_state_dict_post_hooks" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -518,7 +617,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.VaeEncoder._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._modules" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Module'</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._modules" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -528,7 +627,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.encoders.VaeEncoder._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._parameters" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Parameter</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.encoders.VaeEncoder._parameters" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VAE class &mdash; multimodal-vae-comparison 1.0 documentation</title>
@@ -11,11 +11,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -28,11 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -50,12 +54,47 @@
 <li class="toctree-l1"><a class="reference internal" href="mmvae_models.html">Multimodal VAE models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="encoders.html">Encoders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="decoders.html">Decoders</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">VAE class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">VAE class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.vae.BaseVae"><code class="docutils literal notranslate"><span class="pre">BaseVae</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.BaseVae._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">BaseVae._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.BaseVae.decode"><code class="docutils literal notranslate"><span class="pre">BaseVae.decode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.BaseVae.encode"><code class="docutils literal notranslate"><span class="pre">BaseVae.encode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.BaseVae.forward"><code class="docutils literal notranslate"><span class="pre">BaseVae.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.BaseVae.training"><code class="docutils literal notranslate"><span class="pre">BaseVae.training</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.vae.DencoderFactory"><code class="docutils literal notranslate"><span class="pre">DencoderFactory</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.DencoderFactory.get_nework_classes"><code class="docutils literal notranslate"><span class="pre">DencoderFactory.get_nework_classes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.vae.VAE"><code class="docutils literal notranslate"><span class="pre">VAE</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._backward_hooks"><code class="docutils literal notranslate"><span class="pre">VAE._backward_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._buffers"><code class="docutils literal notranslate"><span class="pre">VAE._buffers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._forward_hooks"><code class="docutils literal notranslate"><span class="pre">VAE._forward_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VAE._forward_pre_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VAE._is_full_backward_hook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">VAE._load_state_dict_post_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VAE._load_state_dict_pre_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._modules"><code class="docutils literal notranslate"><span class="pre">VAE._modules</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">VAE._non_persistent_buffers_set</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._parameters"><code class="docutils literal notranslate"><span class="pre">VAE._parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">VAE._state_dict_hooks</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.generate_samples"><code class="docutils literal notranslate"><span class="pre">VAE.generate_samples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.objective"><code class="docutils literal notranslate"><span class="pre">VAE.objective()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.pz_params"><code class="docutils literal notranslate"><span class="pre">VAE.pz_params</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.pz_params_private"><code class="docutils literal notranslate"><span class="pre">VAE.pz_params_private</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.qz_x_params"><code class="docutils literal notranslate"><span class="pre">VAE.qz_x_params</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.set_objective_fn"><code class="docutils literal notranslate"><span class="pre">VAE.set_objective_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.vae.VAE.training"><code class="docutils literal notranslate"><span class="pre">VAE.training</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="objectives.html">Objectives</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_cls.html">Config class</a></li>
 </ul>
 
@@ -72,8 +111,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>VAE class</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">VAE class</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/code/vae.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -92,7 +131,7 @@
 <p>Base VAE class for all implementations.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.vae.BaseVae._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae._is_full_backward_hook" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -100,13 +139,13 @@
 <span class="sig-name descname"><span class="pre">decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae.decode" title="Permalink to this definition"></a></dt>
 <dd><p>Decodes the latent samples</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>inp</strong> (<em>dict</em>) – Samples dictionary</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>decoded distribution parameters (means and logvars)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -117,13 +156,13 @@
 <span class="sig-name descname"><span class="pre">encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae.encode" title="Permalink to this definition"></a></dt>
 <dd><p>Encodes the inputs</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>inp</strong> (<em>dict</em>) – Inputs dictionary</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>encoded distribution parameters (means and logvars)</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
@@ -134,13 +173,13 @@
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.BaseVae.forward" title="Permalink to this definition"></a></dt>
 <dd><p>Forward pass</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>torch.tensor</em>) – input modality</p></li>
 <li><p><strong>K</strong> (<em>int</em>) – sample K samples from the posterior</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the posterior distribution, the reconstruction and latent samples</p>
 </dd>
 </dl>
@@ -165,16 +204,16 @@
 <div><p>Instantiates the encoder and decoder networks</p>
 </div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>enc</strong> (<em>str</em>) – encoder name</p></li>
 <li><p><strong>dec</strong> (<em>str</em>) – decoder name</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>returns encoder and decoder class</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple(object, object)</p>
 </dd>
 </dl>
@@ -193,7 +232,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._buffers" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._buffers" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -208,7 +247,12 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE._load_state_dict_post_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._load_state_dict_post_hooks" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -218,7 +262,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._modules" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Module'</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._modules" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -228,7 +272,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._parameters" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Parameter</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#multimodal_compare.models.vae.VAE._parameters" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -238,10 +282,14 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE.generate_samples">
-<span class="sig-name descname"><span class="pre">generate_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.generate_samples" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">generate_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traversals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traversal_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-1,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.generate_samples" title="Permalink to this definition"></a></dt>
 <dd><p>Generates samples from the latent space
 :param N: How many samples to make
 :type N: int
+:param traversals: whether to make latent traversals (True) or random samples (False)
+:type traversals: bool
+:param traversal_range: range of the traversals (if plausible)
+:type traversal_range: tuple
 :return: output reconstructions
 :rtype: torch.tensor</p>
 </dd></dl>
@@ -251,13 +299,13 @@
 <span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.objective" title="Permalink to this definition"></a></dt>
 <dd><p>Objective function for unimodal VAE scenario (not used with multimodal VAEs)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – input data with modalities as keys</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>loss calculated using self.loss_fn</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>torch.tensor</p>
 </dd>
 </dl>
@@ -269,7 +317,19 @@
 <dd><p>returns likelihood parameters
 :rtype: list(torch.tensor, torch.tensor)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>return</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.vae.VAE.pz_params_private">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params_private</span></span><a class="headerlink" href="#multimodal_compare.models.vae.VAE.pz_params_private" title="Permalink to this definition"></a></dt>
+<dd><p>returns likelihood parameters for the private latent space
+:rtype: list(torch.tensor, torch.tensor)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>return</p>
 </dd>
 </dl>
@@ -281,7 +341,7 @@
 <dd><p>returns posterior distribution parameters
 :rtype: list(torch.tensor, torch.tensor)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>return</p>
 </dd>
 </dl>

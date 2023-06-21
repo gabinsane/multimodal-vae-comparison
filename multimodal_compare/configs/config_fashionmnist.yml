@@ -1,11 +1,11 @@
-batch_size: 4
+batch_size: 32
 epochs: 600
-exp_name: celeba
-labels: ./data/celeba/celeba50k_att_strings.npy
+exp_name: fashionmnist
+labels:
 lr: 1e-3
 mixing: poe
 iterseeds: 1
-n_latents: 8
+n_latents: 32
 obj: elbo
 optimizer: adam
 pre_trained: null
@@ -13,16 +13,16 @@ seed: 2
 beta: 1
 viz_freq: 1
 test_split: 0.1
-dataset_name: celeba
+dataset_name: fashionmnist
 modality_1:
-  decoder: CNN
-  encoder: CNN
+  decoder: MNIST
+  encoder: MNIST
   mod_type: image
   recon_loss:  bce
-  path: ./data/celeba/celeba50k.npy
+  path:
 modality_2:
   decoder: FNN
   encoder: FNN
-  mod_type: atts
+  mod_type: label
   recon_loss:  category_ce
-  path: ./data/celeba/celeba50k_atts.npy
+  path:

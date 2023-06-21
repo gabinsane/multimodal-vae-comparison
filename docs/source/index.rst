@@ -12,7 +12,7 @@ By default, we provide implementations of the `MVAE <https://github.com/mhw32/mu
 (`paper <https://openreview.net/forum?id=5Y21V0RDBV>`_) and `DMVAE <https://github.com/seqam-lab/DMVAE>`_ (`paper <https://openaccess.thecvf.com/content/CVPR2021W/MULA/papers/Lee_Private-Shared_Disentangled_Multimodal_VAE_for_Learning_of_Latent_Representations_CVPRW_2021_paper.pdf>`_) models, but anyone is free to contribute with their own
 implementation.
 
-We also provide a custom synthetic bimodal dataset, called GeBiD, designed specifically for comparison of the
+We also provide a custom synthetic bimodal dataset, called CdSprites+, designed specifically for comparison of the
 joint- and cross-generative capabilities of multimodal VAEs. You can read about the utilities of the dataset in the proposed
 paper (link will be added soon). This dataset offers 5 levels of difficulty (based on the number of attributes)
 to find the minimal functioning scenario for each model. Moreover, its rigid structure enables automatic qualitative
@@ -48,5 +48,5 @@ The toolkit is using the `PyTorch Lightning <https://www.pytorchlightning.ai/>`_
    code/dataloader
    code/datasets
    code/infer
-   code/eval_gebid
+   code/eval_cdsprites
    code/config_cls

@@ -171,7 +171,7 @@ class BaseDataset():
         """
         output_processed = self._postprocess(data)
         output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
-            if self.mod_type == "text" else output_processed
+            if self.mod_type not in ["text", "atts"] else output_processed
         return output_processed
 
     def save_traversals(self, recons, path, num_dims):
@@ -594,19 +594,20 @@ class SPRITES(BaseDataset):
 
 class CELEBA(BaseDataset):
     feature_dims = {"image": [64, 64, 3],
-                    "atts": [4],
+                    "atts": [4, 2],
                     }  # these feature_dims are also used by the encoder and decoder networks
 
     def __init__(self, pth, testpth, mod_type):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
         self.text2img_size = (64,192,3)
+        self.labelmap = [["hairy", "bald"], ["no eyeglasses", "eyeglasses"], ["female", "male"], ["not smiling", "smiling"]]
 
     def _mod_specific_loaders(self):
         return {"image": self._preprocess_images, "atts": self._preprocess_atts}
 
     def _mod_specific_savers(self):
-        return {"image": self._postprocess_images, "atts": self._postproces_atts}
+        return {"image": self._postprocess_images, "atts": self._postprocess_atts}
 
     def _preprocess_images(self):
         return super(CELEBA, self)._preprocess_images([self.feature_dims["image"][i] for i in [2,0,1]])
@@ -615,15 +616,42 @@ class CELEBA(BaseDataset):
         data = data["data"] if isinstance(data, dict) else data
         return np.asarray(data.detach().cpu())*255
 
+    def _postprocess_all2img(self, data):
+        """
+        Converts any kind of data to images to save traversal visualizations
+
+        :param data: input data
+        :type data: torch.tensor
+        :return: processed images
+        :rtype: torch.tensor
+        """
+        output_processed = self._postprocess(data)
+        output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
+            if self.mod_type in ["atts"] else output_processed
+        return output_processed
+
     def _postprocess_atts(self, data):
         if isinstance(data, dict):
             data = data["data"]
-        data = (([np.asarray([round(s) for s in x]) for x in data]*2)-1)
-        return np.asarray(data).astype("uint8")
+        data = np.asarray([np.asarray([(s[0]) for s in x]) for x in data.detach().cpu()])
+        data_str = []
+        for s in data:
+            d = []
+            for idx, i in enumerate(s):
+                d.append(self.labelmap[idx][int(i)])
+            data_str.append(", ".join(d))
+        return np.asarray(data_str)
 
     def _preprocess_atts(self):
         d = (torch.tensor(self.get_data_raw().astype("float32"))+1)/2
-        return d
+        data = []
+        for s in d:
+            sample = []
+            for v in s:
+                i = torch.tensor([0,1]) if v == 0 else torch.tensor([1,0])
+                sample.append(i)
+            data.append(torch.stack(sample))
+        return torch.stack(data)
 
     def save_recons(self, data, recons, path, mod_names):
         output_processed = self._postprocess_all2img(recons)
@@ -631,7 +659,7 @@ class CELEBA(BaseDataset):
         input_processed = []
         for key, d in data.items():
             output = self._mod_specific_savers()[mod_names[key]](d)
-            images = turn_text2image(output, img_size=self.text2img_size) if mod_names[key] == "text" \
+            images = turn_text2image(output, img_size=self.text2img_size) if mod_names[key] == "atts" \
                 else np.reshape(output,(-1,*self.feature_dims["image"]))
             images = add_recon_title(images, "input\n{}".format(mod_names[key]), (0, 0, 255))
             input_processed.append(np.vstack(images))

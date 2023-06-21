@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multimodal VAE Comparison Toolkit &mdash; multimodal-vae-comparison 1.0 documentation</title>
@@ -11,11 +11,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -27,11 +27,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> multimodal-vae-comparison
+
+          
+          
+          <a href="#" class="icon icon-home">
+            multimodal-vae-comparison
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -54,7 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="code/dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code/eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/config_cls.html">Config class</a></li>
 </ul>
 
@@ -71,8 +75,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Multimodal VAE Comparison Toolkit</li>
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Multimodal VAE Comparison Toolkit</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -92,7 +96,7 @@ By default, we provide implementations of the <a class="reference external" href
 (<a class="reference external" href="https://arxiv.org/pdf/1911.03393.pdf">paper</a>), <a class="reference external" href="https://github.com/thomassutter/MoPoE">MoPoE</a>
 (<a class="reference external" href="https://openreview.net/forum?id=5Y21V0RDBV">paper</a>) and <a class="reference external" href="https://github.com/seqam-lab/DMVAE">DMVAE</a> (<a class="reference external" href="https://openaccess.thecvf.com/content/CVPR2021W/MULA/papers/Lee_Private-Shared_Disentangled_Multimodal_VAE_for_Learning_of_Latent_Representations_CVPRW_2021_paper.pdf">paper</a>) models, but anyone is free to contribute with their own
 implementation.</p>
-<p>We also provide a custom synthetic bimodal dataset, called GeBiD, designed specifically for comparison of the
+<p>We also provide a custom synthetic bimodal dataset, called CdSprites+, designed specifically for comparison of the
 joint- and cross-generative capabilities of multimodal VAEs. You can read about the utilities of the dataset in the proposed
 paper (link will be added soon). This dataset offers 5 levels of difficulty (based on the number of attributes)
 to find the minimal functioning scenario for each model. Moreover, its rigid structure enables automatic qualitative
@@ -124,7 +128,7 @@ evaluation of the generated samples. For more info, see below.</p>
 <li class="toctree-l1"><a class="reference internal" href="code/dataloader.html">DataLoader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/datasets.html">Dataset Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/infer.html">Inference module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="code/eval_gebid.html">Evaluate on GeBiD dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code/eval_cdsprites.html">Evaluate on CdSprites+ dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code/config_cls.html">Config class</a></li>
 </ul>
 </div>
