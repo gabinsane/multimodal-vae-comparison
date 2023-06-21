@@ -14,7 +14,21 @@ from visualization import tensors_to_df
 from itertools import combinations
 
 
-def print_save_stats(stats_dict, path, dataset_name, level):
+alphabet = ' abcdefghijklmnopqrstuvwxyz'
+
+def print_save_stats(stats_dict, path, dataset_name, level=1):
+    """
+    Prints the results retrieved from eval modules into txt file and into terminal.
+
+    :param stats_dict: dictionary with statistics as keys and corresponding values
+    :type stats_dict: dict
+    :param path: path where to save the stats
+    :type path: str
+    :param dataset_name: name of the dataset for file name
+    :type dataset_name: str
+    :param level: in case of cdsprites+, you can provide level to print out results for table
+    :type level: int
+    """
     print("Final results:")
     final_line = ""
     with open(os.path.join(path,'{}_stats.txt'.format(dataset_name)), 'w') as f:
@@ -336,9 +350,6 @@ def kl_divergence(d1, d2, K=100):
         return (d1.log_prob(samples) - d2.log_prob(samples)).mean(0)
 
 
-alphabet = ' abcdefghijklmnopqrstuvwxyz'
-
-
 def char2Index(alphabet, character):
     return alphabet.find(character)
 
@@ -390,18 +401,71 @@ def img_separators(imgs, thickness=2, horizontal=True):
     return images
 
 def add_text_in_image(img, text, position, size, colour=(0, 0, 0)):
+    """
+    Add text into image.
+
+    :param img: image numpy array
+    :type img: np.array
+    :param text: string with text
+    :type text: str
+    :param position: position of text within image (x,y)
+    :type position: list
+    :param size: font size
+    :type size: int
+    :param colour: RGB colour
+    :type colour: tuple
+    :return: finished image
+    :rtype: np.array
+    """
+    img_size = img.shape[1]
     img = Image.fromarray(img.astype('uint8'), 'RGB')
     font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
     font = ImageFont.truetype(font_path, size=size)
     draw = ImageDraw.Draw(img)
-    words = text.split(" ")
-    if len(words[0]) > 1 and len(words) > 2:
-        words.insert(2, "\n")
-        if len(words) > 6:
-            words.insert(6, "\n")
-        text = " ".join(words)
-    draw.text(position, text, font=font, fill=colour)
+    lines = text_wrap(text, font, img_size)
+    for line in lines:
+        draw.text(position, line, font=font, fill=colour)
+        pos = list(position)
+        pos[1] += size
+        position = tuple(pos)
     return img
+
+
+def text_wrap(text, font, max_width):
+    """
+    Wrap text base on specified width. This is to enable text of width more than the image width to be display
+    nicely.
+
+    :param text: string wth text
+    :type text: str
+    :param font: font object
+    :type font: obj
+    :param max_width: maximum width to fit the text into
+    :type max_width: int
+    :return: list of separate text lines
+    :rtype: list
+    """
+    lines = []
+
+    # If the text width is smaller than the image width, then no need to split
+    # just add it to the line list and return
+    if font.getsize(text)[0] <= max_width:
+        lines.append(text)
+    else:
+        # split the line by spaces to get words
+        words = text.split(' ')
+        i = 0
+        # append every word to a line while its width is shorter than the image width
+        while i < len(words):
+            line = ''
+            while i < len(words) and font.getsize(line + words[i])[0] <= max_width:
+                line = line + words[i] + " "
+                i += 1
+            if not line:
+                line = words[i]
+                i += 1
+            lines.append(line)
+    return lines
 
 def output_onehot2text(recon=None, original=None):
     recon_decoded, orig_decoded = None, None
@@ -438,8 +502,7 @@ def get_all_pairs(lst):
 
 
 def partial_sum(v, keep_dims=[]):
-    """Sums variable or tensor along all dimensions except those specified
-    in `keep_dims`"""
+    """Sums variable or tensor along all dimensions except those specified in `keep_dims`"""
     if len(keep_dims) == 0:
         return v.sum()
     else:
@@ -499,11 +562,9 @@ def log_batch_marginal(dists, zs, sample_dim=None, batch_dim=None, bias=1.0):
         log_pw_joints = log_pw_joints + log_pw_joint
 
         # log average over pairs (B) or (S, B)
-        # zi에 대해 sum 이미 되어버린 log_pw_joint(100, 100,1)을가지고 100을 sum out 시켜 marginal구함
         log_marginal = log_mean_exp(log_pw_joint, 1).transpose(0, batch_dim)  # 128,128,1 -128,1-> 1,128
 
         # log product over marginals (B) or (S, B): #128,128,1 -- 128,1 -->
-        # zi가 남아있는 log_pw(100, 100, 1, 10)에대해, 100을 sum out 시켜 marginal zi(100,1,10)를 만든후 zi들을 곱해버림(partial sum wrt dim=2)
         log_prod_marginal = batch_sum(log_mean_exp(log_pw, 1),
                                       sample_dim + 1, 0)
 

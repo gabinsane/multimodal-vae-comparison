@@ -679,7 +679,7 @@ class CELEBA(BaseDataset):
         :param num_dims: number of latent dimensions
         :type num_dims: int
         """
-        if len(recons.shape) < 3:
+        if len(recons.shape) < 5:
             output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
             grid = np.asarray(make_grid(output_processed, padding=1, nrow=int(math.sqrt(len(recons)))).transpose(2, 0))
             cv2.imwrite(path, grid.astype("uint8"))
