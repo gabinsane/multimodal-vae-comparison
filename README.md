@@ -125,17 +125,16 @@ To automatically run the whole set of experiments located in one folder, launch:
 
 ```./iterate_configs.sh "./configs/my_experiment/" ```
 
-We provide sets of configs for the experiments reported in the paper. These are located in _./configs/reproduce_paper/batch_size_experiment_
-and  _./configs/reproduce_paper/latent_dim_experiment_. You can run any subset of these using the same bash script. E.g., to reproduce all reported experiments,
+We provide sets of configs for the experiments reported in the paper. These are located in _./configs/reproduce_paper/_. You can run any subset of these using the same bash script. E.g., to reproduce all reported experiments,
 run:
 
 ```./iterate_configs.sh "./configs/reproduce_paper/" ```
-(This is 550 experiments)
+(This is 60 experiments, each run trains the model 5x with 5 different seeds.)
 
-Or, to reproduce for example only the latent dimensionality experiments for CdSprites+ level 5 and the MMVAE model, run:
+Or, to reproduce for example only the experiments for the MMVAE model, run:
 
-```./iterate_configs.sh "./configs/reproduce_paper/latent_dim_experiment/gebidlevel5/mmvae"```
-(This is 40 experiments)
+```./iterate_configs.sh "./configs/reproduce_paper/mmvae"```
+(This is 15 experiments, each run trains the model 5x with 5 different seeds.)
 
 ## Evaluation
 
@@ -144,7 +143,7 @@ Furthermore, to calculate the joint- and cross-generation accuracy, you can run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python eval/eval_gebid.py --model model_dir_name --level 2  # specify the level on which the model was trained
+python eval/eval_cdsprites.py --model model_dir_name --level 2  # specify the level on which the model was trained
 ```
 
 The trained model is expected to be placed in the results folder. The script will print the statistics in the terminal 
@@ -159,7 +158,7 @@ for CdSprites+ Level 1 and the MVAE model, run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-./iterate_configs.sh "./configs/reproduce_paper/latent_dim_experiment/gebidlevel1/mvae/64/bce/"
+./iterate_configs.sh "./configs/reproduce_paper/mvae/level1"
 ```
  
  All experiments will be run with 5 seeds, the results here are reported as a mean over those seeds.
@@ -174,7 +173,7 @@ cd ~/multimodal-vae-comparison/multimodal_compare
      - **Feats** - mean percentage of correct features per sample (for Level 1 same as Strict)
  - **Accuracy (Image&rarr;Text)** - provided only images on the input, we report accuracy of the reconstructed text.
  We show **three** numbers: 
-     - **Strict** - percentage of completely correct samples (out of 500 test samples)
+     - **Strict** - percentage of completely correct samples (out of 250 test samples)
      - **Feats** - mean percentage of correct words per sample (for Level 1 same as Strict)
      - **Letters** - mean percentage of correct letters per sample
  - **Accuracy Joint** -  we sample _N_ x 20 (_N_ is the Latent Dim) random vectors from the latent space and reconstruct both text and image. We report **two** numbers:
