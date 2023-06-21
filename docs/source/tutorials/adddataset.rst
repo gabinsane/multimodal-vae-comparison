@@ -3,7 +3,7 @@
 Add a new dataset
 ====================
 
-By default, we support the proposed GeBiD dataset as well as MNIST, SVHN or the Caltech-UCSD Birds (CUB) dataset. Here we describe how
+By default, we support the proposed CdSprites+ dataset as well as MNIST, SVHN or the Caltech-UCSD Birds (CUB) dataset. Here we describe how
 you can train the models on your own data.
 
 
@@ -65,12 +65,12 @@ Adding a new dataset class
 If you wish to train on your own data, you will need to make a custom dataset class in ``datasets.py``. Any new dataset must inherit
 from BaseDataset to have some common methods used by the DataModule.
 
-In case of CUB, we can also inherit the GEBID class as the data format is very similar. We can thus add it in datasets.py like this:
+In case of CUB we add it in datasets.py like this:
 
 .. code-block:: python
    :linenos:
 
-   class CUB(GEBID):
+   class CUB(BaseDataset):
        """Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
        represented as sequences of one-hot-encodings for each character (incl. spaces)"""
        feature_dims = {"image": [64, 64, 3],
@@ -129,7 +129,7 @@ we have "mnist" and "svhn". You specify mod_type in the config.
 You also need to specify the expected shape of the data in the class attribute "feature_dims". This will be used by the dataset class to postprocess the data (i.e. reconstructions produced by the model),
  but also by the encoder and decoder networks to adjust sizes of the network layers.
 
-Next thing you need are methods that prepare each modality for training (_preprocess_text and _preprocess_images). Here we use _preprocess_images from GEBID, since it is the same format, and only rewrite _preprocess_text.  Data loading is handled automatically by BaseDataset, so you
+Next thing you need are methods that prepare each modality for training (_preprocess_text and _preprocess_images). Here we use _preprocess_images from CdSprites+, since it is the same format, and only rewrite _preprocess_text.  Data loading is handled automatically by BaseDataset, so you
 only perform reshaping, converting to tensors etc., so that these functions return tensors of the same length on the output.
 Note: In case of sequential data (like text here), we make boolean masks and concatenate them with the last dimension of the text data. This is then automatically handled by the collate function.
 

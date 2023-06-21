@@ -94,7 +94,7 @@
              
   <section id="add-a-new-dataset">
 <span id="adddataset"></span><h1>Add a new dataset<a class="headerlink" href="#add-a-new-dataset" title="Permalink to this heading"></a></h1>
-<p>By default, we support the proposed GeBiD dataset as well as MNIST, SVHN or the Caltech-UCSD Birds (CUB) dataset. Here we describe how
+<p>By default, we support the proposed CdSprites+ dataset as well as MNIST, SVHN or the Caltech-UCSD Birds (CUB) dataset. Here we describe how
 you can train the models on your own data.</p>
 <section id="supported-data-formats-config">
 <h2>Supported data formats, config<a class="headerlink" href="#supported-data-formats-config" title="Permalink to this heading"></a></h2>
@@ -143,8 +143,8 @@ modalities are expected to be ordered so that they can be semantically matched i
 <h2>Adding a new dataset class<a class="headerlink" href="#adding-a-new-dataset-class" title="Permalink to this heading"></a></h2>
 <p>If you wish to train on your own data, you will need to make a custom dataset class in <code class="docutils literal notranslate"><span class="pre">datasets.py</span></code>. Any new dataset must inherit
 from BaseDataset to have some common methods used by the DataModule.</p>
-<p>In case of CUB, we can also inherit the GEBID class as the data format is very similar. We can thus add it in datasets.py like this:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CUB</span><span class="p">(</span><span class="n">GEBID</span><span class="p">):</span>
+<p>In case of CUB we add it in datasets.py like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">class</span> <span class="nc">CUB</span><span class="p">(</span><span class="n">BaseDataset</span><span class="p">):</span>
 <span class="linenos"> 2</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text</span>
 <span class="linenos"> 3</span><span class="sd">    represented as sequences of one-hot-encodings for each character (incl. spaces)&quot;&quot;&quot;</span>
 <span class="linenos"> 4</span>    <span class="n">feature_dims</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
@@ -204,7 +204,7 @@ we have “mnist” and “svhn”. You specify mod_type in the config.</p>
 <dt>You also need to specify the expected shape of the data in the class attribute “feature_dims”. This will be used by the dataset class to postprocess the data (i.e. reconstructions produced by the model),</dt><dd><p>but also by the encoder and decoder networks to adjust sizes of the network layers.</p>
 </dd>
 </dl>
-<p>Next thing you need are methods that prepare each modality for training (_preprocess_text and _preprocess_images). Here we use _preprocess_images from GEBID, since it is the same format, and only rewrite _preprocess_text.  Data loading is handled automatically by BaseDataset, so you
+<p>Next thing you need are methods that prepare each modality for training (_preprocess_text and _preprocess_images). Here we use _preprocess_images from CdSprites+, since it is the same format, and only rewrite _preprocess_text.  Data loading is handled automatically by BaseDataset, so you
 only perform reshaping, converting to tensors etc., so that these functions return tensors of the same length on the output.
 Note: In case of sequential data (like text here), we make boolean masks and concatenate them with the last dimension of the text data. This is then automatically handled by the collate function.</p>
 <p>The last thing we need to do is map the data processing functions to the modality types, i.e. define _mod_specific_loaders() and _mod_specific_savers():</p>
