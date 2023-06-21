@@ -1,27 +1,27 @@
 batch_size: 24
 beta: 1
 dataset_name: cdspritesplus
-epochs: 250
-exp_name: mopoe
+epochs: 150
+exp_name: moe_level2_2
 iterseeds: 5
 labels: null
 lr: 1e-4
-mixing: mopoe
+mixing: moe
 modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
+  path: ./data/CdSpritesplus/level2/traindata.h5
   private_latents: 10
-  path: ./data/CdSpritesplus/level5/traindata.h5
   recon_loss: bce
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  path: ./data/CdSpritesplus/level2/traindata.h5
   private_latents: 10
-  path: ./data/CdSpritesplus/level5/traindata.h5
   recon_loss: category_ce
-n_latents: 24
+n_latents: 32
 obj: elbo
 optimizer: adam
 pre_trained: null
