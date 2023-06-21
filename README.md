@@ -170,16 +170,15 @@ cd ~/multimodal-vae-comparison/multimodal_compare
   - **Accuracy (Text&rarr;Image)** - provided only text on the input, we report accuracy of the reconstructed images.
  We show **two** numbers: 
      - **Strict** - percentage of completely correct samples (out of 500 test samples)
-     - **Feats** - mean percentage of correct features per sample (for Level 1 same as Strict)
+     - **Feats** - ratio of correct features per sample, i.e., 1.2 (0.1)/3 for Level 3 means that on average 1.2 +/- 0.1 features out of 3 are recognized correctly for each sample (for Level 1 same as Strict)
  - **Accuracy (Image&rarr;Text)** - provided only images on the input, we report accuracy of the reconstructed text.
  We show **three** numbers: 
      - **Strict** - percentage of completely correct samples (out of 250 test samples)
-     - **Feats** - mean percentage of correct words per sample (for Level 1 same as Strict)
+     - **Feats** - ratio of correct words per sample (for Level 1 same as Strict)
      - **Letters** - mean percentage of correct letters per sample
  - **Accuracy Joint** -  we sample _N_ x 20 (_N_ is the Latent Dim) random vectors from the latent space and reconstruct both text and image. We report **two** numbers:
      - **Strict** - percentage of completely correct and matching samples (out of 500 test samples)
-     - **Feats** - mean percentage of correct features (matching for image and text) per sample (for Level 1 same as Strict)
- were matching in the image and text outputs) 
+     - **Feats** - ratio of correct features (matching for image and text) per sample (for Level 1 same as Strict)
  - **Weights** - download the pretrained weights
  - **Config** - config to reproduce the results
 
