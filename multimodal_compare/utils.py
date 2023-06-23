@@ -168,10 +168,10 @@ def load_pickle(pth):
 
 def load_data(path):
     """
-    Returns appropriate method for data loading based on path suffix
+    Returns loaded data based on path suffix
     :param path: Path to data
     :type path: str
-    :return: method to load data
+    :return: loaded data
     :rtype: object
     """
     if path.startswith('.'):
