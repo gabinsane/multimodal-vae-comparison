@@ -217,12 +217,15 @@ class POE(TorchMMVAE):
 
 
     def prior_expert(self, size, use_cuda=False):
-        """Universal prior expert. Here we use a spherical
-        Gaussian: N(0, 1).
-        @param size: integer
-                     dimensionality of Gaussian
-        @param use_cuda: boolean [default: False]
-                         cast CUDA on variables
+        """
+        Universal prior expert. Here we use a spherical Gaussian: N(0, 1).
+
+        :param size: dimensionality of the Gaussian
+        :type size: int
+        :param use_cuda: cast CUDA on variables
+        :type use_cuda: boolean
+        :return: mean and logvar of the expert
+        :rtype: tuple
         """
         mu = Variable(torch.zeros(size))
         logvar = Variable(torch.log(torch.ones(size)))

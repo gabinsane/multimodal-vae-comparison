@@ -120,9 +120,12 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.add_vaes">
 <span class="sig-name descname"><span class="pre">add_vaes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vae_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ModuleDict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.add_vaes" title="Permalink to this definition"></a></dt>
-<dd><p>This functions updates the VAEs of the MMVAE with a given dictionary.
-:param vae_dict: A dictionary with the modality names as keys and BaseVAEs as values
-:param type vae_dict: nn.ModuleDict</p>
+<dd><p>This functions updates the VAEs of the MMVAE with a given dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vae_dict</strong> (<em>nn.ModuleDict</em>) – A dictionary with the modality names as keys and BaseVAEs as values</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -182,7 +185,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.get_missing_modalities">
 <span class="sig-name descname"><span class="pre">get_missing_modalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mods</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.get_missing_modalities" title="Permalink to this definition"></a></dt>
-<dd><p>Get indices of modalities that are missing</p>
+<dd><p>Get indices of modalities that are missing on the input</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>mods</strong> (<em>list</em>) – list of modalities</p>
@@ -265,7 +268,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.product_of_experts">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">product_of_experts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvar</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.product_of_experts" title="Permalink to this definition"></a></dt>
-<dd><p>Calculated the product of experts for input data</p>
+<dd><p>Calculate the product of experts for input data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

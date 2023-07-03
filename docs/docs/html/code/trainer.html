@@ -116,8 +116,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>feature_dims</strong> (<em>dict</em>) – dictionary with feature dimensions of raining data</p></li>
-<li><p><strong>cfg</strong> (<a class="reference internal" href="config_cls.html#multimodal_compare.models.config_cls.Config" title="multimodal_compare.models.config_cls.Config"><em>Config</em></a>) – instance of Config class</p></li>
+<li><p><strong>feature_dims</strong> (<em>dict</em>) – dictionary with feature dimensions of training data</p></li>
+<li><p><strong>cfg</strong> (<em>object</em>) – instance of Config class</p></li>
 </ul>
 </dd>
 </dl>
@@ -142,7 +142,19 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.check_config">
 <span class="sig-name descname"><span class="pre">check_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.check_config" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Creates a Config class out of the provided argument parser</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>(</em><em>argparse.ArgumentParser</em><em>, </em><em>str</em><em>)</em>) – argument parser or str path to config</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Config instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.configure_optimizers">
@@ -153,20 +165,36 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.datamod">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datamod</span></span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.datamod" title="Permalink to this definition"></a></dt>
-<dd><p>When the class is used for inference, there is no pl trainer module
-:return: an instance of DataModule class
-:rtype:</p>
+<dd><p>When the class is used for inference, there is no pl trainer module</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>an instance of DataModule class</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.eval_forward">
 <span class="sig-name descname"><span class="pre">eval_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.eval_forward" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Forward pass used outside training, e.g. during evaluation</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_mod_names">
 <span class="sig-name descname"><span class="pre">get_mod_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.get_mod_names" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Creates a dictionary with modality numbers and their names based on dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict with modality numbers as keys and names as values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.get_model">
@@ -207,57 +235,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.test_epoch_end">
 <span class="sig-name descname"><span class="pre">test_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.test_epoch_end" title="Permalink to this definition"></a></dt>
-<dd><p>Called at the end of a test epoch with the output of all test steps.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the pseudocode for these calls</span>
-<span class="n">test_outs</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">test_batch</span> <span class="ow">in</span> <span class="n">test_data</span><span class="p">:</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">test_step</span><span class="p">(</span><span class="n">test_batch</span><span class="p">)</span>
-    <span class="n">test_outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="n">test_epoch_end</span><span class="p">(</span><span class="n">test_outs</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>outputs</strong> – List of outputs you defined in <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step_end()</span></code>, or if there
-are multiple dataloaders, a list containing a list of outputs for each dataloader</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If you didn’t define a <a class="reference internal" href="#multimodal_compare.models.trainer.MultimodalVAE.test_step" title="multimodal_compare.models.trainer.MultimodalVAE.test_step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code></a>, this won’t be called.</p>
-</div>
-<p class="rubric">Examples</p>
-<p>With a single dataloader:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
-    <span class="c1"># do something with the outputs of all test batches</span>
-    <span class="n">all_test_preds</span> <span class="o">=</span> <span class="n">test_step_outputs</span><span class="o">.</span><span class="n">predictions</span>
-
-    <span class="n">some_result</span> <span class="o">=</span> <span class="n">calc_all_results</span><span class="p">(</span><span class="n">all_test_preds</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">some_result</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>With multiple dataloaders, <cite>outputs</cite> will be a list of lists. The outer list contains
-one entry per dataloader, while the inner list contains the individual outputs of
-each test step for that dataloader.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
-    <span class="n">final_value</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">dataloader_outputs</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">test_step_out</span> <span class="ow">in</span> <span class="n">dataloader_outputs</span><span class="p">:</span>
-            <span class="c1"># do something</span>
-            <span class="n">final_value</span> <span class="o">+=</span> <span class="n">test_step_out</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;final_metric&quot;</span><span class="p">,</span> <span class="n">final_value</span><span class="p">)</span>
-</pre></div>
-</div>
+<dd><p>Visualizations to make at the end of the testing epoch</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.test_step">
 <span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.test_step" title="Permalink to this definition"></a></dt>
-<dd><p>Iterates over the test loader (if test data is provided)</p>
+<dd><p>Iterates over the test loader (if test data is provided, otherwise val loader)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -269,7 +253,7 @@ each test step for that dataloader.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.trainer.MultimodalVAE.validation_epoch_end">
 <span class="sig-name descname"><span class="pre">validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.trainer.MultimodalVAE.validation_epoch_end" title="Permalink to this definition"></a></dt>
-<dd><p>Save visualizations</p>
+<dd><p>Save visualizations at the end of validation epoch</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>outputs</strong> (<em>torch.tensor</em>) – Loss that comes from validation_step</p>
