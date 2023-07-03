@@ -16,10 +16,10 @@ class MultimodalVAE(pl.LightningModule):
     """
     Multimodal VAE trainer common for all architectures. Configures, trains and tests the model.
 
-    :param feature_dims: dictionary with feature dimensions of raining data
+    :param feature_dims: dictionary with feature dimensions of training data
     :type feature_dims: dict
     :param cfg: instance of Config class
-    :type cfg: Config
+    :type cfg: object
     """
 
     def __init__(self, cfg, feature_dims: dict):
@@ -35,11 +35,25 @@ class MultimodalVAE(pl.LightningModule):
         self.latents = cfg.n_latents
 
     def check_config(self, cfg):
+        """
+        Creates a Config class out of the provided argument parser
+
+        :param cfg: argument parser or str path to config
+        :type cfg: (argparse.ArgumentParser, str)
+        :return: Config instance
+        :rtype: object
+        """
         if not isinstance(cfg, models.config_cls.Config):
             cfg = Config(cfg)
         return cfg
 
     def get_mod_names(self):
+        """
+        Creates a dictionary with modality numbers and their names based on dataset
+
+        :return: Dict with modality numbers as keys and names as values
+        :rtype: dict
+        """
         mod_names = {}
         for i, m in enumerate(self.config.mods):
             mod_names["mod_{}".format(i + 1)] = m["mod_type"]
@@ -49,6 +63,7 @@ class MultimodalVAE(pl.LightningModule):
     def datamod(self):
         """
         When the class is used for inference, there is no pl trainer module
+
         :return: an instance of DataModule class
         :rtype:
         """
@@ -125,7 +140,7 @@ class MultimodalVAE(pl.LightningModule):
 
     def test_step(self, test_batch, batch_idx):
         """
-        Iterates over the test loader (if test data is provided)
+        Iterates over the test loader (if test data is provided, otherwise val loader)
         """
         loss_d = self.model.objective(test_batch)
         for key in loss_d.keys():
@@ -138,7 +153,7 @@ class MultimodalVAE(pl.LightningModule):
 
     def validation_epoch_end(self, outputs):
         """
-        Save visualizations
+        Save visualizations at the end of validation epoch
 
         :param outputs: Loss that comes from validation_step
         :type outputs: torch.tensor
@@ -152,6 +167,7 @@ class MultimodalVAE(pl.LightningModule):
             self.save_joint_samples(savedir=savepath, num_samples=10, traversals=True)
 
     def test_epoch_end(self, outputs):
+        """Visualizations to make at the end of the testing epoch"""
         savepath = os.path.join(self.config.mPath, "visuals/epoch_{}_test/".format(self.trainer.current_epoch))
         os.makedirs(savepath, exist_ok=True)
         self.analyse_data(savedir=savepath, split="test")
@@ -159,7 +175,7 @@ class MultimodalVAE(pl.LightningModule):
         if self.datamod.datasets[0].eval_statistics_fn() is not None:
             self.datamod.datasets[0].eval_statistics_fn()(self)
 
-    def save_reconstructions(self, num_samples=24, savedir=None, split="val"):
+    def save_reconstructions(self, num_samples=10, savedir=None, split="val"):
         """
         Reconstructs data and saves output, also iterates over missing modalities on the input to cross-generate
 
@@ -196,7 +212,7 @@ class MultimodalVAE(pl.LightningModule):
             md = copy.deepcopy(mods)
             save(output, md, mod_name)
 
-    def save_joint_samples(self, num_samples=64, savedir=None, traversals=False):
+    def save_joint_samples(self, num_samples=16, savedir=None, traversals=False):
         """
         Generate joint samples from random vectors and save them
 
@@ -254,6 +270,7 @@ class MultimodalVAE(pl.LightningModule):
               self.mod_names)
 
     def eval_forward(self, data):
+        """Forward pass used outside training, e.g. during evaluation"""
         data_i = check_input_unpacked(data_to_device(data, self.device))
         output = self.model.forward(data_i)
         output_dic = output.unpack_values()

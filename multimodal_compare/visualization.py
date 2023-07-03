@@ -28,6 +28,22 @@ def is_iterable(o):
        return False
 
 def t_sne_ploting(df, data, path, labels, mod_names, K=1):
+    """
+    Plots a T-SNE visualization
+
+    :param df: constructed pandas dataframe
+    :type df: pd.Dataframe
+    :param data: encoded samples for one or more modalities
+    :type data: list
+    :param path: complete path to save the plot
+    :type path: str
+    :param dlabels: ground truth labels (if known)
+    :type dlabels: list
+    :param mod_names: dictionary with modality numbers as keys and names as values
+    :type mod_names: dict
+    :param K: how many subsamples were made for each input
+    :type K: int
+    """
     data_labels = []
     mod_names_list = []
     for ind, mod in enumerate(data):
@@ -60,6 +76,20 @@ def t_sne_ploting(df, data, path, labels, mod_names, K=1):
     plt.clf()
 
 def t_sne(data, path, dlabels, mod_names, K=1):
+    """
+    Make a T-SNE visualization
+
+    :param data: encoded samples for one or more modalities
+    :type data: list
+    :param path: complete path to save the plot
+    :type path: str
+    :param dlabels: ground truth labels (if known). If list of lists, multiple plots will be made for each set of labels
+    :type dlabels: list
+    :param mod_names: dictionary with modality numbers as keys and names as values
+    :type mod_names: dict
+    :param K: how many subsamples were made for each input
+    :type K: int
+    """
     tsne = TSNE(n_components=2, verbose=0, random_state=123, init='random', learning_rate="auto")
     z = tsne.fit_transform(np.concatenate([x.detach().cpu().numpy() for x in data]))
     df = pd.DataFrame()
@@ -93,7 +123,7 @@ def tensors_to_df(tensors, head=None, keys=None, ax_names=None):
 
 
 def plot_kls_df(df, filepath):
-    """Taken from https://github.com/iffsid/mmvae"""
+    """Plots the KLD boxplots for each latent dimension. Taken from https://github.com/iffsid/mmvae"""
     _, cmap_arr = custom_cmap(df[df.columns[0]].nunique() + 1)
     with sns.plotting_context("notebook", font_scale=2.0):
         g = sns.FacetGrid(df, height=12, aspect=2)

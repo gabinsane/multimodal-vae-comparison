@@ -50,9 +50,9 @@ class TorchMMVAE(nn.Module):
     def add_vaes(self, vae_dict: nn.ModuleDict):
         """
         This functions updates the VAEs of the MMVAE with a given dictionary.
-        Args:
-            vae_dict: A dictionary with the modality names as keys and BaseVAEs as values
-            type vae_dict: nn.ModuleDict
+
+        :param vae_dict: A dictionary with the modality names as keys and BaseVAEs as values
+        :type vae_dict: nn.ModuleDict
         """
         if not all(isinstance(key, str) for key in vae_dict.keys()):
             raise ValueError(f'Expected modality name as str, but got {list(vae_dict.keys())}.')
@@ -188,7 +188,7 @@ class TorchMMVAE(nn.Module):
     @staticmethod
     def product_of_experts(mu, logvar):
         """
-        Calculated the product of experts for input data
+        Calculate the product of experts for input data
 
         :param mu: list of means
         :type mu: list
@@ -208,7 +208,7 @@ class TorchMMVAE(nn.Module):
 
     def get_missing_modalities(self, mods):
         """
-        Get indices of modalities that are missing
+        Get indices of modalities that are missing on the input
 
         :param mods: list of modalities
         :type mods: list

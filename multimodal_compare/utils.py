@@ -70,6 +70,14 @@ def check_input_unpacked(mods):
     return mods
 
 def subsample_input_modalities(mods):
+    """
+    Makes all possible subsets of modalities
+
+    :param mods: Dict with modality inputs
+    :type mods: dict
+    :return: list of subsets whee each subsest is a dictionary
+    :rtype: list
+    """
     mods_inputs = []
     for m in range(len(mods) + 1):
         mods_input = copy.deepcopy(mods)
@@ -100,6 +108,7 @@ def get_root_folder():
     return os.path.dirname(__file__)
 
 def make_kl_df(qz_xs, pz):
+    """Prepares a KLD tensor for each latent dimension. Taken from https://github.com/iffsid/mmvae"""
     pz.loc = pz.loc.detach().cpu()
     pz.scale = pz.scale.detach().cpu()
     if isinstance(qz_xs, list):
@@ -163,8 +172,16 @@ def load_images(path):
     return np.asarray(dataset)
 
 def load_pickle(pth):
-        with open(pth, 'rb') as handle:
-            return pickle.load(handle)
+    """
+    Loads a pickle and returns the output
+
+    :param pth: path to the pickle
+    :type pth: str
+    :return: loaded pickle
+    :rtype: object
+    """
+    with open(pth, 'rb') as handle:
+        return pickle.load(handle)
 
 def load_data(path):
     """
@@ -190,6 +207,14 @@ def load_data(path):
     raise Exception("Unrecognized dataset format. Supported types are: .pkl, .pth or directory with images")
 
 def lengths_to_mask(lengths):
+    """
+    Creates a binary mask tensor for a list of sequence lengths (with the max. length as the second dimension)
+
+    :param lengths: list of integers (sequence lengths)
+    :type lengths: list
+    :return: tensor with True values where there is data and False where there is padding only
+    :rtype: torch.tensor
+    """
     max_len = max(lengths)
     mask = torch.arange(max_len, device=lengths.device).expand(len(lengths), max_len) < lengths.unsqueeze(1)
     return mask
@@ -540,7 +565,6 @@ def make_joint_samples(model, index, datamod, latents, traversals, savedir, num_
     rows = latents if traversals else int(math.sqrt(num_samples))
     data_class.save_traversals(recon, p, rows)
     return data_class.get_processed_recons(recon.detach().cpu()), recon
-
 
 
 def log_batch_marginal(dists, zs, sample_dim=None, batch_dim=None, bias=1.0):

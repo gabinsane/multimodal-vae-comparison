@@ -106,7 +106,7 @@ class MOE(TorchMMVAE):
                     cross_px_zs[mod_vae] = {modality:vae.px_z(*vae.dec(z))}
         return self.make_output_dict(qzs, px_zs, zs, cross_decoder_dist=cross_px_zs)
 
-    def reconstruct(self, data, runPath, epoch, N=8):
+    def reconstruct(self, data, runPath, epoch):
         """
         Reconstruct data for individual experts
 
@@ -116,8 +116,6 @@ class MOE(TorchMMVAE):
         :type runPath: str
         :param epoch: current epoch to name the data
         :type epoch: str
-        :param N: how many samples to reconstruct
-        :type N: int
         """
         recons_mat = super(MOE, self).reconstruct([d for d in data])
         self.process_reconstructions(recons_mat, data, epoch, runPath)
@@ -182,9 +180,9 @@ class POE(TorchMMVAE):
         :return: dict where keys are modalities and values are a named tuple
         :rtype: dict
         """
-        mu, logvar, single_params = self.modality_mixing(inputs, K)
+        mu, logvar, single_params = self.modality_mixing(inputs)
         qz_x = dist.Normal(*[mu, logvar])
-        z = qz_x.rsample(torch.Size([1]))
+        z = qz_x.rsample(torch.Size([K]))
         qz_d, px_d, z_d = {}, {}, {}
         for mod, vae in self.vaes.items():
             px_d[mod] = vae.px_z(*vae.dec({"latents": z, "masks": inputs[mod]["masks"]}))
@@ -193,7 +191,7 @@ class POE(TorchMMVAE):
             z_d[key] = {"latents": z, "masks": inputs[key]["masks"]}
         return self.make_output_dict(single_params, px_d, z_d, joint_dist=qz_d)
 
-    def modality_mixing(self, x, K=1):
+    def modality_mixing(self, x):
         """
         Inference module, calculates the joint posterior
         :param inputs: input data, a dict of modalities where missing modalities are replaced with None
@@ -342,7 +340,7 @@ class MoPOE(TorchMMVAE):
         for mod, vae in self.vaes.items():
             qz_d[mod] = dist.Normal(*latents["modalities"][mod]["shared"]) if latents["modalities"][mod]["shared"] is not None else None
             qz_joint[mod] = dist.Normal(*latents["joint"])
-            z = qz_joint[mod].rsample(torch.Size([1]))#qz_d[mod].rsample(torch.Size([1])) if latents["modalities"][mod]["shared"] is not None \
+            z = qz_joint[mod].rsample(torch.Size([K]))#qz_d[mod].rsample(torch.Size([1])) if latents["modalities"][mod]["shared"] is not None \
                 #else qz_joint[mod].rsample(torch.Size([1]))
             z_d[mod] = {"latents": z, "masks": inputs[mod]["masks"]}
             px_d[mod] = vae.px_z(*vae.dec(z_d[mod]))
@@ -459,7 +457,7 @@ class DMVAE(TorchMMVAE):
             joint_dist[mod] = joint_d
             qz_xs[mod] = self.qz_x(*enc_d[mod]["shared"]) if enc_d[mod]["shared"] is not None else None
             qz_private[mod] = self.qz_x(*enc_d[mod]["private"]) if enc_d[mod]["private"] is not None else None
-        z_joint = joint_d.rsample(torch.Size([1]))
+        z_joint = joint_d.rsample(torch.Size([K]))
         # decode from all dists
         for mod in self.vaes.keys():
            z_shared = qz_xs[mod].rsample(torch.Size([1])) if qz_xs[mod] is not None \

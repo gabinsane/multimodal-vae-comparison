@@ -6,7 +6,7 @@ from models.config_cls import Config
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.loggers import TensorBoardLogger
 from models.dataloader import DataModule
-from pytorch_lightning.callbacks import StochasticWeightAveraging, ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.profiler import SimpleProfiler
 
 parser = argparse.ArgumentParser()
