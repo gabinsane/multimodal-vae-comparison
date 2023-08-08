@@ -25,7 +25,13 @@ class MOE(TorchMMVAE):
         self.model_config = model_config
         self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'moe'
-        self.K = 1
+
+    @property
+    def pz_params(self):
+        return nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.ones(1, self.n_latents), requires_grad=True)  # logvar
+        ])
 
     def objective(self, data):
         """
@@ -61,7 +67,7 @@ class MOE(TorchMMVAE):
                 else:
                     lpx_zs.append([lpx1, lpx_z])
         lpx = torch.stack([lp for lp in lpx_zs if lp.sum() != 0]) if not isinstance(lpx_zs[0], list) else lpx_zs
-        d = {"lpx_z":lpx, "kld": torch.stack(klds), "qz_x":out_d["encoder_dist"], "zs": out_d["latent_samples"], "pz":self.pz, "pz_params":self.pz_params}
+        d = {"lpx_z":lpx, "kld": torch.stack(klds), "qz_x":out_d["encoder_dist"], "zs": out_d["latent_samples"], "pz":self.pz, "pz_params":self.pz_params, "K":self.K}
         obj = self.obj_fn.calculate_loss(d)
         if self.obj_fn.obj_name == "elbo":
             obj["loss"] = (1 / len(self.vaes)) * obj["loss"]
@@ -138,6 +144,8 @@ class POE(TorchMMVAE):
         super().__init__(n_latents, **obj_config)
         self.vaes = nn.ModuleDict(vaes)
         self.model_config = model_config
+        for vae in self.vaes:
+            assert vae.prior_str == "normal", "PoE mixing only works with normal (gaussian) priors! adjust the config"
         self.modelName = 'poe'
 
     def objective(self, mods):

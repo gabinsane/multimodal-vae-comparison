@@ -13,7 +13,7 @@ class TorchMMVAE(nn.Module):
     Base class for all PyTorch based MMVAE implementations.
     """
 
-    def __init__(self, n_latents: int, obj: str, beta=1):
+    def __init__(self, n_latents: int, obj: str, beta=1, K=1):
         """
         :param n_latents: dimensionality of the (shared) latent space
         :type n_latents: int
@@ -29,6 +29,7 @@ class TorchMMVAE(nn.Module):
         self.px_z = dist.Normal
         self.pz = dist.Normal
         self.n_latents = n_latents
+        self.K = K
         self.obj_fn = MultimodalObjective(obj, beta)
 
     @property

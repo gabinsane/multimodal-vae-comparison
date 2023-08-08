@@ -16,6 +16,7 @@ class Config():
         :type parser: (argparse.ArgumentParser, str)
         """
         self.num_mods = None
+        self.K = 1
         self.model_cfg = {}
         self.mPath = None
         self.labels_test = None

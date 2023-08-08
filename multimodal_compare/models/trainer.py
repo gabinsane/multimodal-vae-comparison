@@ -104,7 +104,7 @@ class MultimodalVAE(pl.LightningModule):
                                                prior_dist=m["prior"], post_dist=m["prior"], likelihood_dist=m["prior"])
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
-            obj_cfg = {"obj": self.config.obj, "beta": self.config.beta}
+            obj_cfg = {"obj": self.config.obj, "beta": self.config.beta, "K":self.config.K}
             self.model = getattr(models, self.config.mixing.lower())(vaes, self.config.n_latents, obj_cfg,
                                                                      self.config.model_cfg)
             assert isinstance(self.model, TorchMMVAE)
