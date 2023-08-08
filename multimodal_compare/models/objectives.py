@@ -323,6 +323,32 @@ class MultimodalObjective(BaseObjective):
         loss = -log_mean_exp(torch.cat(lws)).sum()
         return {"loss": loss, "kld": torch.tensor(0), "reconstruction_loss": torch.stack([torch.stack(x)for x in data["lpx_z"]])}
 
+    def _m_dreg_looser(self, lpx_zs, pz, pz_params, zss, qz_xs, K=1):
+        """DREG estimate for log p_\theta(x) for multi-modal vae -- fully vectorised;
+        Source: https://github.com/iffsid/mmvae
+        This version is the looser bound---with the average over modalities outside the log
+        """
+        lws = []
+        for r, zs in enumerate(zss):
+            lpz = pz(*pz_params).log_prob(zss[r]).sum(-1)
+            lqz_x = log_mean_exp(torch.stack([qz_x_.log_prob(zss[r]).sum(-1) for qz_x_ in qz_xs]))
+            lpx_z = torch.stack(lpx_zs[r]).sum(0)
+            lw = lpz.sum(-1) + lpx_z - lqz_x.sum(-1)
+            lws.append(lw)
+        return torch.stack(lws), torch.stack(zss)
+
+    def dreg(self, data):
+        """Computes dreg estimate for log p_\theta(x) for multi-modal vae;
+        Source: https://github.com/iffsid/mmvae
+        This version is the looser bound---with the average over modalities outside the log
+        """
+        lw, zss = self._m_dreg_looser(data["lpx_z"], data["pz"], data["pz_params"].cuda(), [z["latents"] for z in data["zs"]], data["qz_x"], K=data["K"])
+        with torch.no_grad():
+            grad_wt = (lw - torch.logsumexp(lw, 1, keepdim=True)).exp()
+            if zss.requires_grad:
+                zss.register_hook(lambda grad: grad_wt.unsqueeze(-1) * grad)
+        return {"loss": -(grad_wt * lw).mean(0).sum(), "kld": torch.tensor(0),
+                 "reconstruction_loss": torch.stack([torch.stack(x) for x in data["lpx_z"]])}
 
 class ReconLoss():
     """ Class that stores reconstruction loss functions """
