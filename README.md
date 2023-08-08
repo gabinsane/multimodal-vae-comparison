@@ -136,6 +136,18 @@ Or, to reproduce for example only the experiments for the MMVAE model, run:
 ```./iterate_configs.sh "./configs/reproduce_paper/mmvae"```
 (This is 15 experiments, each run trains the model 5x with 5 different seeds.)
 
+### Mixed precision training
+
+For improving the training speed, you can also use Mixed Precision Training. PyTorch Lightning supports the following values: **64**, **32**, **16**, **bf16**. 
+The default precision is 32, but you can change the parameter with the '--precision' or '-p' argument:
+
+```
+cd ~/multimodal-vae-comparison/multimodal_compare
+python main.py --cfg configs/config1.yml --precision bf16
+```
+
+You can read more about this configuration in the [PyTorch Lightning documentation](https://lightning.ai/docs/pytorch/1.5.7/advanced/mixed_precision.html)
+
 ## Evaluation
 
 After training, you will find various visualizations of the training progress in the _./visuals_ folder of your experiment.
