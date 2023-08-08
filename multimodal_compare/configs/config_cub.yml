@@ -18,11 +18,13 @@ modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
+  prior: normal
   recon_loss:  bce
   path: ./data/cub/images
 modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
+  prior: normal
   mod_type: text
   recon_loss: category_ce
   path: ./data/cub/cub_captions.pkl

@@ -18,11 +18,13 @@ modality_1:
   encoder: VideoGPT
   mod_type: frames
   recon_loss:  bce
+  prior: normal
   path: ./data/sprites
   test_datapath: ./data/sprites/test
 modality_2:
   decoder: FNN
   encoder: FNN
+  prior: normal
   recon_loss: category_ce
   mod_type: actions
   path: ./data/sprites
@@ -30,6 +32,7 @@ modality_2:
 modality_3:
   decoder: FNN
   encoder: FNN
+  prior: normal
   recon_loss: category_ce
   mod_type: attributes
   path: ./data/sprites

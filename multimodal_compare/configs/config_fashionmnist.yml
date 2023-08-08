@@ -17,12 +17,14 @@ dataset_name: fashionmnist
 modality_1:
   decoder: MNIST
   encoder: MNIST
+  prior: normal
   mod_type: image
   recon_loss:  bce
   path:
 modality_2:
   decoder: FNN
   encoder: FNN
+  prior: normal
   mod_type: label
   recon_loss:  category_ce
   path:

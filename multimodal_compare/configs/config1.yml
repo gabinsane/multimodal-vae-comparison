@@ -10,6 +10,7 @@ mixing: mopoe
 modality_1:
   decoder: CNN
   encoder: CNN
+  prior: normal
   mod_type: image
   private_latents: 10
   path: ./data/CdSpritesplus/level5/traindata.h5
@@ -18,6 +19,7 @@ modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  prior: normal
   private_latents: 10
   path: ./data/CdSpritesplus/level5/traindata.h5
   recon_loss: category_ce

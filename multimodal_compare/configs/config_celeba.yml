@@ -19,10 +19,12 @@ modality_1:
   encoder: CNN
   mod_type: image
   recon_loss:  bce
+  prior: normal
   path: ./data/celeba/celeba50k.npy
 modality_2:
   decoder: FNN
   encoder: FNN
+  prior: normal
   mod_type: atts
   recon_loss:  category_ce
   path: ./data/celeba/celeba50k_atts.npy

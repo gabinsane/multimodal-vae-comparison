@@ -128,6 +128,7 @@ class Dec_SVHN(VaeDecoder):
         :rtype: tuple(torch.tensor, torch.tensor)
         """
         z = z["latents"]
+        bs = z.shape[:2] if len(z.shape) == 3 else None
         z = z.squeeze(0)
         z = self.linear(z)
         z = z.view(-1, z.size(-1), 1, 1)
@@ -139,6 +140,8 @@ class Dec_SVHN(VaeDecoder):
         x_hat = self.conv3(x_hat)
         x_hat = self.relu(x_hat)
         d = torch.sigmoid(self.conv4(x_hat)).permute(0, 2, 3, 1)
+        if bs:
+            d = d.view(*bs, d.shape[1], d.shape[2], d.shape[3])
         return d.squeeze(), torch.tensor(0.75).to(z.device)
 
 

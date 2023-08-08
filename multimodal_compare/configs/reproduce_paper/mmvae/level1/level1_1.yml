@@ -11,6 +11,7 @@ modality_1:
   decoder: CNN
   encoder: CNN
   mod_type: image
+  prior: normal
   path: ./data/CdSpritesplus/level1/traindata.h5
   private_latents: 10
   recon_loss: bce
@@ -18,6 +19,7 @@ modality_2:
   decoder: TxtTransformer
   encoder: TxtTransformer
   mod_type: text
+  prior: normal
   path: ./data/CdSpritesplus/level1/traindata.h5
   private_latents: 10
   recon_loss: category_ce

@@ -18,11 +18,13 @@ modality_1:
   decoder: PolyMNIST
   encoder: PolyMNIST
   mod_type: m0
+  prior: normal
   recon_loss:  bce
   path: ./data/MMNIST/train/m0.pt
 modality_2:
   decoder: PolyMNIST
   encoder: PolyMNIST
+  prior: normal
   mod_type: m1
   recon_loss:  bce
   path: ./data/MMNIST/train/m1.pt
@@ -30,17 +32,20 @@ modality_3:
   decoder: PolyMNIST
   encoder: PolyMNIST
   mod_type: m2
+  prior: normal
   recon_loss:  bce
   path: ./data/MMNIST/train/m2.pt
 modality_4:
   decoder: PolyMNIST
   encoder: PolyMNIST
   mod_type: m3
+  prior: normal
   recon_loss:  bce
   path: ./data/MMNIST/train/m3.pt
 modality_5:
   decoder: PolyMNIST
   encoder: PolyMNIST
   mod_type: m4
+  prior: normal
   recon_loss:  bce
   path: ./data/MMNIST/train/m4.pt

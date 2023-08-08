@@ -104,8 +104,8 @@ class BaseVae(nn.Module):
         return out
 
 class VAE(BaseVae):
-    def __init__(self, enc, dec, feature_dim, n_latents, ltype, private_latents=None, prior_dist=dist.Normal,
-                 likelihood_dist=dist.Normal, post_dist=dist.Normal, obj_fn=None, beta=1, id_name="mod_1"):
+    def __init__(self, enc, dec, feature_dim, n_latents, ltype, private_latents=None, prior_dist="normal",
+                 likelihood_dist="normal", post_dist="normal", obj_fn=None, beta=1, id_name="mod_1"):
         """
         The general unimodal VAE module, can be used separately or in a multimodal VAE
 
@@ -124,6 +124,12 @@ class VAE(BaseVae):
         :param post_dist: posterior distribution
         :type post_dist: torch.dist
         """
+        dist_map = {"normal":dist.Normal, "categorical":dist.Categorical, "laplace":dist.Laplace,
+                    "gumbel":dist.Gumbel, "gaussian": dist.Normal}
+        self.prior_str = prior_dist.lower()
+        prior_dist = dist_map[prior_dist.lower()]
+        post_dist = dist_map[post_dist.lower()]
+        likelihood_dist = dist_map[likelihood_dist.lower()]
         enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim)
         super(VAE, self).__init__(enc_net, dec_net, prior_dist, likelihood_dist, post_dist)
         self._qz_x_params, self._pz_params_private = None, None

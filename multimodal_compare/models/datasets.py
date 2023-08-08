@@ -397,12 +397,25 @@ class MNIST_SVHN(BaseDataset):
     def __init__(self, pth, testpth, mod_type):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
+        self.text2img_size = (32, 32, 3)
 
     def _mod_specific_loaders(self):
         return {"mnist": self._process_mnist, "svhn": self._process_svhn}
 
     def _mod_specific_savers(self):
         return {"mnist": self._postprocess_mnist, "svhn": self._postprocess_svhn}
+
+    def _postprocess_all2img(self, data):
+        """
+        Converts any kind of data to images to save traversal visualizations
+
+        :param data: input data
+        :type data: torch.tensor
+        :return: processed images
+        :rtype: torch.tensor
+        """
+        output_processed = self._postprocess(data)
+        return output_processed
 
     def _postprocess_svhn(self, data):
         if isinstance(data, dict):
