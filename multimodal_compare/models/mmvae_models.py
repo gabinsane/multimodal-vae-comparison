@@ -21,9 +21,8 @@ class MOE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__(n_latents, **obj_config)
+        super().__init__(vaes, n_latents, **obj_config)
         self.model_config = model_config
-        self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'moe'
 
     @property
@@ -141,8 +140,7 @@ class POE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__(n_latents, **obj_config)
-        self.vaes = nn.ModuleDict(vaes)
+        super().__init__(vaes, n_latents, **obj_config)
         self.model_config = model_config
         for vae in self.vaes:
             assert vae.prior_str == "normal", "PoE mixing only works with normal (gaussian) priors! adjust the config"
@@ -256,8 +254,7 @@ class MoPOE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__(n_latents, **obj_config)
-        self.vaes = nn.ModuleDict(vaes)
+        super().__init__(vaes, n_latents, **obj_config)
         self.model_config = model_config
         self.modelName = 'mopoe'
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
@@ -412,9 +409,8 @@ class DMVAE(TorchMMVAE):
         :param model_cofig: config with model-specific parameters
         :type model_config: dict
         """
-        super().__init__(n_latents, **obj_config)
+        super().__init__(vaes, n_latents, **obj_config)
         self.model_config = model_config
-        self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'dmvae'
         assert self.latent_factorization, "DMVAE requires private_latents in the config"
 

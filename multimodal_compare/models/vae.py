@@ -105,7 +105,7 @@ class BaseVae(nn.Module):
 
 class VAE(BaseVae):
     def __init__(self, enc, dec, feature_dim, n_latents, ltype, private_latents=None, prior_dist="normal",
-                 likelihood_dist="normal", post_dist="normal", obj_fn=None, beta=1, id_name="mod_1"):
+                 likelihood_dist="normal", post_dist="normal", obj_fn=None, beta=1, id_name="mod_1", llik_scaling="auto"):
         """
         The general unimodal VAE module, can be used separately or in a multimodal VAE
 
@@ -133,7 +133,7 @@ class VAE(BaseVae):
         enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim)
         super(VAE, self).__init__(enc_net, dec_net, prior_dist, likelihood_dist, post_dist)
         self._qz_x_params, self._pz_params_private = None, None
-        self.llik_scaling = 1
+        self.llik_scaling = llik_scaling
         self.data_dim = feature_dim
         self.private_latents = private_latents
         self.n_latents = n_latents

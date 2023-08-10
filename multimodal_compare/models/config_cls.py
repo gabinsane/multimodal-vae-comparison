@@ -82,6 +82,8 @@ class Config():
             d = getattr(self, m)
             if not "private_latents" in d.keys():
                 d["private_latents"] = None
+            if not "llik_scaling" in d.keys():
+                d["llik_scaling"] = 1
             self.mods.append(d)
         if config["labels"]:
             self.labels = load_data(config["labels"])

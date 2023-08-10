@@ -6,6 +6,7 @@ from models.output_storage import VAEOutput
 import torch.distributions as dist
 from models.objectives import MultimodalObjective
 from models.vae import BaseVae
+import numpy as np
 
 
 class TorchMMVAE(nn.Module):
@@ -13,7 +14,7 @@ class TorchMMVAE(nn.Module):
     Base class for all PyTorch based MMVAE implementations.
     """
 
-    def __init__(self, n_latents: int, obj: str, beta=1, K=1):
+    def __init__(self, vaes:list, n_latents: int, obj: str, beta=1, K=1):
         """
         :param n_latents: dimensionality of the (shared) latent space
         :type n_latents: int
@@ -23,7 +24,7 @@ class TorchMMVAE(nn.Module):
         :type beta: float
         """
         super().__init__()
-        self.vaes = nn.ModuleDict()
+        self.vaes = nn.ModuleDict(vaes)
         self.modelName = 'TorchMMVAE'
         self.qz_x = dist.Normal # posterior
         self.px_z = dist.Normal
@@ -31,6 +32,15 @@ class TorchMMVAE(nn.Module):
         self.n_latents = n_latents
         self.K = K
         self.obj_fn = MultimodalObjective(obj, beta)
+        self.set_likelihood_scales()
+
+    def set_likelihood_scales(self):
+        min_dim = min([np.prod(vae.enc.data_dim) for vae in self.vaes.values()])
+        for vae in self.vaes.values():
+            if vae.llik_scaling == "auto":
+                vae.llik_scaling = min_dim/np.prod(vae.enc.data_dim)
+            else:
+                vae.llik_scaling = float(vae.llik_scaling)
 
     @property
     def pz_params(self):

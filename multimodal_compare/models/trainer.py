@@ -101,7 +101,8 @@ class MultimodalVAE(pl.LightningModule):
                                                self.config.n_latents, m["recon_loss"], m["private_latents"],
                                                obj_fn=self.config.obj,
                                                beta=self.config.beta, id_name="mod_{}".format(i + 1),
-                                               prior_dist=m["prior"], post_dist=m["prior"], likelihood_dist=m["prior"])
+                                               prior_dist=m["prior"], post_dist=m["prior"], likelihood_dist=m["prior"],
+                                               llik_scaling=m["llik_scaling"])
         if len(self.config.mods) > 1:
             vaes = nn.ModuleDict(vaes)
             obj_cfg = {"obj": self.config.obj, "beta": self.config.beta, "K":self.config.K}
