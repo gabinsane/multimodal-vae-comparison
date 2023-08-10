@@ -2,6 +2,7 @@ import torch
 import cv2, os
 import numpy as np
 import math, copy
+import wget
 from utils import one_hot_encode, output_onehot2text, lengths_to_mask, turn_text2image, load_data, add_recon_title
 from torchvision.utils import make_grid
 from eval.eval_sprites import eval_single_model as sprites_eval
@@ -387,7 +388,6 @@ class CUB(BaseDataset):
         final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
         cv2.imwrite(path, cv2.cvtColor(final, cv2.COLOR_BGR2RGB))
 
-
 class MNIST_SVHN(BaseDataset):
     """Dataset class for the MNIST-SVHN bimodal dataset (can be also used for unimodal training)"""
     feature_dims = {"mnist": [28,28,1],
@@ -398,6 +398,15 @@ class MNIST_SVHN(BaseDataset):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
         self.text2img_size = (32, 32, 3)
+        self.check_indices_present()
+
+    def check_indices_present(self):
+        if not os.path.exists(self.path):
+            wget.download(os.path.join("https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/",
+                                       os.path.basename(self.path)), out=os.path.dirname(self.path))
+
+    def labels(self):
+        return self.train_labels
 
     def _mod_specific_loaders(self):
         return {"mnist": self._process_mnist, "svhn": self._process_svhn}
@@ -420,7 +429,7 @@ class MNIST_SVHN(BaseDataset):
     def _postprocess_svhn(self, data):
         if isinstance(data, dict):
             data = data["data"]
-        images = np.asarray(data.detach().cpu()).reshape(-1, *self.feature_dims["svhn"]) * 255
+        images = np.asarray(data.detach().cpu().reshape(-1, 3,32,32)).transpose(0,2,3,1) * 255
         images_res = []
         for i in images:
             images_res.append(cv2.resize(i, (28,28)))
@@ -434,10 +443,18 @@ class MNIST_SVHN(BaseDataset):
         return images_3chan
 
     def _process_mnist(self):
-        return super(MNIST_SVHN, self)._preprocess_images([self.feature_dims["mnist"][i] for i in [2,0,1]])
+        data = torchvision.datasets.MNIST('../data', train=True, download=True, transform=torchvision.transforms.ToTensor())
+        t_mnist = torch.load(self.path)[1::28][:60000]
+        d = data.train_data[t_mnist].unsqueeze(1)
+        self.train_labels = data.train_labels[t_mnist]
+        return d /255
 
     def _process_svhn(self):
-        return super(MNIST_SVHN, self)._preprocess_images([self.feature_dims["svhn"][i] for i in [2,0,1]])
+        data = torchvision.datasets.SVHN('../data', download=True, split='train', transform=torchvision.transforms.ToTensor())
+        t_svhn = torch.load(self.path)[1::28][:60000]
+        d = data.data[t_svhn]
+        self.train_labels = data.labels[t_svhn]
+        return (torch.tensor(d))/255
 
     def save_recons(self, data, recons, path, mod_names):
         output_processed = self._postprocess(recons)

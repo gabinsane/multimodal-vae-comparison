@@ -350,14 +350,14 @@ used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf), Sprites (as in 
 
 #### MNIST_SVHN
 
-First download the dataset (30 MB in total) before the training. You can run the following:
+We use the inbuilt torchvision.datasets function to download and process the dataset. Resampling of the data
+should happen automatically based on indices that will be downloaded within the script. You can thus run:
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-wget https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/mnist_svhn.zip   # download mnist_svhn dataset
-unzip mnist_svhn.zip -d ./data/
 python main.py --cfg configs/config_mnistsvhn.yml
 ```
+
 
 #### CUB
 

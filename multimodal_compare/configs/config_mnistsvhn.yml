@@ -1,7 +1,7 @@
-batch_size: 32
+batch_size: 128
 epochs: 600
 exp_name: mnistsvhn2
-labels: ./data/mnist_svhn/labels.pkl
+labels:
 lr: 1e-3
 mixing: moe
 iterseeds: 1
@@ -9,7 +9,7 @@ n_latents: 20
 obj: dreg
 optimizer: adam
 pre_trained: null
-seed: 2
+seed: 1
 beta: 1
 K: 30
 viz_freq: 1
@@ -21,11 +21,11 @@ modality_1:
   prior: laplace
   mod_type: mnist
   recon_loss: lprob
-  path: ./data/mnist_svhn/mnist
+  path: ./data/mnist_svhn/train-ms-mnist-idx.pt
 modality_2:
   decoder: SVHN
   encoder: SVHN
   mod_type: svhn
   prior: laplace
   recon_loss: lprob
-  path: ./data/mnist_svhn/svhn
+  path: ./data/mnist_svhn/train-ms-svhn-idx.pt
