@@ -21,11 +21,13 @@ modality_1:
   prior: laplace
   mod_type: mnist
   recon_loss: lprob
+  llik_scaling: auto
   path: ./data/mnist_svhn/train-ms-mnist-idx.pt
 modality_2:
   decoder: SVHN
   encoder: SVHN
   mod_type: svhn
   prior: laplace
+  llik_scaling: auto
   recon_loss: lprob
   path: ./data/mnist_svhn/train-ms-svhn-idx.pt

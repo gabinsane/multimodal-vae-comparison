@@ -342,7 +342,7 @@ class MultimodalObjective(BaseObjective):
         Source: https://github.com/iffsid/mmvae
         This version is the looser bound---with the average over modalities outside the log
         """
-        lw, zss = self._m_dreg_looser(data["lpx_z"], data["pz"], data["pz_params"].cuda(), [z["latents"] for z in data["zs"]], data["qz_x"], K=data["K"])
+        lw, zss = self._m_dreg_looser(data["lpx_z"], data["pz"], [x.cuda() for x in data["pz_params"]], [z["latents"] for z in data["zs"]], data["qz_x"], K=data["K"])
         with torch.no_grad():
             grad_wt = (lw - torch.logsumexp(lw, 1, keepdim=True)).exp()
             if zss.requires_grad:

@@ -143,7 +143,7 @@ class VAE(BaseVae):
         self.total_latents = self.n_latents + self.private_latents if self.private_latents is not None else self.n_latents
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.total_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.total_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, self.total_latents), requires_grad=True)  # logvar
         ])
         if self.private_latents is not None:
             self._pz_params_private = nn.ParameterList([

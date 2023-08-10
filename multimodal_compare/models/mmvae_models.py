@@ -2,7 +2,7 @@
 from models.mmvae_base import TorchMMVAE
 import torch
 import torch.distributions as dist
-import torch.nn as nn
+import torch.nn.functional as F
 from utils import combinatorial, log_joint, log_batch_marginal, get_all_pairs, subsample_input_modalities, find_out_batch_size
 from torch.autograd import Variable
 from itertools import chain, combinations
@@ -27,10 +27,7 @@ class MOE(TorchMMVAE):
 
     @property
     def pz_params(self):
-        return nn.ParameterList([
-            nn.Parameter(torch.zeros(1, self.n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.n_latents), requires_grad=True)  # logvar
-        ])
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
 
     def objective(self, data):
         """

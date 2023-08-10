@@ -32,6 +32,10 @@ class TorchMMVAE(nn.Module):
         self.n_latents = n_latents
         self.K = K
         self.obj_fn = MultimodalObjective(obj, beta)
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.n_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.zeros(1, self.n_latents), requires_grad=True)  # logvar
+        ])
         self.set_likelihood_scales()
 
     def set_likelihood_scales(self):
