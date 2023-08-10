@@ -50,3 +50,4 @@ dependencies:
     - pyttsx3
     - torchnet
     - tensorboard
+    - wget
