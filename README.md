@@ -18,6 +18,10 @@ evaluation of the generated samples. For more info, see below.
 
 [**Code Documentation & Tutorials**](https://gabinsane.github.io/multimodal-vae-comparison)
 
+
+| :dart: To elevate the general discussion on the development of multimodal VAEs, we have now added the [Discussions section](https://github.com/gabinsane/multimodal-vae-comparison/discussions) |
+| --- |
+
 ---
 ### **List of contents**
 
