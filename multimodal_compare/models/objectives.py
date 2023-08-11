@@ -159,7 +159,7 @@ class BaseObjective():
         """
         klds = []
         for d in latent_dists:
-            klds.append(self.calc_kld(d, model.pz(*model.pz_params.cuda())))
+            klds.append(self.calc_kld(d, model.pz(*[x.cuda() for x in model.pz_params])))
         return klds
 
     def weighted_group_kld(self, latent_dists, model, weights):
@@ -177,7 +177,7 @@ class BaseObjective():
         """
         klds = []
         for d in latent_dists:
-            klds.append(self.calc_kld(d, model.pz(*model.pz_params.cuda())))
+            klds.append(self.calc_kld(d, model.pz(*[x.cuda() for x in model.pz_params])))
         group_div = torch.stack(klds).sum(-1).mean(1) * weights
         return group_div.sum(), klds
 
@@ -331,8 +331,8 @@ class MultimodalObjective(BaseObjective):
         lws = []
         for r, zs in enumerate(zss):
             lpz = pz(*pz_params).log_prob(zss[r]).sum(-1)
-            lqz_x = log_mean_exp(torch.stack([qz_x_.log_prob(zss[r]).sum(-1) for qz_x_ in qz_xs]))
-            lpx_z = torch.stack(lpx_zs[r]).sum(0)
+            lqz_x = log_mean_exp(torch.stack([qz_x_.log_prob(zss[r]).sum(-1) for qz_x_ in qz_xs if qz_x_ is not None]))
+            lpx_z = torch.stack(lpx_zs[r]).sum(0) if isinstance(lpx_zs[r], list) else lpx_zs[r]
             lw = lpz.sum(-1) + lpx_z - lqz_x.sum(-1)
             lws.append(lw)
         return torch.stack(lws), torch.stack(zss)
@@ -347,8 +347,9 @@ class MultimodalObjective(BaseObjective):
             grad_wt = (lw - torch.logsumexp(lw, 1, keepdim=True)).exp()
             if zss.requires_grad:
                 zss.register_hook(lambda grad: grad_wt.unsqueeze(-1) * grad)
+        rec_loss = torch.stack([torch.stack(x) for x in data["lpx_z"]]) if isinstance(data["lpx_z"], list) else(data["lpx_z"])
         return {"loss": -(grad_wt * lw).mean(0).sum(), "kld": torch.tensor(0),
-                 "reconstruction_loss": torch.stack([torch.stack(x) for x in data["lpx_z"]])}
+                 "reconstruction_loss": rec_loss}
 
 class ReconLoss():
     """ Class that stores reconstruction loss functions """

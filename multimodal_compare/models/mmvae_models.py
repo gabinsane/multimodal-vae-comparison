@@ -139,9 +139,12 @@ class POE(TorchMMVAE):
         """
         super().__init__(vaes, n_latents, **obj_config)
         self.model_config = model_config
-        for vae in self.vaes:
-            assert vae.prior_str == "normal", "PoE mixing only works with normal (gaussian) priors! adjust the config"
         self.modelName = 'poe'
+
+    @property
+    def pz_params(self):
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
 
     def objective(self, mods):
         """
@@ -157,7 +160,7 @@ class POE(TorchMMVAE):
         for m, mods_input in enumerate(mods_inputs):
             output = self.forward(mods_input)
             output_dic = output.unpack_values()
-            kld = self.obj_fn.calc_kld(output_dic["joint_dist"][0], self.pz(*self.pz_params.to("cuda")))
+            kld = self.obj_fn.calc_kld(output_dic["joint_dist"][0], self.pz(*[x.cuda() for x in self.pz_params]))
             klds.append(kld.sum(-1))
             loc_lpx_z = []
             for mod in output.mods.keys():
@@ -167,7 +170,7 @@ class POE(TorchMMVAE):
                 loc_lpx_z.append(lpx_z)
                 if mod == "mod_{}".format(m + 1):
                     lpx_zs[m].append(lpx_z)
-            d = {"lpx_z": torch.stack(loc_lpx_z).sum(0), "kld": kld.sum(-1), "qz_x": output_dic["encoder_dist"], "zs": output_dic["latent_samples"], "pz": self.pz, "pz_params": self.pz_params}
+            d = {"lpx_z": torch.stack(loc_lpx_z).sum(0), "kld": kld.sum(-1), "qz_x": output_dic["encoder_dist"], "K":self.K,"zs": output_dic["latent_samples"], "pz": self.pz, "pz_params": self.pz_params}
             losses.append(self.obj_fn.calculate_loss(d)["loss"])
         ind_losses = [-torch.stack(m).sum() / self.vaes["mod_{}".format(idx+1)].llik_scaling for idx, m in enumerate(lpx_zs)]
         obj = {"loss": torch.stack(losses).sum(), "reconstruction_loss": ind_losses, "kld": torch.stack(klds).mean(0).sum()}
@@ -257,6 +260,11 @@ class MoPOE(TorchMMVAE):
         self.subsets = [[x] for x in self.vaes] + list(combinatorial([x for x in self.vaes]))
         self.subsets = self.set_subsets()
         self.weights = None
+
+    @property
+    def pz_params(self):
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
 
     def set_subsets(self):
         """
@@ -411,6 +419,10 @@ class DMVAE(TorchMMVAE):
         self.modelName = 'dmvae'
         assert self.latent_factorization, "DMVAE requires private_latents in the config"
 
+    @property
+    def pz_params(self):
+        return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
     def objective(self, mods):
         """
         Objective for the DMVAE model. Source: https://github.com/seqam-lab/
@@ -425,8 +437,8 @@ class DMVAE(TorchMMVAE):
         for mod, output in output_whole.mods.items():
             self.obj_fn.set_ltype(self.vaes[mod].ltype)
             lpx_z = (self.obj_fn.recon_loss_fn(output.decoder_dist, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1)
-            kld = self.obj_fn.calc_kld(output.encoder_dist, self.pz(*self.pz_params.to("cuda")))
-            kld_poe = self.obj_fn.calc_kld(output.joint_dist, self.pz(*self.pz_params.to("cuda")))
+            kld = self.obj_fn.calc_kld(output.encoder_dist, self.pz(*[x.cuda() for x in self.pz_params]))
+            kld_poe = self.obj_fn.calc_kld(output.joint_dist, self.pz(*[x.cuda() for x in self.pz_params]))
             lpx_z_poe = (self.obj_fn.recon_loss_fn(output.joint_decoder_dist, mods[mod]) * self.vaes[mod].llik_scaling).sum(-1)
             lpx_zs_cross = []
             klds_priv = []

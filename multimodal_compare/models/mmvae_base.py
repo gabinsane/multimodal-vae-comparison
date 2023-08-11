@@ -50,7 +50,7 @@ class TorchMMVAE(nn.Module):
     def pz_params(self):
         return nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.n_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.n_latents), requires_grad=False)  # logvar
+            nn.Parameter(torch.ones(1, self.n_latents), requires_grad=True)  # logvar
         ])
 
     @property
