@@ -8,8 +8,14 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from models.dataloader import DataModule
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.profiler import SimpleProfiler
+from pickle import dumps
+
+def identity(string):
+    return string
 
 parser = argparse.ArgumentParser()
+parser.register('type', None, identity)
+_ = dumps(parser)
 parser.add_argument("-c", "--cfg", help="Specify config file", metavar="FILE")
 parser.add_argument('-p', '--precision', type=str, default=32,
                     help='Value for mixed precision training. Allowed values: 64, 32, 16, bf16')
@@ -42,13 +48,10 @@ def main(config):
     logger1 = TensorBoardLogger(config.mPath, name="metrics", log_graph=True, version="tensorboard")
     trainer_kwargs = {"profiler": profiler, "accelerator":"gpu",
                       "default_root_dir": config.mPath, "max_epochs": config.epochs, "check_val_every_n_epoch": 1,
-                      "callbacks": [checkpoint_callback], "logger":[logger1, logger2], "precision":args.precision}
+                      "callbacks": [checkpoint_callback], "logger":[logger1, logger2], "precision":args.precision, "devices":-1}
     pl_trainer = pl.Trainer(**trainer_kwargs)
     pl_trainer.fit(model_wrapped, datamodule=data_module)
     pl_trainer.test(ckpt_path="best", datamodule=data_module)
-
-def identity(string):
-    return string
 
 if __name__ == '__main__':
     args = parser.parse_args()
