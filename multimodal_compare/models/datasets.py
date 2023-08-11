@@ -444,14 +444,14 @@ class MNIST_SVHN(BaseDataset):
 
     def _process_mnist(self):
         data = torchvision.datasets.MNIST('../data', train=True, download=True, transform=torchvision.transforms.ToTensor())
-        t_mnist = torch.load(self.path)[1::28][:60000]
+        t_mnist = torch.load(self.path)[1::7][:200000]
         d = data.train_data[t_mnist].unsqueeze(1)
         self.train_labels = data.train_labels[t_mnist]
         return d /255
 
     def _process_svhn(self):
         data = torchvision.datasets.SVHN('../data', download=True, split='train', transform=torchvision.transforms.ToTensor())
-        t_svhn = torch.load(self.path)[1::28][:60000]
+        t_svhn = torch.load(self.path)[1::7][:200000]
         d = data.data[t_svhn]
         self.train_labels = data.labels[t_svhn]
         return (torch.tensor(d))/255
