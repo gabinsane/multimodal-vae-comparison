@@ -6,7 +6,7 @@ Code adapted from https://github.com/iffsid/mmvae"""
 import argparse
 import os
 import sys
-
+import copy
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -29,7 +29,7 @@ def classify_latents(model, epochs, option, train_loader, test_loader):
     for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
         total_iters = len(train_loader)
-        print('\n====> Epoch: {:03d} '.format(epoch))
+        #print('\n====> Epoch: {:03d} '.format(epoch))
         for i, data in enumerate(train_loader):
             # get the inputs
             data_i = check_input_unpacked(data_to_device(data, "cuda"))
@@ -129,9 +129,14 @@ def cross_coherence(model, epochs, train_loader, test_loader):
     with torch.no_grad():
         for i, data in enumerate(test_loader):
             data_i = check_input_unpacked(data_to_device(data, "cuda"))
-            output = model.model.forward(data_i)
-            mnist_mnist = mnist_net(output.mods[optionmap["mnist"]].decoder_dist.loc)
-            svhn_svhn = svhn_net(output.mods[optionmap["svhn"]].decoder_dist.loc.reshape(-1,3,32,32))
+            data_i_1 = copy.deepcopy(data_i)
+            data_i_1["mod_1"]["data"] = None
+            output1 = model.model.forward(data_i)
+            mnist_mnist = mnist_net(output1.mods[optionmap["mnist"]].decoder_dist.loc.squeeze(0))
+            data_i_2 = copy.deepcopy(data_i)
+            data_i_2["mod_2"]["data"] = None
+            output2 = model.model.forward(data_i)
+            svhn_svhn = svhn_net(output2.mods[optionmap["svhn"]].decoder_dist.loc.squeeze())
             targets = torch.tensor(model.datamodule.labels_val[
                                   i * model.config.batch_size:i * model.config.batch_size + model.config.batch_size]).cuda()
             _, pred_m = torch.max(mnist_mnist, 1)
@@ -170,9 +175,17 @@ def joint_coherence(model):
     print('Joint coherence: {:.2f}%'.format(corr / total * 100))
 
 
+
+def identity(string):
+        return string
+
 if __name__ == "__main__":
     from eval.infer import MultimodalVAEInfer
+
+    from pickle import dumps
     parser = argparse.ArgumentParser()
+    parser.register('type', None, identity)
+    _ = dumps(parser)
     parser.add_argument("-p", "--mpath", type=str, help="path to the .ckpt model file. Relative or absolute")
     parser.add_argument("-l", "--level", type=int, default=0, help="for multieval option, if statistics for individual models are not yet made"),
     args = parser.parse_args()
@@ -183,10 +196,10 @@ if __name__ == "__main__":
     test_loader = model.datamodule.val_dataloader()
     print('-' * 25 + 'latent classification accuracy' + '-' * 25)
     print("Calculating latent classification accuracy for single MNIST VAE...")
-    classify_latents(model, epochs=30, option='mnist', train_loader=train_loader, test_loader=test_loader)
+    #classify_latents(model, epochs=10, option='mnist', train_loader=train_loader, test_loader=test_loader)
     # #
     print("\n Calculating latent classification accuracy for single SVHN VAE...")
-    classify_latents(model, epochs=30, option='svhn', train_loader=train_loader, test_loader=test_loader)
+    classify_latents(model, epochs=10, option='svhn', train_loader=train_loader, test_loader=test_loader)
     #
     print('\n' + '-' * 45 + 'cross coherence' + '-' * 45)
     cross_coherence(model, epochs=30, train_loader=train_loader, test_loader=test_loader)

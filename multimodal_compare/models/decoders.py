@@ -127,12 +127,12 @@ class Dec_SVHN(VaeDecoder):
         :return: output reconstructions, log variance
         :rtype: tuple(torch.tensor, torch.tensor)
         """
-        z = z["latents"]
-        bs = z.shape[:2] if len(z.shape) == 3 else None
-        z = z.squeeze(0)
-        z = self.linear(z)
-        z = z.view(-1, z.size(-1), 1, 1)
-        x_hat = self.relu(z)
+        zs = z["latents"]
+        bs = zs.shape[:2] if len(zs.squeeze().shape) == 3 else None
+        zs = zs.squeeze(0)
+        zs = self.linear(zs)
+        zs = zs.reshape(-1, zs.size(-1), 1, 1)
+        x_hat = self.relu(zs)
         x_hat = self.conv1(x_hat)
         x_hat = self.relu(x_hat)
         x_hat = self.conv2(x_hat)
@@ -141,8 +141,8 @@ class Dec_SVHN(VaeDecoder):
         x_hat = self.relu(x_hat)
         d = torch.sigmoid(self.conv4(x_hat)).permute(0, 2, 3, 1)
         if bs:
-            d = d.view(*bs, d.shape[1], d.shape[2], d.shape[3])
-        return d.squeeze(), torch.tensor(0.75).to(z.device)
+            d = d.reshape(*bs, *d.shape[1:])
+        return d.squeeze(), torch.tensor(0.75).to(zs.device)
 
 
 def extra_hidden_layer(hidden_dim):
@@ -185,7 +185,7 @@ class Dec_MNIST2(VaeDecoder):
         """
         z = z["latents"]
         p = self.fc3(self.dec(z))
-        d = torch.sigmoid(p.view(*z.size()[:-1], *[1, 28, 28]))  # reshape data
+        d = torch.sigmoid(p.reshape(*z.size()[:-1], *[1, 28, 28]))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
@@ -228,7 +228,7 @@ class Dec_MNIST(VaeDecoder):
         x_hat = self.dec(z)
         x_hat = self.fc3(x_hat)
         x_hat = self.sigmoid(x_hat)
-        d = x_hat.view(*z.size()[:-1], *self.data_dim).squeeze(0)
+        d = x_hat.reshape(*z.size()[:-1], *self.data_dim).squeeze(0)
         d = d.permute(0, 3, 1, 2) if len(d.shape) == 4 else d.permute(0, 1, 4, 2, 3)
         return d.squeeze(0), torch.tensor(0.75).to(z.device)
 

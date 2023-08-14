@@ -47,21 +47,29 @@ class MOE(TorchMMVAE):
             self.obj_fn.set_ltype(self.vaes["mod_{}".format(r + 1)].ltype)
             lpx_z = (self.obj_fn.recon_loss_fn(out_d["decoder_dist"][r], data["mod_{}".format(r + 1)], K=self.K).view(*out_d["decoder_dist"][r].batch_shape[:1], -1)
                      * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
-            lpx1 = (torch.tensor(0.0).cuda().exp() * lpx_z)
-            for key, cros_l in output.mods["mod_{}".format(r+1)].cross_decoder_dist.items():
-                lpx_z = (self.obj_fn.recon_loss_fn(cros_l, data["mod_{}".format(r + 1)], K=self.K).view(
-                    *cros_l.batch_shape[:1], -1)
-                         * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
-                zs = out_d["latent_samples"][int(key.split("_")[-1])-1]["latents"].detach()
-                q = out_d["encoder_dist"][int(key.split("_")[-1])-1]
-                qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
-                lwt = (qz_x.log_prob(zs) - q.log_prob(zs).detach()).sum(-1).reshape(-1)
-                lwt = lwt #/abs(torch.max(lwt))
-                if self.obj_fn.obj_name == "elbo":
+            if self.obj_fn.obj_name == "elbo":
+                lpx1 = (torch.tensor(0.0).cuda().exp() * lpx_z)
+                for key, cros_l in output.mods["mod_{}".format(r + 1)].cross_decoder_dist.items():
+                    lpx_z = (self.obj_fn.recon_loss_fn(cros_l, data["mod_{}".format(r + 1)], K=self.K).view(
+                        *cros_l.batch_shape[:1], -1)
+                             * self.vaes["mod_{}".format(r + 1)].llik_scaling).sum(-1)
+                    zs = out_d["latent_samples"][int(key.split("_")[-1]) - 1]["latents"].detach()
+                    q = out_d["encoder_dist"][int(key.split("_")[-1]) - 1]
+                    qz_x.log_prob(zs)[torch.isnan(qz_x.log_prob(zs))] = 0
+                    lwt = (qz_x.log_prob(zs) - q.log_prob(zs).detach()).sum(-1).reshape(-1)
+                    lwt = lwt  # /abs(torch.max(lwt))
                     lpx_zs.append(lpx1)
                     lpx_zs.append((lwt.exp() * lpx_z))
-                else:
-                    lpx_zs.append([lpx1, lpx_z])
+            else:
+                cross_lpx_zs = [lpx_z]
+                for d in out_d["cross_decoder_dist"]:
+                    if list(d.keys())[0] != "mod_{}".format(r + 1):
+                        p = self.obj_fn.recon_loss_fn(d[list(d.keys())[0]],
+                                                      data["mod_{}".format(r + 1)],
+                                                      K=self.K).view(*out_d["decoder_dist"][r].batch_shape[:1], -1) * \
+                                                      self.vaes["mod_{}".format(r + 1)].llik_scaling
+                        cross_lpx_zs.append(p.sum(-1))
+                lpx_zs.append(cross_lpx_zs)
         lpx = torch.stack([lp for lp in lpx_zs if lp.sum() != 0]) if not isinstance(lpx_zs[0], list) else lpx_zs
         d = {"lpx_z":lpx, "kld": torch.stack(klds), "qz_x":out_d["encoder_dist"], "zs": out_d["latent_samples"], "pz":self.pz, "pz_params":self.pz_params, "K":self.K}
         obj = self.obj_fn.calculate_loss(d)
@@ -140,6 +148,8 @@ class POE(TorchMMVAE):
         super().__init__(vaes, n_latents, **obj_config)
         self.model_config = model_config
         self.modelName = 'poe'
+        for vae in self.vaes.values():
+            assert vae.prior_str in ["normal", "gaussian"], "POE only works with gaussian priors! Adjust the config"
 
     @property
     def pz_params(self):
