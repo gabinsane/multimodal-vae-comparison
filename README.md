@@ -32,6 +32,7 @@ evaluation of the generated samples. For more info, see below.
 * [CdSprites+ leaderboard](#cdsprites&#43;-leaderboard)<br>
 * [Training on other datasets](#training-on-other-datasets) <br>
 * [Add own model](#extending-for-own-models-and-networks)<br>
+* [Ethical Guidelines](#ethical-guidelines)<br>
 * [License & Acknowledgement](#license)<br>
 * [Contact](#contact)<br>
 ---
@@ -442,6 +443,18 @@ We provide a set of unit tests to check whether any newly-added implementations 
 cd ~/multimodal-vae-comparison/
 py.test .
 ```
+## Ethical Guidelines
+
+The users of our toolkit and dataset are responsible for using the code and data in alignment with our ethical guidelines. These rules may be updated from time to time and are provided below.
+
+- Clearly describe your experimental setup and model configurations, to ensure reproducibility, and share code and resources related to your experiments for others to verify and reproduce your results.
+- Present your results, findings, and comparisons accurately and honestly, without manipulation or exaggeration.
+- Avoid usage of the toolkit that would allow the malicious misuse of the generated content (such as manipulating real-world photographs, producing spam etc.) 
+- If you're working with sensitive or personal data, respect privacy and security guidelines. Obtain necessary permissions and anonymize data when required. Be cautious when using data that might reinforce biases or harm vulnerable groups.
+- Ensure that you have the necessary permissions and licenses to use any code, datasets, or resources that you incorporate incorporated into your project.
+- Properly attribute the toolkit and its components when you use them in your work.
+
+
 
 
 ## License
