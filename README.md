@@ -348,7 +348,7 @@ Please feel free to propose your own model and training config so that we can ad
 
 ### Training on other datasets
 
-By default, we also support training on MNIST_SVHN (or MNIST/SVHN only), Caltech-UCSD Birds 200 (CUB) dataset as 
+By default, we also support training on VHN (or MNIST/SVHN only), Caltech-UCSD Birds 200 (CUB) dataset as 
 used in the [MMVAE paper](https://arxiv.org/pdf/1911.03393.pdf), Sprites (as in [this repository](https://github.com/YingzhenLi/Sprites)), CelebA, FashionMNIST and PolyMNIST. We provide the default training configs which
  you can adjust according to your needs (e.g. change the model, loss objective etc.). 
 
@@ -360,6 +360,7 @@ should happen automatically based on indices that will be downloaded within the 
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
+mkdir ./data/mnist_svhn
 python main.py --cfg configs/config_mnistsvhn.yml
 ```
 
