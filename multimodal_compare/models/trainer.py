@@ -138,6 +138,7 @@ class MultimodalVAE(pl.LightningModule):
             else:
                 for i, p_l in enumerate(loss_d[key]):
                     self.log("Mod_{}_ValLoss".format(i), p_l.sum(), batch_size=self.config.batch_size)
+        
         return loss_d["loss"]
 
     def test_step(self, test_batch, batch_idx):
@@ -153,7 +154,7 @@ class MultimodalVAE(pl.LightningModule):
                     self.log("Mod_{}_TestLoss".format(i), p_l.sum(), batch_size=self.config.batch_size)
         return loss_d["loss"]
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         """
         Save visualizations at the end of validation epoch
 
