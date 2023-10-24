@@ -7,7 +7,7 @@ from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.loggers import TensorBoardLogger
 from models.dataloader import DataModule
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.profiler import SimpleProfiler
+from pytorch_lightning.profilers import SimpleProfiler
 from pickle import dumps
 
 def identity(string):
