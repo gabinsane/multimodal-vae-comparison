@@ -23,6 +23,7 @@ torch.backends.cudnn.benchmark = True
 
 def classify_latents(model, epochs, option, train_loader, test_loader):
     optionmap = {model.config.mods[0]["mod_type"]:"mod_1", model.config.mods[1]["mod_type"]:"mod_2"}
+    other_option = {"mnist":"svhn", "svhn":"mnist"}
     classifier = Latent_Classifier(model.config.n_latents, 10).cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(classifier.parameters(), lr=0.001)
@@ -33,6 +34,7 @@ def classify_latents(model, epochs, option, train_loader, test_loader):
         for i, data in enumerate(train_loader):
             # get the inputs
             data_i = check_input_unpacked(data_to_device(data, "cuda"))
+            data_i[optionmap[other_option[option]]]["data"] = None
             output = model.model.forward(data_i)
             with torch.no_grad():
                 zs = output.mods[optionmap[option]].latent_samples["latents"]
@@ -136,7 +138,10 @@ def cross_coherence(model, epochs, train_loader, test_loader):
             data_i_2 = copy.deepcopy(data_i)
             data_i_2["mod_2"]["data"] = None
             output2 = model.model.forward(data_i)
-            svhn_svhn = svhn_net(output2.mods[optionmap["svhn"]].decoder_dist.loc.squeeze())
+            o = output2.mods[optionmap["svhn"]].decoder_dist.loc.squeeze()
+            if o.shape[1] != 3:
+                o = o.permute(0,3,1,2)
+            svhn_svhn = svhn_net(o)
             targets = torch.tensor(model.datamodule.labels_val[
                                   i * model.config.batch_size:i * model.config.batch_size + model.config.batch_size]).cuda()
             _, pred_m = torch.max(mnist_mnist, 1)
@@ -189,20 +194,27 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--mpath", type=str, help="path to the .ckpt model file. Relative or absolute")
     parser.add_argument("-l", "--level", type=int, default=0, help="for multieval option, if statistics for individual models are not yet made"),
     args = parser.parse_args()
-    exp = MultimodalVAEInfer(args.mpath)
-    model = exp.get_wrapped_model()
-    model.eval()
-    train_loader = model.datamodule.train_dataloader()
-    test_loader = model.datamodule.val_dataloader()
-    print('-' * 25 + 'latent classification accuracy' + '-' * 25)
-    print("Calculating latent classification accuracy for single MNIST VAE...")
-    #classify_latents(model, epochs=10, option='mnist', train_loader=train_loader, test_loader=test_loader)
-    # #
-    print("\n Calculating latent classification accuracy for single SVHN VAE...")
-    classify_latents(model, epochs=10, option='svhn', train_loader=train_loader, test_loader=test_loader)
-    #
-    print('\n' + '-' * 45 + 'cross coherence' + '-' * 45)
-    cross_coherence(model, epochs=30, train_loader=train_loader, test_loader=test_loader)
-    #
-    print('\n' + '-' * 45 + 'joint coherence' + '-' * 45)
-    joint_coherence(model)
+    paths = ["/home/gabi/Desktop/mnist_svhn_results/mnistsvhnDMVAE1/version_1/model/last.ckpt"]
+    #paths = ["/home/gabi/Desktop/mnist_svhn_results/seedsMOE/mnistsvhn900epochsMOEupdated2seed3/version_1/model/last.ckpt",
+    #         "/home/gabi/Desktop/mnist_svhn_results/seedsMOE/mnistsvhn900epochsMOEupdated2seed2/version_1/model/last.ckpt",
+    #         "/home/gabi/Desktop/mnist_svhn_results/mnistsvhnpoellik_scalingseed1/version_0/model/last.ckpt",
+    #         "/home/gabi/Desktop/mnist_svhn_results/mnistsvhnDMVAE1/version_1/model/last.ckpt"]
+    for path in paths:
+        print(path)
+        exp = MultimodalVAEInfer(path)
+        model = exp.get_wrapped_model()
+        model.eval()
+        train_loader = model.datamodule.train_dataloader()
+        test_loader = model.datamodule.val_dataloader()
+        print('-' * 25 + 'latent classification accuracy' + '-' * 25)
+        print("Calculating latent classification accuracy for single MNIST VAE...")
+        classify_latents(model, epochs=10, option='mnist', train_loader=train_loader, test_loader=test_loader)
+        # #
+        print("\n Calculating latent classification accuracy for single SVHN VAE...")
+        classify_latents(model, epochs=10, option='svhn', train_loader=train_loader, test_loader=test_loader)
+        #
+        print('\n' + '-' * 45 + 'cross coherence' + '-' * 45)
+        cross_coherence(model, epochs=30, train_loader=train_loader, test_loader=test_loader)
+        #
+        print('\n' + '-' * 45 + 'joint coherence' + '-' * 45)
+        joint_coherence(model)

@@ -409,7 +409,7 @@ class Dec_TransformerIMG(VaeDecoder):
         kernel_size = 4
         cnn_kwargs = dict(stride=2, padding=1)
         self.reshape = (hid_channels, kernel_size, kernel_size)
-        self.lin = torch.nn.DataParallel(nn.Linear(self.self.out_dim, np.product(self.reshape)))
+        self.lin = torch.nn.DataParallel(nn.Linear(self.out_dim, np.product(self.reshape)))
         self.deconvolve = torch.nn.DataParallel(
             torch.nn.Sequential(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
                                 torch.nn.SiLU(),

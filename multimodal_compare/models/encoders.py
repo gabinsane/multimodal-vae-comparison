@@ -201,8 +201,8 @@ class Enc_MNIST2(VaeEncoder):
         modules.append(Sequential(Linear(data_d, hidden_dim), ReLU(True)))
         modules.extend([extra_hidden_layer(hidden_dim) for _ in range(num_hidden_layers - 1)])
         self.enc = Sequential(*modules)
-        self.fc21 = Linear(hidden_dim, latent_dim)
-        self.fc22 = Linear(hidden_dim, latent_dim)
+        self.fc21 = Linear(hidden_dim, self.out_dim)
+        self.fc22 = Linear(hidden_dim, self.out_dim)
 
     def forward(self, x):
         """
@@ -290,8 +290,8 @@ class Enc_SVHN2(VaeEncoder):
             ReLU(True),
             # size: (fBase * 4) x 4 x 4
         )
-        self.c1 = Conv2d(fBase * 4, latent_dim, 4, 1, 0, bias=True)
-        self.c2 = Conv2d(fBase * 4, latent_dim, 4, 1, 0, bias=True)
+        self.c1 = Conv2d(fBase * 4, self.out_dim, 4, 1, 0, bias=True)
+        self.c2 = Conv2d(fBase * 4, self.out_dim, 4, 1, 0, bias=True)
         # c1, c2 size: latent_dim x 1 x 1
 
     def forward(self, x):

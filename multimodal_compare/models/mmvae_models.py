@@ -486,9 +486,9 @@ class DMVAE(TorchMMVAE):
         z_joint = joint_d.rsample(torch.Size([K]))
         # decode from all dists
         for mod in self.vaes.keys():
-           z_shared = qz_xs[mod].rsample(torch.Size([1])) if qz_xs[mod] is not None \
+           z_shared = qz_xs[mod].rsample(torch.Size([K])) if qz_xs[mod] is not None \
                    else qz_xs[self.get_missing_modalities(x)[1][0]].rsample(torch.Size([1])).cuda()
-           z_private = qz_private[mod].rsample(torch.Size([1])) if qz_private[mod] is not None \
+           z_private = qz_private[mod].rsample(torch.Size([K])) if qz_private[mod] is not None \
                 else self.qz_x(*(torch.zeros(z_joint.shape[1], self.vaes[mod].private_latents),
                                  torch.ones(z_joint.shape[1], self.vaes[mod].private_latents))).rsample(torch.Size([1])).cuda()
            zss[mod] = {"latents": z_shared, "masks": x[mod]["masks"]}

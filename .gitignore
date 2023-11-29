@@ -1,5 +1,14 @@
 ./multimodal_compare/data/*
-./multimodal_compare/results/
+./data/*
+./multimodal_compare/results/*
 .idea
 __pycache__/
 builddocs.txt
+launch.json
+*.zip
+*.npz
+*.npy
+*.pt
+*.txt
+*.gz
+*.png

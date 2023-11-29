@@ -212,6 +212,7 @@ def load_textures(dtd_path="./dtd_textures"):
     if not os.path.exists(dtd_path):
         download_textures(dtd_path)
     textures_paths = glob.glob(os.path.join(dtd_path, './*/*/*/*.jpg'))
+    print("Loading textures....")
     textures = []
     for i in textures_paths:
         textures.append(cv2.imread(i))
@@ -221,9 +222,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     data = np.load(dsprites_path)
     label_counters = {}
-    #textures = load_textures()
+    textures = load_textures()
     if args.level == 0:
-        cfgs = ["config_level2.json", "config_level3.json", "config_level4.json", "config_level5.json"]
+        cfgs = ["./config_level3.json", "./config_level4.json", "./config_level5.json"]
     else:
         cfgs = ["config_level{}.json".format(args.level)]
     for cfg in cfgs:
@@ -260,8 +261,8 @@ if __name__ == "__main__":
         prep_dir(folder_name)
         specs = config_parser.parse_specs()
 
-        # extract_label_groups(label_groups=specs["train"], folder_name=folder_name + "train/", latent_spec=latent_spec,
-        #                      mappings=mappings, args=args)
+        extract_label_groups(label_groups=specs["train"], folder_name=folder_name + "train/", latent_spec=latent_spec,
+                              mappings=mappings, args=args)
         images = glob.glob(os.path.join(folder_name, '*/*/*.png'))
         imgs = []
         captions = []
@@ -275,6 +276,7 @@ if __name__ == "__main__":
             elif "level2" in cfg:
                 caption = " ".join([caption.split(" ")[0],caption.split(" ")[-1]])
             captions.append(caption)
+        print(len(captions))
         hf = h5py.File(os.path.join(folder_name, 'traindata.h5'), 'w')
         hf.create_dataset('image', data=np.asarray(imgs))
         hf.create_dataset('text', data=captions)

@@ -172,7 +172,7 @@ class BaseDataset():
         """
         output_processed = self._postprocess(data)
         output_processed = turn_text2image(output_processed, img_size=self.text2img_size) \
-            if self.mod_type not in ["text", "atts"] else output_processed
+            if self.mod_type in ["text", "atts", "label"] else output_processed
         return output_processed
 
     def save_traversals(self, recons, path, num_dims):
@@ -731,6 +731,7 @@ class FASHIONMNIST(BaseDataset):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
         self.labels_train = None
+        self.text2img_size = (28,64,3)
 
     def labels(self):
         return self.labels_train
@@ -746,14 +747,16 @@ class FASHIONMNIST(BaseDataset):
     def _mod_specific_savers(self):
         return {"image": self._postprocess_image, "label": self._postprocess_label}
 
-    def _process_label(self, data):
+    def _process_label(self):
         self.get_data_raw()
-        d = np.zeros((self.labels_train.size, self.labels_train.max() + 1))
-        d[np.arange(self.labels_train.size), self.labels_train] = 1
+        d = np.zeros((len(self.labels_train), max(self.labels_train) + 1))
+        d[np.arange(len(self.labels_train)), self.labels_train] = 1
         return torch.tensor(d)
 
     def _postprocess_label(self, data):
-        pass
+        data = data["data"] if isinstance(data, dict) else data
+        d = torch.argmax(data, dim=1)
+        return [str(i) for i in list(np.asarray((d.detach().cpu())))]
 
     def _postprocess_image(self, data):
         data = data["data"] if isinstance(data, dict) else data
@@ -765,12 +768,16 @@ class FASHIONMNIST(BaseDataset):
         return super(FASHIONMNIST, self)._preprocess_images([self.feature_dims["image"][i] for i in [2,0,1]])
 
     def save_recons(self, data, recons, path, mod_names):
-        output_processed = self._postprocess(recons)
+        output_processed =  self._postprocess_all2img(recons)
         outs = add_recon_title(output_processed, "output\n{}".format(self.mod_type), (0, 170, 0))
         input_processed = []
         for key, d in data.items():
             output = self._mod_specific_savers()[mod_names[key]](d)
-            images = add_recon_title(output, "input\n{}".format(mod_names[key]), (0, 0, 255))
+            images =  np.asarray(turn_text2image(output, img_size=self.text2img_size)) if mod_names[key] == "label" \
+                else np.reshape(output,(-1,*self.feature_dims["image"]))
+            if images.shape[-1] == 1:
+                images = cv2.merge((images, images, images)).squeeze(-2)
+            images = add_recon_title(images, "input\n{}".format(mod_names[key]), (0, 0, 255))
             input_processed.append(np.vstack(images))
             input_processed.append(np.ones((np.vstack(images).shape[0], 2, 3))*125)
         inputs = np.hstack(input_processed).astype("uint8")
@@ -789,6 +796,7 @@ class POLYMNIST(BaseDataset):
     def __init__(self, pth, testpth, mod_type):
         super().__init__(pth, testpth, mod_type)
         self.mod_type = mod_type
+        self.text2img_size = (28,28,3)
 
     def _mod_specific_loaders(self):
         d = {}
@@ -840,7 +848,7 @@ class POLYMNIST(BaseDataset):
             grid = np.asarray(make_grid(output_processed, padding=1, nrow=num_dims))
             cv2.imwrite(path, cv2.cvtColor(np.transpose(grid, (1,2,0)).astype("uint8"), cv2.COLOR_BGR2RGB))
         else:
-            output_processed = torch.stack([torch.tensor(np.array(self._postprocess_all2img(x))) for x in recons])
+            output_processed = torch.stack([torch.tensor(np.array(self._postprocess(x))) for x in recons])
             output_processed = output_processed.reshape(num_dims, -1, *output_processed.shape[1:]).squeeze()
             rows = []
             for ind, dim in enumerate(output_processed):

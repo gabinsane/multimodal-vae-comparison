@@ -20,11 +20,11 @@ modality_1:
   prior: normal
   mod_type: image
   recon_loss:  bce
-  path:
+  path: ./data/FashionMNIST
 modality_2:
   decoder: FNN
   encoder: FNN
   prior: normal
   mod_type: label
   recon_loss:  category_ce
-  path:
+  path: ./data/FashionMNIST
