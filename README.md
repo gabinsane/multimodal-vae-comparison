@@ -1,6 +1,6 @@
 # Multimodal VAE Comparison
 
-This is the official code for the submitted NIPS 2023 Datasets and Benchmarks paper "Benchmarking Multimodal Variational Autoencoders: CdSprites+ Dataset and Toolkit".
+This is the official code for the paper [Benchmarking Multimodal Variational Autoencoders: CdSprites+ Dataset and Toolkit](https://arxiv.org/abs/2209.03048).
 
 The purpose of this toolkit is to offer a systematic and unified way to train, evaluate and compare the state-of-the-art
 multimodal variational autoencoders. The toolkit can be used with arbitrary datasets and both uni/multimodal settings.
