@@ -465,15 +465,13 @@ This code is published under the [CC BY-NC-SA 4.0 license](https://creativecommo
 
 If you use our toolkit or dataset in your work, please, give us an attribution using the following citation:
 ```
-@misc{https://doi.org/10.48550/arxiv.2209.03048,
-  doi = {10.48550/ARXIV.2209.03048},
-  url = {https://arxiv.org/abs/2209.03048},  
-  author = {Sejnova, Gabriela and Vavrecka, Michal and Stepanova, Karla},  
-  keywords = {Machine Learning (cs.LG), FOS: Computer and information sciences, FOS: Computer and information sciences},  
-  title = {Benchmarking Multimodal Variational Autoencoders: CdSprites Dataset and Toolkit},  
-  publisher = {arXiv},  
-  year = {2022},  
-  copyright = {Creative Commons Attribution Non Commercial Share Alike 4.0 International}
+@misc{sejnova2023benchmarking,
+      title={Benchmarking Multimodal Variational Autoencoders: CdSprites+ Dataset and Toolkit}, 
+      author={Gabriela Sejnova and Michal Vavrecka and Karla Stepanova},
+      year={2023},
+      eprint={2209.03048},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
 }
 ```
 
