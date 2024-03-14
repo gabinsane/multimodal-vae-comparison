@@ -29,6 +29,12 @@ The toolkit is using the `PyTorch Lightning <https://www.pytorchlightning.ai/>`_
 
 .. toctree::
    :maxdepth: 1
+   :caption: Paper Results
+
+   results
+
+.. toctree::
+   :maxdepth: 1
    :caption: Tutorials
 
    tutorials/addmodel
