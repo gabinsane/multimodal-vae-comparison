@@ -18,6 +18,8 @@ evaluation of the generated samples. For more info, see below.
 
 [**Code Documentation & Tutorials**](https://gabinsane.github.io/multimodal-vae-comparison)
 
+[**Supplementary Material (Additional Paper Results)**](https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/supplement.pdf)
+
 
 | :dart: To elevate the general discussion on the development and evaluation of multimodal VAEs, we have now added the [Discussions section](https://github.com/gabinsane/multimodal-vae-comparison/discussions) |
 | --- |
