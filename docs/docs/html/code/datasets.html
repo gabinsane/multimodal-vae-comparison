@@ -132,11 +132,14 @@
 <li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_loaders"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._mod_specific_loaders()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._mod_specific_savers"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._mod_specific_savers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_all2img"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._postprocess_all2img()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._postprocess_mnist()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_svhn"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._postprocess_svhn()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._process_mnist"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._process_mnist()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN._process_svhn"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN._process_svhn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN.check_indices_present"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN.check_indices_present()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN.feature_dims"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN.feature_dims</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN.labels"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN.labels()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.datasets.MNIST_SVHN.save_recons"><code class="docutils literal notranslate"><span class="pre">MNIST_SVHN.save_recons()</span></code></a></li>
 </ul>
 </li>
@@ -677,7 +680,7 @@ represented as sequences of one-hot-encodings for each character (incl. spaces)<
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.FASHIONMNIST._process_label">
-<span class="sig-name descname"><span class="pre">_process_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._process_label" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_process_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.FASHIONMNIST._process_label" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -730,6 +733,23 @@ represented as sequences of one-hot-encodings for each character (incl. spaces)<
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._postprocess_all2img">
+<span class="sig-name descname"><span class="pre">_postprocess_all2img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_all2img" title="Permalink to this definition"></a></dt>
+<dd><p>Converts any kind of data to images to save traversal visualizations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>torch.tensor</em>) – input data</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>processed images</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist">
 <span class="sig-name descname"><span class="pre">_postprocess_mnist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._postprocess_mnist" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -749,10 +769,21 @@ represented as sequences of one-hot-encodings for each character (incl. spaces)<
 <span class="sig-name descname"><span class="pre">_process_svhn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN._process_svhn" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.check_indices_present">
+<span class="sig-name descname"><span class="pre">check_indices_present</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN.check_indices_present" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.feature_dims">
 <span class="sig-name descname"><span class="pre">feature_dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'mnist':</span> <span class="pre">[28,</span> <span class="pre">28,</span> <span class="pre">1],</span> <span class="pre">'svhn':</span> <span class="pre">[32,</span> <span class="pre">32,</span> <span class="pre">3]}</span></em><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN.feature_dims" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.datasets.MNIST_SVHN.labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns labels for the whole dataset</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.datasets.MNIST_SVHN.save_recons">

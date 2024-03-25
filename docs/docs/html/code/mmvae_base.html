@@ -64,6 +64,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.objective"><code class="docutils literal notranslate"><span class="pre">TorchMMVAE.objective()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.product_of_experts"><code class="docutils literal notranslate"><span class="pre">TorchMMVAE.product_of_experts()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.pz_params"><code class="docutils literal notranslate"><span class="pre">TorchMMVAE.pz_params</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.set_likelihood_scales"><code class="docutils literal notranslate"><span class="pre">TorchMMVAE.set_likelihood_scales()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.training"><code class="docutils literal notranslate"><span class="pre">TorchMMVAE.training</span></code></a></li>
 </ul>
 </li>
@@ -109,7 +110,7 @@
 <span id="multimodal-vae-base-class"></span><span id="mmvae-base"></span><h1>Multimodal VAE Base Class<a class="headerlink" href="#module-multimodal_compare.models.mmvae_base" title="Permalink to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_base.</span></span><span class="sig-name descname"><span class="pre">TorchMMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_latents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.mmvae_base.</span></span><span class="sig-name descname"><span class="pre">TorchMMVAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vaes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_latents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>Base class for all PyTorch based MMVAE implementations.</p>
 <dl class="py attribute">
@@ -288,6 +289,11 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.pz_params">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.pz_params" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_base.TorchMMVAE.set_likelihood_scales">
+<span class="sig-name descname"><span class="pre">set_likelihood_scales</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_base.TorchMMVAE.set_likelihood_scales" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

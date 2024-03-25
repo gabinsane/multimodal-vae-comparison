@@ -58,6 +58,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.DMVAE.get_remaining_mods_data"><code class="docutils literal notranslate"><span class="pre">DMVAE.get_remaining_mods_data()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.DMVAE.logsumexp"><code class="docutils literal notranslate"><span class="pre">DMVAE.logsumexp()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.DMVAE.objective"><code class="docutils literal notranslate"><span class="pre">DMVAE.objective()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.DMVAE.pz_params"><code class="docutils literal notranslate"><span class="pre">DMVAE.pz_params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.DMVAE.training"><code class="docutils literal notranslate"><span class="pre">DMVAE.training</span></code></a></li>
 </ul>
 </li>
@@ -65,6 +66,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MOE._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">MOE._is_full_backward_hook</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MOE.forward"><code class="docutils literal notranslate"><span class="pre">MOE.forward()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MOE.objective"><code class="docutils literal notranslate"><span class="pre">MOE.objective()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MOE.pz_params"><code class="docutils literal notranslate"><span class="pre">MOE.pz_params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MOE.reconstruct"><code class="docutils literal notranslate"><span class="pre">MOE.reconstruct()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MOE.training"><code class="docutils literal notranslate"><span class="pre">MOE.training</span></code></a></li>
 </ul>
@@ -77,6 +79,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.moe_fusion"><code class="docutils literal notranslate"><span class="pre">MoPOE.moe_fusion()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.objective"><code class="docutils literal notranslate"><span class="pre">MoPOE.objective()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.poe_fusion"><code class="docutils literal notranslate"><span class="pre">MoPOE.poe_fusion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.pz_params"><code class="docutils literal notranslate"><span class="pre">MoPOE.pz_params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.reparameterize"><code class="docutils literal notranslate"><span class="pre">MoPOE.reparameterize()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.reweight_weights"><code class="docutils literal notranslate"><span class="pre">MoPOE.reweight_weights()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.MoPOE.set_subsets"><code class="docutils literal notranslate"><span class="pre">MoPOE.set_subsets()</span></code></a></li>
@@ -89,6 +92,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.POE.modality_mixing"><code class="docutils literal notranslate"><span class="pre">POE.modality_mixing()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.POE.objective"><code class="docutils literal notranslate"><span class="pre">POE.objective()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.POE.prior_expert"><code class="docutils literal notranslate"><span class="pre">POE.prior_expert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.POE.pz_params"><code class="docutils literal notranslate"><span class="pre">POE.pz_params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.mmvae_models.POE.training"><code class="docutils literal notranslate"><span class="pre">POE.training</span></code></a></li>
 </ul>
 </li>
@@ -188,6 +192,11 @@
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE.pz_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.pz_params" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.DMVAE.training">
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#multimodal_compare.models.mmvae_models.DMVAE.training" title="Permalink to this definition"></a></dt>
@@ -240,6 +249,11 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.pz_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MOE.pz_params" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MOE.reconstruct">
@@ -331,6 +345,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.poe_fusion">
 <span class="sig-name descname"><span class="pre">poe_fusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mus</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logvars</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.poe_fusion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.MoPOE.pz_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.MoPOE.pz_params" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -426,6 +445,11 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.pz_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pz_params</span></span><a class="headerlink" href="#multimodal_compare.models.mmvae_models.POE.pz_params" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="multimodal_compare.models.mmvae_models.POE.training">

@@ -70,7 +70,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective._m_dreg_looser"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective._m_dreg_looser()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.calculate_loss"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.calculate_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.dreg"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.dreg()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.elbo"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.elbo()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#multimodal_compare.models.objectives.MultimodalObjective.iwae"><code class="docutils literal notranslate"><span class="pre">MultimodalObjective.iwae()</span></code></a></li>
 </ul>
@@ -313,6 +315,14 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">multimodal_compare.models.objectives.</span></span><span class="sig-name descname"><span class="pre">MultimodalObjective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective" title="Permalink to this definition"></a></dt>
 <dd><p>Common class for multimodal objectives</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.objectives.MultimodalObjective._m_dreg_looser">
+<span class="sig-name descname"><span class="pre">_m_dreg_looser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lpx_zs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pz_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz_xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective._m_dreg_looser" title="Permalink to this definition"></a></dt>
+<dd><p>DREG estimate for log <a href="#id2"><span class="problematic" id="id3">p_</span></a>        heta(x) for multi-modal vae – fully vectorised;
+Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a>
+This version is the looser bound—with the average over modalities outside the log</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.objectives.MultimodalObjective.calculate_loss">
 <span class="sig-name descname"><span class="pre">calculate_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective.calculate_loss" title="Permalink to this definition"></a></dt>
 <dd><p>Calculates the loss using self.objective</p>
@@ -327,6 +337,14 @@
 <dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="multimodal_compare.models.objectives.MultimodalObjective.dreg">
+<span class="sig-name descname"><span class="pre">dreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.MultimodalObjective.dreg" title="Permalink to this definition"></a></dt>
+<dd><p>Computes dreg estimate for log <a href="#id4"><span class="problematic" id="id5">p_</span></a>       heta(x) for multi-modal vae;
+Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a>
+This version is the looser bound—with the average over modalities outside the log</p>
 </dd></dl>
 
 <dl class="py method">
@@ -513,7 +531,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.objectives.UnimodalObjective.dreg">
 <span class="sig-name descname"><span class="pre">dreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.UnimodalObjective.dreg" title="Permalink to this definition"></a></dt>
-<dd><p>DREG estimate for log <a href="#id2"><span class="problematic" id="id3">p_</span></a>        heta(x) – fully vectorised. Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
+<dd><p>DREG estimate for log <a href="#id6"><span class="problematic" id="id7">p_</span></a>        heta(x) – fully vectorised. Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: px_z, target, qz_x, zs, K, prior_dist</p>
@@ -547,7 +565,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="multimodal_compare.models.objectives.UnimodalObjective.iwae">
 <span class="sig-name descname"><span class="pre">iwae</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#multimodal_compare.models.objectives.UnimodalObjective.iwae" title="Permalink to this definition"></a></dt>
-<dd><p>Computes an importance-weighted ELBO estimate for log <a href="#id4"><span class="problematic" id="id5">p_</span></a>        heta(x) Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
+<dd><p>Computes an importance-weighted ELBO estimate for log <a href="#id8"><span class="problematic" id="id9">p_</span></a>        heta(x) Source: <a class="reference external" href="https://github.com/iffsid/mmvae">https://github.com/iffsid/mmvae</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – dict with the keys: px_z, target, qz_x, zs, K</p>

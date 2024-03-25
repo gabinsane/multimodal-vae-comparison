@@ -1,7 +1,7 @@
 .. _results:
 
 
-Paper results
+Supplementary material
 =====================================
 
-Here we report additional results and visualizations of experiments performed using our toolkit and reported in the paper.
+The Supplementary material for our paper includes additional detailed results for experiments mentioned in the paper, further training information and some more visualizations. You can download it `here <https://data.ciirc.cvut.cz/public/groups/incognite/CdSprites/supplement.pdf>`_
