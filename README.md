@@ -352,7 +352,7 @@ Please feel free to propose your own model and training config so that we can ad
 
 VILANRO-TRIMODAL is a synthetic robotic dataset with three modalities - images, natural language descriptions and action sequences. We provide 36 datasets for training with scaled complexity. Some datasets include only 1 object in a fixed (A) or random (B) place, some include either 1 (C) or 2 (D) distractors. Some datasets include only one task (1-3,6-9), some require learning either two (4) or three (5) tasks in parallel. See the overview below:
 
-![VILANRO-TRIMODAL](https://github.com/gabinsane/multimodal-vae-comparison/multimodal_compare/models/contrib/vilanro_trimodal.png "dataset overview")
+![VILANRO-TRIMODAL](https://github.com/gabinsane/multimodal-vae-comparison/blob/main/multimodal_compare/models/contrib/vilanro_trimodal.png "dataset overview")
 
 The data was generated using an adapted version of the [LANRO-Gym simulator](https://github.com/frankroeder/lanro-gym). We provide the custom version of lanro-gym within our repository. 
 
