@@ -296,6 +296,30 @@ class CDSPRITESPLUS(BaseDataset):
         final = np.hstack((inputs, np.vstack(outs).astype("uint8")))
         cv2.imwrite(path, final)
 
+    def save_traversals(self, recons, path, num_dims):
+        """
+        Makes a grid of traversals and saves as image
+
+        :param recons: data to save
+        :type recons: torch.tensor
+        :param path: path to save the traversal to
+        :type path: str
+        :param num_dims: number of latent dimensions
+        :type num_dims: int
+        """
+        if isinstance(recons[0], str):
+            pass
+            # output_processed = torch.tensor(np.asarray(self._postprocess_all2img(recons))).transpose(1, 3)
+            # grid = np.asarray(make_grid(output_processed, padding=1, nrow=num_dims))
+            # cv2.imwrite(path, cv2.cvtColor(np.transpose(grid, (1,2,0)).astype("uint8"), cv2.COLOR_BGR2RGB))
+        else:
+            output_processed = torch.stack([torch.tensor(x) for x in recons])
+            output_processed = output_processed.reshape(num_dims, -1, *output_processed.shape[1:]).squeeze()
+            rows = []
+            for ind, dim in enumerate(output_processed):
+                rows.append(np.asarray(torch.hstack([x for x in dim]).type(torch.uint8).detach().cpu()))
+            cv2.imwrite(path, cv2.cvtColor(np.vstack(np.asarray(rows)), cv2.COLOR_BGR2RGB))
+
 class CUB(BaseDataset):
     """Dataset class for our processed version of Caltech-UCSD birds dataset. We use the original images and text
     represented as sequences of one-hot-encodings for each character (incl. spaces)"""
@@ -871,8 +895,6 @@ class VILANRO(BaseDataset):
         self.mod_type = mod_type
         self.vocab = self.load_vocab()
         self.feature_dims["language"][1] = len(self.vocab)
-        if "level1" in self.path or "level2" in self.path:
-            self.feature_dims["language"][0] = 2
         self.vocab_atts = self.load_vocab(atts=True)
         self.lang_labels = None
         self.text2img_size = (64, 250, 3)
@@ -948,6 +970,18 @@ class VILANRO(BaseDataset):
         return o
 
 
+    def postprocess_language(self, data):
+        if isinstance(data, dict):
+            data["data"] = torch.argmax(torch.softmax(data["data"].double(), dim=-1), dim=-1).squeeze()
+            o = [([self.vocab[int(round(float(x.detach().cpu()),0))]])[0] for x in data["data"]]
+            #o = [" ".join(list(compress(x, data["masks"][i]))).replace("none","") for i, x in enumerate(o)]
+        else:
+            o = [" ".join([self.vocab[int(round(float(i),0))] for i in x.detach().cpu()]).replace("none","") for x in torch.argmax(torch.softmax(data, dim=-1), dim=-1)]
+        return o
+
+    def postprocess_actions(self, data):
+        data = data["data"] if isinstance(data, dict) else data
+        return data
 
     def get_lang(self):
         self.has_masks = True

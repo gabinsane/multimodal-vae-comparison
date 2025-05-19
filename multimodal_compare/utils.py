@@ -647,7 +647,7 @@ def make_joint_samples(model, index, datamod, latents, traversals, savedir, num_
     tag = "traversals_range{}".format(str(trav_range[0]).replace("-", "").replace(".", "")) if traversals else "samples"
     p = os.path.join(savedir, "{}_{}.png".format(tag, data_class.mod_type))
     rows = latents if traversals else int(math.sqrt(num_samples))
-    data_class.save_traversals(recon, p, rows)
+    data_class.save_traversals(data_class.get_processed_recons(recon.detach().cpu()), p, rows)
     return data_class.get_processed_recons(recon.detach().cpu()), recon
 
 
