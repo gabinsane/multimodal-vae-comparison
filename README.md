@@ -6,7 +6,7 @@ By default, we provide implementations of the [MVAE](https://github.com/mhw32/mu
 ([paper](https://arxiv.org/abs/1802.05335)), [MMVAE](https://github.com/iffsid/mmvae) 
 ([paper](https://arxiv.org/pdf/1911.03393.pdf)), [MoPoE](https://github.com/thomassutter/MoPoE) 
 ([paper](https://openreview.net/forum?id=5Y21V0RDBV)) and [DMVAE](https://github.com/seqam-lab/DMVAE) ([paper](https://github.com/seqam-lab/DMVAE)) models, but anyone is free to contribute with their own
-implementation. 
+implementation. We also include 7 existing bimodal (except for SPRITES, which is trimodal) datasets, but it is possible to add own datasets without changing the existing code.
 
 We also provide two custom synthetic multimodal datasets to evaluate multimodal VAEs more systematically:
 
