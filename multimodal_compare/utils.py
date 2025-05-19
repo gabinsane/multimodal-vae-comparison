@@ -4,6 +4,7 @@ import shutil
 import pathlib
 import cv2
 import h5py
+import itertools
 import glob, imageio
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -12,6 +13,20 @@ from collections import defaultdict
 import pickle
 from visualization import tensors_to_df
 from itertools import combinations
+from eval.fid_score import calculate_fid_given_data
+from torch.distributions.categorical import Categorical
+
+def cluster_analysis(labels, path_name, zss_sampled):
+    if hasattr(labels[0], "__len__") and len(labels[0]) > 1 and any(
+            [isinstance(labels[0], list), type(labels[0]).__module__ == "numpy"]) \
+            and not isinstance(labels[0], str):
+        for i, _ in enumerate(labels[0]):
+            label = [x[i] for x in labels]
+            path_name += "_feature{}".format(i)
+            cluster_scores = analyse_clusters(zss_sampled, list(label))
+    else:
+        cluster_scores = analyse_clusters(zss_sampled, labels)
+    return cluster_scores
 
 
 alphabet = ' abcdefghijklmnopqrstuvwxyz'
@@ -19,7 +34,6 @@ alphabet = ' abcdefghijklmnopqrstuvwxyz'
 def print_save_stats(stats_dict, path, dataset_name, level=1):
     """
     Prints the results retrieved from eval modules into txt file and into terminal.
-
     :param stats_dict: dictionary with statistics as keys and corresponding values
     :type stats_dict: dict
     :param path: path where to save the stats
@@ -69,7 +83,7 @@ def check_input_unpacked(mods):
         mods = mods[list(mods.keys())[0]]
     return mods
 
-def subsample_input_modalities(mods):
+def subsample_input_modalities(mods, forbidden = []):
     """
     Makes all possible subsets of modalities
 
@@ -79,16 +93,22 @@ def subsample_input_modalities(mods):
     :rtype: list
     """
     mods_inputs = []
-    for m in range(len(mods) + 1):
+    allowed_combos = []
+    for x in range(len(mods.keys())):
+        combos = list(set(itertools.combinations(list(mods.keys()), x+1)))
+        for c in combos:
+            allowed_combos.append(c)
+    for m in allowed_combos:
         mods_input = copy.deepcopy(mods)
+        present_mods = []
         for d in mods.keys():
             mods_input[d]["data"] = None
             mods_input[d]["masks"] = None
-        if m == len(mods.keys()):
-            mods_input = mods
-        else:
-            mods_input["mod_{}".format(m + 1)] = mods["mod_{}".format(m + 1)]
-        mods_inputs.append(mods_input)
+        for key in m:
+            mods_input[key] = mods[key]
+            present_mods.append(key)
+        if "+".join(present_mods) not in forbidden:
+            mods_inputs.append(mods_input)
     return mods_inputs
 
 def data_to_device(data, device):
@@ -110,11 +130,15 @@ def get_root_folder():
 def make_kl_df(qz_xs, pz):
     """Prepares a KLD tensor for each latent dimension. Taken from https://github.com/iffsid/mmvae"""
     pz.loc = pz.loc.detach().cpu()
-    pz.scale = pz.scale.detach().cpu()
+    if hasattr(pz, "scale"):
+        pz.scale = pz.scale.detach().cpu()
+    if isinstance(qz_xs, list) and len(qz_xs) == 1:
+        qz_xs = qz_xs[0]
     if isinstance(qz_xs, list):
         for i, qz in enumerate(qz_xs):
             qz_xs[i].loc = qz.loc.detach().cpu()
-            qz_xs[i].scale = qz.scale.detach().cpu()
+            if hasattr(qz_xs[i], "scale"):
+                qz_xs[i].scale = qz.scale.detach().cpu()
         kls_df = tensors_to_df(
             [*[kl_divergence(qz_x, pz) for qz_x in qz_xs],
              *[0.5 * (kl_divergence(p, q) + kl_divergence(q, p))
@@ -125,8 +149,14 @@ def make_kl_df(qz_xs, pz):
                     for i, j in combinations(range(len(qz_xs)), 2)]],
             ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
     else:
-        qz_xs.loc = qz_xs.loc.detach().cpu()
-        qz_xs.scale = qz_xs.scale.detach().cpu()
+        if hasattr(qz_xs, "scale"):
+            qz_xs.loc = qz_xs.loc.detach().cpu()
+            qz_xs.scale = qz_xs.scale.detach().cpu()
+        else:
+            qz_xs.logits = qz_xs.logits.detach().cpu()
+            pz.logits = pz.logits.detach().cpu()
+            pz.probs = pz.probs.detach().cpu()
+            qz_xs.probs = qz_xs.probs.detach().cpu()
         kls_df = tensors_to_df([kl_divergence(qz_xs, pz)], head='KL',
                                keys=[r'KL$(q(z|x)\,||\,p(z))$'], ax_names=['Dimensions', r'KL$(q\,||\,p)$'])
     return kls_df
@@ -368,12 +398,14 @@ def log_mean_exp(value, dim=0, keepdim=False):
 
 def kl_divergence(d1, d2, K=100):
     """Computes closed-form KL if available, else computes a MC estimate."""
-    if (type(d1), type(d2)) in torch.distributions.kl._KL_REGISTRY:
+    if (type(d1), type(d2)) in torch.distributions.kl._KL_REGISTRY or all(type(x) == Categorical for x in (d1,d2)):
         return torch.distributions.kl_divergence(d1, d2)
     else:
         samples = d1.rsample(torch.Size([K]))
         return (d1.log_prob(samples) - d2.log_prob(samples)).mean(0)
 
+
+alphabet = ' abcdefghijklmnopqrstuvwxyz'
 
 def char2Index(alphabet, character):
     return alphabet.find(character)
@@ -388,13 +420,66 @@ def one_hot_encode(len_seq, seq):
             X[index_char, char2Index(alphabet, char)] = 1.0
     return X
 
+def one_hot_encode_words(vocab, seq):
+    X = torch.zeros(len(seq), len(vocab))
+    for index_word, word in enumerate(seq):
+        word = word.replace(".", "").lower()
+        assert word in list(vocab)
+        X[index_word, list(vocab).index(word)] = 1.0
+    return X
+
 
 def seq2text(alphabet, seq):
     decoded = []
     for j in range(len(seq)):
+        try: int(seq[j])
+        except:
+            seq[j] = np.argmax(j)
         decoded.append(alphabet[seq[j]])
     return decoded
 
+def seq2words(vocab, seq):
+    decoded = []
+    for s in seq:
+        if not isinstance(s, int):
+            id = int(np.argmax(s))
+        else:
+            id = s
+        decoded.append(vocab[id])
+    return decoded
+
+
+def sample_gumbel(shape, eps=1e-20):
+    U = torch.rand(shape)
+    U = U.cuda()
+    return -torch.log(-torch.log(U + eps) + eps)
+
+
+def gumbel_softmax_sample(logits, temperature):
+    y = logits + sample_gumbel(logits.size())
+    return torch.nn.functional.softmax(y / temperature, dim=-1)
+
+
+def gumbel_softmax(logits, latent_dim, categorical_dim, temperature=1 , hard=False):
+    """
+    ST-gumple-softmax
+    input: [*, n_class]
+    return: flatten --> [*, n_class] an one-hot vector
+    """
+    logits = logits.view(logits.size(0), latent_dim, categorical_dim)
+    y = gumbel_softmax_sample(logits, temperature)
+
+    if not hard:
+        return y.view(-1, latent_dim * categorical_dim)
+
+    shape = y.size()
+    _, ind = y.max(dim=-1)
+    y_hard = torch.zeros_like(y).view(-1, shape[-1])
+    y_hard.scatter_(1, ind.view(-1, 1), 1)
+    y_hard = y_hard.view(*shape)
+    # Set gradients w.r.t. y_hard gradients w.r.t. y
+    y_hard = (y_hard - y).detach() + y
+    return y_hard.view(-1, latent_dim * categorical_dim)
 
 def tensor_to_text(gen_t):
     if not isinstance(gen_t, list):
@@ -413,7 +498,7 @@ def add_recon_title(recon_list, title, colour=(0,0,0)):
     return images
 
 def turn_text2image(string_list, img_size=(64,192,3)):
-        return [np.asarray(add_text_in_image(np.ones(img_size)*255, t, (5,8),16)) for t in string_list]
+        return [np.asarray(add_text_in_image(np.ones(img_size)*255, t, (5,8),12)) for t in string_list]
 
 def img_separators(imgs, thickness=2, horizontal=True):
     images = []
@@ -447,12 +532,11 @@ def add_text_in_image(img, text, position, size, colour=(0, 0, 0)):
     font_path = os.path.join(cv2.__path__[0], 'qt', 'fonts', 'DejaVuSans.ttf')
     font = ImageFont.truetype(font_path, size=size)
     draw = ImageDraw.Draw(img)
-    lines = text_wrap(text, font, img_size)
-    for line in lines:
-        draw.text(position, line, font=font, fill=colour)
-        pos = list(position)
-        pos[1] += size
-        position = tuple(pos)
+    t = text.split(" ")
+    for id in range(1,int(len(t)/5)+1):
+        t.insert(id*5, "\n")
+    text = " ".join(t)
+    draw.text(position, text, font=font, fill=colour)
     return img
 
 
@@ -625,3 +709,36 @@ def check_img_normalize(data):
     else:
         data = data / 256 if torch.max(data) > 1 else data
     return data
+
+class Categorical(Categorical):
+    has_rsample = True
+
+    def __init__(self, logits=None, scale=None, probs=None):
+        assert not (logits is None and probs is None), "Must provide either logits or probs!"
+        super(Categorical, self).__init__(logits=logits, probs=probs)
+        self.logits = logits
+        if logits is not None:
+            self._batch_shape = self.logits.shape
+        else:
+            self._batch_shape = self.probs.shape
+        self.loc = self.logits
+
+    @property
+    def mean(self):
+        return self.logits
+
+    def sample(self, sample_shape=torch.Size()):
+        with torch.no_grad():
+            return self.rsample(sample_shape)
+
+    def rsample(self, sample_shape=torch.Size()):
+        return self.logits.expand([*sample_shape, *self.logits.shape]).contiguous()
+
+    # def log_prob(self, value):
+    #     # value of shape (K, B, D)
+    #     lpx_z = -torch.nn.functional.cross_entropy(input=self.logits.view(-1, self.logits.size(-1)),
+    #                              target=value.expand(self.logits.size()[:-1]).long().view(-1),
+    #                              reduction='none',
+    #                              ignore_index=0)
+    #
+    #     return lpx_z.view(*self.logits.shape[:-1])

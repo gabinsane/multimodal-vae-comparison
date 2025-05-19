@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: lanro-gym
+Version: 0.3.7
+Summary: Gymnasium multi-goal environments for goal-conditioned and language-conditioned deep reinforcement learning build with PyBullet
+Home-page: https://github.com/frankroeder/lanro-gym
+Author: Frank Röder
+Author-email: frank.roeder@tuhh.de
+License: MIT
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=3.8
+Provides-Extra: dev
+Provides-Extra: extra

@@ -3,6 +3,144 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+
+def expand_layer(old_layer, layer_class, new_size):
+    """Adds new neurons to a layer, returns expanded layer"""
+    weights = old_layer.weight.data
+    new_layer = layer_class(in_features=new_size[0], out_features=new_size[1])
+    new_layer.weight.data[:weights.shape[0], :weights.shape[1]] = weights
+    return new_layer
+
+class ResDown(nn.Module):
+    """
+    Residual down sampling block for the encoder
+    """
+
+    def __init__(self, channel_in, channel_out, kernel_size=3):
+        super(ResDown, self).__init__()
+        self.conv1 = nn.Conv2d(channel_in, channel_out // 2, kernel_size, 2, kernel_size // 2)
+        self.bn1 = nn.BatchNorm2d(channel_out // 2, eps=1e-4)
+        self.conv2 = nn.Conv2d(channel_out // 2, channel_out, kernel_size, 1, kernel_size // 2)
+        self.bn2 = nn.BatchNorm2d(channel_out, eps=1e-4)
+
+        self.conv3 = nn.Conv2d(channel_in, channel_out, kernel_size, 2, kernel_size // 2)
+
+        self.act_fnc = nn.ELU()
+
+    def forward(self, x):
+        skip = self.conv3(x)
+        x = self.act_fnc(self.bn1(self.conv1(x)))
+        x = self.conv2(x)
+        return self.act_fnc(self.bn2(x + skip))
+
+
+class ResUp(nn.Module):
+    """
+    Residual up sampling block for the decoder
+    """
+
+    def __init__(self, channel_in, channel_out, kernel_size=3, scale_factor=2):
+        super(ResUp, self).__init__()
+
+        self.conv1 = nn.Conv2d(channel_in, channel_out // 2, kernel_size, 1, kernel_size // 2)
+        self.bn1 = nn.BatchNorm2d(channel_out // 2, eps=1e-4)
+        self.conv2 = nn.Conv2d(channel_out // 2, channel_out, kernel_size, 1, kernel_size // 2)
+        self.bn2 = nn.BatchNorm2d(channel_out, eps=1e-4)
+
+        self.conv3 = nn.Conv2d(channel_in, channel_out, kernel_size, 1, kernel_size // 2)
+
+        self.up_nn = nn.Upsample(scale_factor=scale_factor, mode="nearest")
+
+        self.act_fnc = nn.ELU()
+
+    def forward(self, x):
+        x = self.up_nn(x)
+        skip = self.conv3(x)
+        x = self.act_fnc(self.bn1(self.conv1(x)))
+        x = self.conv2(x)
+
+        return self.act_fnc(self.bn2(x + skip))
+
+
+class MultiTransformer(nn.Module):
+    def __init__(self, latent_dim, zero_masking, decoder, use_ml_layers,  output_mean, pos_encoding=1,ff_size=2048, num_layers=2, num_heads=2, dropout=0.1, activation="gelu"):
+        """
+        Transformer network for multimodal fusion
+        :param latent_dim: int, latent vector dimensionality
+        :param data_dim: list, dimensions of the data (e.g. [42, 25, 3] for sequences of max. length 42, 25 joints and 3 features per joint)
+        """
+        super(MultiTransformer, self).__init__()
+        self.latent_dim = latent_dim
+
+        self.ff_size = ff_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.activation = activation
+        self.zero_masking = int(zero_masking) == 1
+        self.pos_encoding = pos_encoding == 1 
+        self.output_mean = int(output_mean) == 1
+        self.use_decoder = decoder==1
+        self.use_ml_layers = use_ml_layers==1
+
+        self.input_feats = self.latent_dim 
+        self.mu_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+        self.logvar_layer = torch.nn.DataParallel(nn.Linear(self.latent_dim, self.latent_dim))
+
+        self.skelEmbedding = torch.nn.DataParallel(nn.Linear(self.input_feats, self.latent_dim))
+        if self.pos_encoding:
+            self.sequence_pos_encoder = PositionalEncoding(self.latent_dim, self.dropout)
+        seqTransEncoderLayer = (nn.TransformerEncoderLayer(d_model=self.latent_dim,
+                                                                                nhead=self.num_heads,
+                                                                                dim_feedforward=self.ff_size,
+                                                                                dropout=self.dropout,
+                                                                                activation=self.activation))
+        self.seqTransEncoder = (
+            nn.TransformerEncoder(seqTransEncoderLayer, num_layers=self.num_layers))
+        if self.use_decoder:
+            seqTransDecoderLayer = (nn.TransformerDecoderLayer(d_model=self.latent_dim,
+                                                              nhead=self.num_heads,
+                                                              dim_feedforward=self.ff_size,
+                                                              dropout=self.dropout,
+                                                              activation=activation))
+            self.seqTransDecoder = (nn.TransformerDecoder(seqTransDecoderLayer,
+                                                         num_layers=self.num_layers))
+
+
+    def forward(self, batch):
+        x = batch.float()
+        nframes, bs, njoints, nfeats = x.shape
+        mask = torch.tensor(np.ones((bs, nframes), dtype=bool)).cuda()
+        if self.zero_masking:
+            for ix, sample in enumerate(x.permute(1,0,2,3)):
+                for ix2, frame in enumerate(sample):
+                     if torch.count_nonzero(frame) == 0:
+                            mask[ix][ix2] = torch.tensor(False).cuda()
+        x = x.reshape(nframes, bs, nfeats*njoints)
+        # embedding of the skeleton
+        x = self.skelEmbedding(x.cuda())
+        # add positional encoding
+        if self.pos_encoding:
+            x = self.sequence_pos_encoder(x)
+        # transformer layers
+        final = self.seqTransEncoder(x, src_key_padding_mask=~mask)
+        if self.use_decoder:
+            timequeries = torch.zeros(mask.shape[1], bs, self.latent_dim, device=final.device)
+            timequeries = self.sequence_pos_encoder(timequeries)
+            final = self.seqTransDecoder(tgt=timequeries, memory=final, tgt_key_padding_mask=~mask)
+        if not self.use_ml_layers:
+            mu = final[0]
+            logvar = final[1]
+        else:
+            if self.output_mean:
+                z = final.mean(axis=0)
+            else:
+                z = final[0]
+            mu = self.mu_layer(z)
+            logvar = self.logvar_layer(z)
+        logvar = F.softmax(logvar, dim=-1)
+        return mu, logvar
+
 class Flatten(torch.nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
@@ -924,3 +1062,96 @@ class ResidualBlockDeconv(nn.Module):
         out = self.net(x)
         res = x if self.upsample is None else self.upsample(x)
         return self.af(out + res)
+
+class VGG19(nn.Module):
+    """
+     Simplified version of the VGG19 "feature" block
+     This module's only job is to return the "feature loss" for the inputs
+    """
+
+    def __init__(self, channel_in=3, width=64):
+        super(VGG19, self).__init__()
+
+        self.conv1 = nn.Conv2d(channel_in, width, 3, 1, 1)
+        self.conv2 = nn.Conv2d(width, width, 3, 1, 1)
+
+        self.conv3 = nn.Conv2d(width, 2 * width, 3, 1, 1)
+        self.conv4 = nn.Conv2d(2 * width, 2 * width, 3, 1, 1)
+
+        self.conv5 = nn.Conv2d(2 * width, 4 * width, 3, 1, 1)
+        self.conv6 = nn.Conv2d(4 * width, 4 * width, 3, 1, 1)
+        self.conv7 = nn.Conv2d(4 * width, 4 * width, 3, 1, 1)
+        self.conv8 = nn.Conv2d(4 * width, 4 * width, 3, 1, 1)
+
+        self.conv9 = nn.Conv2d(4 * width, 8 * width, 3, 1, 1)
+        self.conv10 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+        self.conv11 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+        self.conv12 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+
+        self.conv13 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+        self.conv14 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+        self.conv15 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+        self.conv16 = nn.Conv2d(8 * width, 8 * width, 3, 1, 1)
+
+        self.mp = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.relu = nn.ReLU()
+
+        self.load_params_()
+
+    def load_params_(self):
+        # Download and load Pytorch's pre-trained weights
+        state_dict = torch.hub.load_state_dict_from_url('https://download.pytorch.org/models/vgg19-dcbb9e9d.pth')
+        for ((name, source_param), target_param) in zip(state_dict.items(), self.parameters()):
+            target_param.data = source_param.data
+            target_param.requires_grad = False
+
+    def feature_loss(self, x):
+        return (x[:x.shape[0] // 2] - x[x.shape[0] // 2:]).pow(2).mean()
+
+    def forward(self, x):
+        """
+        :param x: Expects x to be the target and source to concatenated on dimension 0
+        :return: Feature loss
+        """
+        x = self.conv1(x)
+        loss = self.feature_loss(x)
+        x = self.conv2(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.mp(self.relu(x))  # 64x64
+
+        x = self.conv3(x)
+        loss += self.feature_loss(x)
+        x = self.conv4(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.mp(self.relu(x))  # 32x32
+
+        x = self.conv5(x)
+        loss += self.feature_loss(x)
+        x = self.conv6(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.conv7(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.conv8(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.mp(self.relu(x))  # 16x16
+
+        x = self.conv9(x)
+        loss += self.feature_loss(x)
+        x = self.conv10(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.conv11(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.conv12(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.mp(self.relu(x))  # 8x8
+
+        x = self.conv13(x)
+        loss += self.feature_loss(x)
+        x = self.conv14(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.conv15(self.relu(x))
+        loss += self.feature_loss(x)
+        x = self.conv16(self.relu(x))
+        loss += self.feature_loss(x)
+
+        return loss/16

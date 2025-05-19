@@ -2,10 +2,9 @@
 import torch
 import torch.distributions as dist
 import torch.nn as nn
-import numpy as np
 import torch.nn.functional as F
 from models import encoders, decoders
-from utils import get_traversal_matrix
+from utils import get_traversal_matrix, gumbel_softmax, Categorical
 from models.decoders import VaeDecoder
 from models.encoders import VaeEncoder
 from models.output_storage import VAEOutput
@@ -13,7 +12,7 @@ from models.objectives import UnimodalObjective
 
 class DencoderFactory(object):
     @classmethod
-    def get_nework_classes(cls, enc_name, dec_name, n_latents, private_latents, data_dim:tuple):
+    def get_nework_classes(cls, enc_name, dec_name, n_latents, private_latents,data_dim:tuple, enc_mu_logvar:bool):
         """
         Instantiates the encoder and decoder networks
 
@@ -25,7 +24,7 @@ class DencoderFactory(object):
        :rtype: tuple(object, object)
        """
         assert hasattr(encoders, "Enc_{}".format(enc_name)), "Did not find encoder {}".format(enc_name)
-        enc_obj = getattr(encoders, "Enc_{}".format(enc_name))(n_latents, data_dim, private_latents)
+        enc_obj = getattr(encoders, "Enc_{}".format(enc_name))(n_latents, data_dim, private_latents, enc_mu_logvar)
         assert hasattr(decoders, "Dec_{}".format(dec_name)), "Did not find decoder {}".format(dec_name)
         dec_obj = getattr(decoders, "Dec_{}".format(dec_name))(n_latents, data_dim, private_latents)
         return enc_obj, dec_obj
@@ -79,7 +78,23 @@ class BaseVae(nn.Module):
         :return: decoded distribution parameters (means and logvars)
         :rtype: tuple
         """
-        return self.dec(inp)
+        px_z_params = self.dec(inp)
+        if self.prior_str == "gumbel":
+            px_z_params = (torch.sigmoid(px_z_params[0]), px_z_params[1])
+        return px_z_params
+
+    def sample(self, qz_x_params, K):
+        K = torch.Size([K]) if isinstance(K, int) else K
+        if self.prior_str == "gumbel":
+            qz_r = torch.relu(qz_x_params[0])
+            q_y = qz_r.view(qz_r.size(0), int(self.n_latents/self.enc.data_dim[1]), self.enc.data_dim[1])
+            zs = gumbel_softmax(q_y, int(self.n_latents/self.enc.data_dim[1]), self.enc.data_dim[1])
+            qz_x= F.softmax(q_y, dim=-1).reshape(*qz_r.size())
+            qz_x = self.qz_x(logits=qz_x)
+        else:
+            qz_x = self.qz_x(*qz_x_params)
+            zs = qz_x.rsample(K)
+        return zs, qz_x
 
     def forward(self, x, K=1):
         """
@@ -93,10 +108,10 @@ class BaseVae(nn.Module):
         :rtype:tuple(torch.dist, torch.dist, torch.tensor)
         """
         self._qz_x_params = self.encode(x)
-        qz_x = self.qz_x(*self._qz_x_params)
-        zs = qz_x.rsample(torch.Size([K]))
-        px_z_params = self.decode({"latents":zs, "masks": None})
-        px_z = self.px_z(*px_z_params)
+        zs, qz_x = self.sample(self._qz_x_params, K)
+        masks = None if x["masks"] is None else x["masks"].repeat(K,1)
+        px_z_params = self.decode({"latents":zs.reshape(1,-1,self.n_latents), "masks": masks})
+        px_z = self.get_px_z(px_z_params)
         out = VAEOutput()
         out.set_with_dict({"mod_1":qz_x}, "encoder_dist")
         out.set_with_dict({"mod_1":{"latents":zs, "masks": None}}, "latent_samples")
@@ -104,8 +119,8 @@ class BaseVae(nn.Module):
         return out
 
 class VAE(BaseVae):
-    def __init__(self, enc, dec, feature_dim, n_latents, ltype, private_latents=None, prior_dist="normal",
-                 likelihood_dist="normal", post_dist="normal", obj_fn=None, beta=1, id_name="mod_1", llik_scaling="auto"):
+    def __init__(self, enc, dec, feature_dim, n_latents, ltype, private_latents=None, llik_scaling=1, prior_dist="normal",
+                 likelihood_dist="normal", post_dist="normal", obj_fn=None, beta=1, id_name="mod_1", enc_mu_logvar=True):
         """
         The general unimodal VAE module, can be used separately or in a multimodal VAE
 
@@ -130,7 +145,7 @@ class VAE(BaseVae):
         prior_dist = dist_map[prior_dist.lower()]
         post_dist = dist_map[post_dist.lower()]
         likelihood_dist = dist_map[likelihood_dist.lower()]
-        enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim)
+        enc_net, dec_net = DencoderFactory().get_nework_classes(enc, dec, n_latents, private_latents, feature_dim, enc_mu_logvar)
         super(VAE, self).__init__(enc_net, dec_net, prior_dist, likelihood_dist, post_dist)
         self._qz_x_params, self._pz_params_private = None, None
         self.llik_scaling = llik_scaling
@@ -143,7 +158,7 @@ class VAE(BaseVae):
         self.total_latents = self.n_latents + self.private_latents if self.private_latents is not None else self.n_latents
         self._pz_params = nn.ParameterList([
             nn.Parameter(torch.zeros(1, self.total_latents), requires_grad=False),  # mu
-            nn.Parameter(torch.ones(1, self.total_latents), requires_grad=True)  # logvar
+            nn.Parameter(torch.ones(1, self.total_latents), requires_grad=False)  # logvar
         ])
         if self.private_latents is not None:
             self._pz_params_private = nn.ParameterList([
@@ -154,6 +169,23 @@ class VAE(BaseVae):
         self.ltype = ltype
         self.obj_fn = self.set_objective_fn(obj_fn, beta)
 
+    def get_qz_x(self, qz_x_params):
+        if self.post_dist == dist.Categorical:
+            return self.qz_x(logits=qz_x_params[0])
+        else:
+            return self.qz_x(*qz_x_params)
+
+    def get_px_z(self, pxz_params):
+        if self.likelihood_dist == dist.Categorical:
+            return self.px_z(logits=pxz_params[0])
+        else:
+            return self.px_z(*pxz_params)
+
+    def get_pz(self, pz_params):
+        if self.prior_dist == dist.Categorical:
+            return self.pz(logits=pz_params[0])
+        else:
+            return self.pz(*pz_params)
 
     @property
     def pz_params_private(self):
@@ -170,6 +202,22 @@ class VAE(BaseVae):
         :rtype: list(torch.tensor, torch.tensor)
         """
         return self._pz_params[0], F.softmax(self._pz_params[1], dim=1) * self._pz_params[1].size(-1)
+
+    def change_latents(self, new_latents:int):
+        """
+        Enables to increase the latent space size at any time (i.e. during training).
+        :param new_latents: new size of the latent space, must be => than the current size
+        :type new_latents: int
+        """
+        assert new_latents >= self.n_latents, "New latent size must be the same or larger than the current one"
+        self.n_latents = new_latents
+        self.total_latents = self.n_latents + self.private_latents if self.private_latents is not None else self.n_latents
+        self._pz_params = nn.ParameterList([
+            nn.Parameter(torch.zeros(1, self.total_latents), requires_grad=False),  # mu
+            nn.Parameter(torch.ones(1, self.total_latents), requires_grad=False)  # logvar
+        ])
+        self.enc.update_latent_dim(new_latents, self.growtype)
+        self.dec.update_latent_dim(new_latents)
 
     @property
     def qz_x_params(self):
@@ -204,12 +252,14 @@ class VAE(BaseVae):
         self.eval()
         with torch.no_grad():
             if not traversals:
-                pz = self.pz(*self.pz_params)
-                latents = pz.rsample(torch.Size([N]))
+                pz = self.get_pz(self.pz_params)
+                if self.prior_dist == dist.Categorical:
+                    latents = pz.logits.expand([N, *pz.logits.shape])
+                else:
+                    latents = pz.rsample(torch.Size([N]))
             else:
-                latents = torch.stack(get_traversal_matrix(N, self.total_latents, trav_range=traversal_range))
+                latents = torch.stack(get_traversal_matrix(N, self.n_latents, trav_range=traversal_range))
         return latents
-
 
     def objective(self, data):
         """
@@ -225,5 +275,7 @@ class VAE(BaseVae):
         qz_x = output.mods["mod_1"].encoder_dist
         px_z = output.mods["mod_1"].decoder_dist
         zs = output.mods["mod_1"].latent_samples
+        if self.obj_fn.obj_name == "elbo_gumbel":
+            data["mod_1"]["n_cats"] = self.data_dim[1]
         loss = self.obj_fn.calculate_loss(px_z, data["mod_1"], qz_x, self.prior_dist, self._pz_params, zs)
         return loss

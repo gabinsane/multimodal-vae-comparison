@@ -1,7 +1,12 @@
 # objectives of choice
 import torch
+import torch.distributions as dist
+from utils import kl_divergence, is_multidata, log_mean_exp, log_joint, get_all_pairs, log_batch_marginal, softclip
+from torch.autograd import Variable
 from utils import kl_divergence, is_multidata, log_mean_exp, log_joint, get_all_pairs, log_batch_marginal, softclip
 from numpy import prod
+import numpy as np
+from models.nn_modules import VGG19
 import numpy as np
 import copy
 
@@ -38,6 +43,8 @@ class BaseObjective():
         if target["masks"] is not None:
             output.loc = output.loc[:, :target["masks"].shape[1]]
             output.scale = output.loc[:, :target["masks"].shape[1]]
+        # if target["data"].shape[1:] == torch.Size([3,64,64]):
+        #     return torch.zeros((target["data"].shape[0],64)).cuda()
         target = target["data"]
         output, target = self.reshape_for_loss(output, target, K)
         bs = target.shape[0]
@@ -93,8 +100,7 @@ class BaseObjective():
         assert (S > 0), "Cannot fit individual data in memory, consider smaller K"
         return min(B, S)
 
-    @staticmethod
-    def reshape_for_loss(output, target, K=1):
+    def reshape_for_loss(self, output, target, K=1):
         """
         Reshapes output and target to calculate reconstruction loss
 
@@ -110,7 +116,12 @@ class BaseObjective():
         :rtype: tuple(torch.tensor, torch.tensor, str)
         """
         target = torch.stack(target).float() if isinstance(target, list) else target
-        target = target.repeat(K, *([1]*(len(target.shape)-1))).reshape(*output.loc.shape)
+        if self.ltype != "category_ce":
+            target = target.repeat(K, *([1]*(len(target.shape)-1))).reshape(*output.loc.shape)
+        else:
+            target = target.repeat(K, *([1] * (len(target.shape) - 1))).reshape(*output.loc.shape)
+            if len(target.shape) == 2 and target.shape[-1] < 2:
+                target = torch.nn.functional.one_hot(target)
         return output, target
 
     @staticmethod
@@ -134,17 +145,25 @@ class BaseObjective():
             output.append(data_norm.reshape(d_size))
         return output
 
-    def calc_kld(self, dist1, dist2):
+    def calc_kld(self, dist1, dist2, cats=None):
         """
         Calculate KL divergence between two distributions
         :param dist1: distribution 1
         :type dist1: torch.dist
         :param dist2: distribution 2
         :type dist2: torch.dist
+        :param cats: nmber of categories in case of gumbel softmax
+        :type cats: int
         :return: KL divergence
         :rtype: torch.tensor
         """
-        return kl_divergence(dist1, dist2)
+        if not cats:
+            return kl_divergence(dist1, dist2)
+        else:
+            N = int(dist1.param_shape[1] / cats)
+            kld = self.calc_kld(dist1, dist.Categorical(
+                torch.full((dist1.param_shape[0] * N, cats), 1.0 / cats).view(dist1.param_shape[0], -1).cuda()))
+            return kld
 
     def calc_klds(self, latent_dists, model):
         """
@@ -230,6 +249,22 @@ class UnimodalObjective(BaseObjective):
         """
         lpx_z = self.recon_loss_fn(data["px_z"], data["target"], data["K"])
         kld = self.calc_kld(data["qz_x"], data["prior_dist"](*data["pz_params"]))
+        loss = super().elbo(lpx_z, kld, self.beta)
+        out = {"loss": loss, "kld": kld, "reconstruction_loss": lpx_z}
+        return out
+
+    def elbo_gumbel(self, data):
+        """
+        Computes unimodal ELBO E_{p(x)}[ELBO]
+
+        :param data: dict with the keys: px_z, target, qz_x, prior_dist, K
+        :type dict: dict
+        :return: dict with loss, kl divergence, reconstruction loss and kld
+        :rtype: dict
+        """
+        lpx_z = self.recon_loss_fn(data["px_z"], data["target"], data["K"])
+        K = data["target"]["n_cats"]
+        kld = self.calc_kld(data["qz_x"], data["prior_dist"], K)
         loss = super().elbo(lpx_z, kld, self.beta)
         out = {"loss": loss, "kld": kld, "reconstruction_loss": lpx_z}
         return out
@@ -384,7 +419,9 @@ class ReconLoss():
         :return: calculated loss
         :rtype: torch.Tensor.float
         """
-        return -output.log_prob(target.cuda()).view(*target.shape[:1], -1).double().reshape(bs, -1)
+        out = output.log_prob(target.cuda()).view(*target.shape[:1], -1).double().reshape(bs, -1)
+        out[torch.isnan(out)] = 0
+        return -out
 
     @staticmethod
     def l1(output, target, bs):
@@ -421,6 +458,31 @@ class ReconLoss():
         return l(output.loc.cuda(), target.float().cuda().detach()).reshape(bs, -1)
 
     @staticmethod
+    def feature_loss(output, target, bs):
+        """
+        Suitable for images only
+        Feature extractor loss taken from https://github.com/LukeDitria/CNN-VAE/blob/master/
+
+        :param output: model output distribution
+        :type output: torch.distributions
+        :param target: ground truth tensor
+        :type target: torch.tensor
+        :param bs: batch size
+        :type bs: int
+        :return: calculated loss
+        :rtype: torch.Tensor.float
+        """
+        if target.shape[-1] == 3:
+            target = target.transpose(1,3)
+            #output.loc = output.loc.transpose(1,3)
+        feature_extractor = VGG19().to("cuda")
+        l = torch.nn.MSELoss(reduction="none")
+        feature_loss = feature_extractor(torch.cat((output.loc.cuda(), target.float().cuda().detach()), 0))
+        loss = l(output.loc.cuda(), target.float().cuda().detach()) + feature_loss
+        ls = loss.sum(-1).sum(-1).reshape(bs, -1) if len (loss.shape) > 3 else loss.sum(-1).reshape(bs, -1)
+        return ls
+
+    @staticmethod
     def category_ce(output, target, bs):
         """
         Categorical Cross-Entropy loss (for classification problems such as text)
@@ -438,10 +500,11 @@ class ReconLoss():
         return l(output.loc.cuda(), target.float().cuda().detach()).reshape(bs, -1)
 
     @staticmethod
-    def gaussian_nll(output, target, bs):
+    def optimal_sigma(output, target, bs):
         """Calculate Gaussian NLL with optimal sigma as in Sigma VAE https://github.com/orybkin/sigma-vae-pytorch"""
-        log_sigma = ((target.float().cuda().detach().cpu() - output.loc.cpu()) ** 2).mean([0,1,2,3], keepdim=True).sqrt().log()[0][0][0][0]
+        log_sigma = ((target.float().cuda().detach().cpu() - output.loc.cpu()) ** 2).mean(list(range(len(output.loc.shape))), keepdim=True).sqrt().log()
+        while not log_sigma.shape == torch.Size([]):  # unwrap a nested tensor
+            log_sigma = log_sigma[0]
         log_sigma = softclip(log_sigma, -6)
         return (torch.pow((target.float().cuda().detach() - output.loc) / log_sigma.exp(), 2).clone().detach() + log_sigma + 0.5 * np.log(2 * np.pi)).reshape(bs, -1)
-
 

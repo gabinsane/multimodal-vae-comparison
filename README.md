@@ -1,7 +1,5 @@
 # Multimodal VAE Comparison
 
-This is the official code for the paper [Benchmarking Multimodal Variational Autoencoders: CdSprites+ Dataset and Toolkit](https://arxiv.org/abs/2209.03048).
-
 The purpose of this toolkit is to offer a systematic and unified way to train, evaluate and compare the state-of-the-art
 multimodal variational autoencoders. The toolkit can be used with arbitrary datasets and both uni/multimodal settings.
 By default, we provide implementations of the [MVAE](https://github.com/mhw32/multimodal-vae-public) 
@@ -10,11 +8,14 @@ By default, we provide implementations of the [MVAE](https://github.com/mhw32/mu
 ([paper](https://openreview.net/forum?id=5Y21V0RDBV)) and [DMVAE](https://github.com/seqam-lab/DMVAE) ([paper](https://github.com/seqam-lab/DMVAE)) models, but anyone is free to contribute with their own
 implementation. 
 
-We also provide a custom synthetic bimodal dataset, called **CdSprites+**, designed specifically for comparison of the
-joint- and cross-generative capabilities of multimodal VAEs. You can read about the utilities of the dataset in the proposed 
-paper (link will be added soon). This dataset extends the [dSprites dataset](https://github.com/deepmind/dsprites-dataset) with natural language captions and additional features and offers 5 levels of difficulty (based on the number of attributes)
+We also provide two custom synthetic multimodal datasets to evaluate multimodal VAEs more systematically:
+
+ - **CdSprites+** - this dataset extends the [dSprites dataset](https://github.com/deepmind/dsprites-dataset) with natural language captions and additional features and offers 5 levels of difficulty (based on the number of attributes)
 to find the minimal functioning scenario for each model. Moreover, its rigid structure enables automatic qualitative
 evaluation of the generated samples. For more info, see below. 
+- **VILANRO-TRIMODAL** - a synthetic robotic dataset with three modalities - images, natural language descriptions and action sequences. The model has to learn the mapping between the initial top-view image of the scene, natural language instruction and a whole motion sequence (end-effector positions in the cartesian space + 1 value for gripper control). During testing, it has to produce the correct motion trajectory based on the image and instruction. 
+
+Both datasets can be found below or on [Hugging Face](https://huggingface.co/datasets/gabinsane/VILANRO)
 
 [**Code Documentation & Tutorials**](https://gabinsane.github.io/multimodal-vae-comparison)
 
@@ -29,6 +30,7 @@ evaluation of the generated samples. For more info, see below.
 
 * [Preliminaries](#preliminaries) <br>
 * [CdSprites+ dataset](#get-the-cdsprites-dataset) <br>
+* [VILANRO-TRIMODAL dataset](#vilanro-trimodal) <br>
 * [Setup & Training](#setup-and-training) <br>
 * [Evaluation](#evaluation)<br>
 * [CdSprites+ leaderboard](#cdsprites&#43;-leaderboard)<br>
@@ -103,7 +105,7 @@ We show an example training config in _./multimodal_compare/configs/config1.yml_
 
 ```
 cd ~/multimodal-vae-comparison/multimodal_compare
-python main.py --cfg configs/config1.yml
+python main.py --cfg configs/config_cdspritesplus.yml
 ```
 
 The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
@@ -346,6 +348,57 @@ In brackets we show standard deviations over the 5 seeds.
 
 Please feel free to propose your own model and training config so that we can add the results in these tables. 
 
+## VILANRO-TRIMODAL
+
+VILANRO-TRIMODAL is a synthetic robotic dataset with three modalities - images, natural language descriptions and action sequences. We provide 36 datasets for training with scaled complexity. Some datasets include only 1 object in a fixed (A) or random (B) place, some include either 1 (C) or 2 (D) distractors. Some datasets include only one task (1-3,6-9), some require learning either two (4) or three (5) tasks in parallel. See the overview below:
+
+![VILANRO-TRIMODAL](https://github.com/gabinsane/multimodal-vae-comparison/multimodal_compare/models/contrib/vilanro_trimodal.png "dataset overview")
+
+The data was generated using an adapted version of the [LANRO-Gym simulator](https://github.com/frankroeder/lanro-gym). We provide the custom version of lanro-gym within our repository. 
+
+**To be able to evaluate the trained models, please additionally run ```pip install gymnasium``` within the existing cnda environment.**
+
+
+### Dataset download 
+You can download the datasets based on their codes. The codes are the following (explanations are provided in the paper):
+
+![Coding 1](https://github.com/gabinsane/multi-vaes-in-robotics/blob/main/data2.png "dataset codes")
+
+![Coding 2](https://github.com/gabinsane/multi-vaes-in-robotics/blob/main/data1.png "dataset codes")
+
+
+The dataset should be placed in the ./data/vilanro directory. For downloading, unzipping and moving the chosen dataset, run:
+
+```
+cd ~/multimodal-vae-comparison/
+wget https://data.ciirc.cvut.cz/public/groups/incognite/LANRO/D1a.zip   # replace d1a with lowercase codes from the tables above
+unzip D1a.zip -d ./data/vilanro 
+```
+
+### Setup and training
+
+You can run the training with the chosen config as follows (assuming you downloaded or generated the dataset):
+
+```
+cd ~/multimodal-vae-comparison/
+python main.py --cfg configs/config_vilanro.yml
+```
+
+
+The config contains general arguments and modality-specific arguments (denoted as "modality_n"). In general, you can set up a training for 1-N modalities by defining the required subsections for each of them. 
+
+
+
+### Evaluation
+
+After training, you will find various visualizations of the training progress in the _./visuals_ folder of your experiment.
+Furthermore, to evaluate on LANRO, you can choose one of the two scenarios:
+
+```
+cd ~/multimodal-vae-comparison/models
+python vilanro_test.py --model modelpath --dataset 2  # specify the path to the model checkpoint and the dataset level (1-4) on which the model was trained
+```
+The code will run an evaluation on 500 trials and provide the successful_percentage.txt file in the model folder next to the .ckpt file.
 
 
 ### Training on other datasets

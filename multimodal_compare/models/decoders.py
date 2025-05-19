@@ -9,6 +9,9 @@ from numpy import prod
 from models.NetworkTypes import NetworkTypes, NetworkRoles
 from models.encoders import VaeComponent
 from models.nn_modules import PositionalEncoding, AttentionResidualBlock, SamePadConvTranspose3d, Unflatten
+from models.nn_modules import DeconvNet, expand_layer, ResUp
+from models.nn_modules import PositionalEncoding, AttentionResidualBlock, \
+    SamePadConvTranspose3d
 from utils import Constants
 
 
@@ -46,7 +49,7 @@ class Dec_CNN(VaeDecoder):
         # Layer parameters
         hid_channels = 32
         kernel_size = 4
-        hidden_dim = 256
+        hidden_dim = 512
         # Shape required to start transpose convs
         self.reshape = (hid_channels, kernel_size, kernel_size)
         self.n_chan = 3
@@ -76,9 +79,8 @@ class Dec_CNN(VaeDecoder):
         """
         z = z["latents"]
         if len(z.shape) == 2:
-            batch_size = z.size(0)
-        else:
-            batch_size = z.size(1)
+            z = z.unsqueeze(0)
+        batch_size = z.size(1)
 
         # Fully connected layers with ReLu activations
         x = torch.relu(self.lin1(z))
@@ -188,6 +190,41 @@ class Dec_MNIST2(VaeDecoder):
         d = torch.sigmoid(p.reshape(*z.size()[:-1], *[1, 28, 28]))  # reshape data
         d = d.clamp(Constants.eta, 1 - Constants.eta)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
+
+class Dec_RESCNN(VaeDecoder):
+    """
+    Decoder block
+    Built to be a mirror of the encoder block
+    """
+
+    def __init__(self, latent_dim, data_dim, latent_private):
+        super(Dec_RESCNN, self).__init__(latent_dim, data_dim, latent_private,  net_type=NetworkTypes.CNN)
+        ch = 64
+        latent_channels = 512
+        channels = 3
+        self.conv_t_up = nn.ConvTranspose2d(latent_dim, ch * 16, 4, 1)
+        self.res_up_block1 = ResUp(ch * 16, ch * 8)
+        self.res_up_block2 = ResUp(ch * 8, ch * 4)
+        self.res_up_block3 = ResUp(ch * 4, ch * 2)
+        self.res_up_block4 = ResUp(ch * 2, ch)
+        self.conv_out = nn.Conv2d(ch, channels, 3, 1, 1)
+        self.act_fnc = nn.ELU()
+
+    def forward(self, x):
+        x = x["latents"]
+        if len(x.shape) > 2:
+            x = x.reshape(x.shape[0]*x.shape[1], -1)
+        x = x.squeeze().unsqueeze(-1).unsqueeze(-1)
+        try:
+            x = self.act_fnc(self.conv_t_up(x))  # 4
+        except:
+            pass
+        x = self.res_up_block1(x)  # 8
+        x = self.res_up_block2(x)  # 16
+        x = self.res_up_block3(x)  # 32
+        x = self.res_up_block4(x)  # 64
+        x = torch.sigmoid(self.conv_out(x))
+        return x, torch.tensor(0.75).to(x.device)
 
 
 class Dec_MNIST(VaeDecoder):
@@ -341,7 +378,7 @@ class Dec_FNN(VaeDecoder):
         self.net_type = "FNN"
         self.hidden_dim = 128
         self.data_dim = data_dim
-        self.lin1 = torch.nn.DataParallel(nn.Linear(self.out_dim, self.hidden_dim))
+        self.first = torch.nn.DataParallel(nn.Linear(self.out_dim, self.hidden_dim))
         #self.lin2 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         #self.lin3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, self.hidden_dim))
         self.fc3 = torch.nn.DataParallel(nn.Linear(self.hidden_dim, np.prod(data_dim)))
@@ -356,11 +393,11 @@ class Dec_FNN(VaeDecoder):
         :rtype: tuple(torch.tensor, torch.tensor)
         """
         z = z["latents"]
-        p = torch.relu(self.lin1(z))
-        #p = torch.relu(self.lin2(p))
-        #p = torch.relu(self.lin3(p))
-        d = (self.fc3(p))  # reshape data
-        d = d.reshape(-1, *self.data_dim)
+        p = F.leaky_relu(self.first(z))
+        #p = F.leaky_relu(self.lin2(p))
+        #p = F.leaky_relu(self.lin3(p))
+        d = (self.fc3(p)) # reshape data
+        d = d.reshape(-1, *self.data_dim).squeeze(-1)
         return d, torch.tensor(0.75).to(z.device)  # mean, length scale
 
 
@@ -409,7 +446,7 @@ class Dec_TransformerIMG(VaeDecoder):
         kernel_size = 4
         cnn_kwargs = dict(stride=2, padding=1)
         self.reshape = (hid_channels, kernel_size, kernel_size)
-        self.lin = torch.nn.DataParallel(nn.Linear(self.out_dim, np.product(self.reshape)))
+        self.lin = torch.nn.DataParallel(nn.Linear(self.self.out_dim, np.product(self.reshape)))
         self.deconvolve = torch.nn.DataParallel(
             torch.nn.Sequential(nn.ConvTranspose2d(hid_channels, hid_channels, kernel_size, **cnn_kwargs),
                                 torch.nn.SiLU(),
@@ -540,12 +577,12 @@ class Dec_Transformer(VaeDecoder):
         self.input_feats = self.njoints * self.nfeats
         self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.out_dim, self.dropout))
 
-        seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.out_dim,
+        seqTransDecoderLayer = (nn.TransformerDecoderLayer(d_model=self.out_dim,
                                                                                 nhead=self.num_heads,
                                                                                 dim_feedforward=self.ff_size,
                                                                                 dropout=self.dropout,
                                                                                 activation=activation))
-        self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
+        self.seqTransDecoder = (nn.TransformerDecoder(seqTransDecoderLayer,
                                                                            num_layers=self.num_layers))
         self.finallayer = torch.nn.DataParallel(nn.Linear(self.out_dim, self.input_feats))
 
@@ -578,9 +615,58 @@ class Dec_Transformer(VaeDecoder):
         output = output.permute(1, 0, 2, 3)
         return output.to(z.device), torch.tensor(0.75).to(z.device)
 
+class Dec_ConvTxt(VaeDecoder):
+    def __init__(self, latent_dim, data_dim, latent_private):
+        """
+        Decoder configured for text reconstructions
+
+        :param latent_dim: latent vector dimensionality
+        :type latent_dim: int
+        :param data_dim: dimensions of the data (e.g. [64,64,3] for 64x64x3 images)
+        :type data_dim: list
+        :param latent_private: (optional) size of the private latent space in case of latent factorization
+        :type latent_private: int
+        """
+        super(Dec_ConvTxt, self).__init__(latent_dim, data_dim, latent_private,  net_type=NetworkTypes.TXTTRANSFORMER)
+        fBase = 64
+        self.data_dim = data_dim
+        self.dec = nn.Sequential(
+            nn.ConvTranspose2d(self.out_dim, fBase * 3, 3, 1, 0, bias=False),
+            nn.BatchNorm2d(fBase * 3),
+            nn.ReLU(True),
+            # size: (fBase * 8) x 4 x 4
+            nn.ConvTranspose2d(fBase * 3, fBase * 3, (1, 3), (1, 2), (0, 1), bias=False),
+            nn.BatchNorm2d(fBase * 3),
+            nn.ReLU(True),
+            # size: (fBase * 8) x 4 x 8
+            nn.ConvTranspose2d(fBase * 3, fBase * 3, (1, 3), (1, 2), (0, 1), bias=False),
+            nn.BatchNorm2d(fBase * 3),
+            nn.ReLU(True),
+            # size: (fBase * 4) x 8 x 32
+            nn.ConvTranspose2d(fBase * 3, fBase * 2, 3, 2, 1, bias=False),
+            nn.BatchNorm2d(fBase * 2),
+            nn.ReLU(True),
+            # size: (fBase * 2) x 16 x 64
+            nn.ConvTranspose2d(fBase * 2, fBase, 3, 2, 1, bias=False),
+            nn.BatchNorm2d(fBase),
+            nn.ReLU(True),
+            # size: (fBase) x 32 x 128
+            nn.ConvTranspose2d(fBase, 1, 3, 2, 1, bias=False),
+            nn.ReLU(True)
+            # Output size: 1 x 64 x 256
+        )
+        # inverts the 'embedding' module upto one-hotness
+        self.toVocabSize = nn.Linear(1105, self.data_dim[0]*self.data_dim[1])
+
+    def forward(self, z):
+        z = z["latents"]
+        z = z[0].unsqueeze(-1).unsqueeze(-1)  # fit deconv layers
+        out = self.dec(z)
+        out = torch.sigmoid(self.toVocabSize(out.view(-1,1105)).view(-1, self.data_dim[0], self.data_dim[1]))
+        return out, torch.tensor(0.75).to(z.device)
 
 class Dec_TxtTransformer(VaeDecoder):
-    def __init__(self, latent_dim, data_dim, latent_private, ff_size=1024, num_layers=8, num_heads=2, dropout=0.1, activation="gelu"):
+    def __init__(self, latent_dim, data_dim, latent_private, ff_size=128, num_layers=1, num_heads=2, dropout=0.1, activation="gelu"):
         """
         Transformer decoder configured for character-level text reconstructions
 
@@ -606,51 +692,34 @@ class Dec_TxtTransformer(VaeDecoder):
         self.num_heads = num_heads
         self.dropout = dropout
         self.activation = activation
+
         self.input_feats = self.njoints * self.nfeats
-        self.softmax = nn.Softmax(dim=2)
         self.sigmoid = nn.Sigmoid()
-        self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.out_dim, self.dropout))
-        self.conv2 = nn.ConvTranspose1d(self.out_dim, self.input_feats,
-                                        kernel_size=4,
-                                        stride=2,
-                                        padding=1,
-                                        dilation=1,
-                                        output_padding=0)
-        seqTransDecoderLayer = torch.nn.DataParallel(nn.TransformerDecoderLayer(d_model=self.out_dim,
+        seqTransDecoderLayer = (nn.TransformerDecoderLayer(d_model=self.out_dim,
                                                                                 nhead=self.num_heads,
                                                                                 dim_feedforward=self.ff_size,
                                                                                 dropout=self.dropout,
                                                                                 activation=activation))
-        self.seqTransDecoder = torch.nn.DataParallel(nn.TransformerDecoder(seqTransDecoderLayer,
+        self.seqTransDecoder = (nn.TransformerDecoder(seqTransDecoderLayer,
                                                                            num_layers=self.num_layers))
         self.finallayer = torch.nn.DataParallel(nn.Linear(self.out_dim, self.input_feats))
-
+        self.sequence_pos_encoder = torch.nn.DataParallel(PositionalEncoding(self.out_dim, self.dropout))
 
     def forward(self, batch):
-        """
-        Forward pass
-
-        :param batch: list with sampled latent vectors z and (optionally) boolean masks for desired lengths
-        :type batch: list, torch.tensor
-        :return: output reconstructions, log variance
-        :rtype: tuple(torch.tensor, torch.tensor)
-        """
         z = batch["latents"]
+        z = z.unsqueeze(0) if len(z.shape) == 2 else z
         mask = batch["masks"]
-        z = z.reshape(-1, self.out_dim).unsqueeze(0)
+        latent_dim = z.shape[-1]
         bs = z.shape[1]
-        if mask is not None:
-            if bs > mask.shape[0]:
-                mask = mask.repeat(int(bs / mask.shape[0]), 1)
-            mask = mask.to(z.device)
-        else:
-            mask = torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(z.device)
-        timequeries = torch.zeros(mask.shape[1], bs, self.out_dim, device=z.device)
+        mask = mask.to(z.device) if mask is not None else torch.tensor(np.ones((bs, self.data_dim[0]), dtype=bool)).to(
+            z.device)
+        timequeries = torch.zeros(mask.shape[1], bs, latent_dim, device=z.device)
         timequeries = self.sequence_pos_encoder(timequeries)
         output = self.seqTransDecoder(tgt=timequeries, memory=z,
                                       tgt_key_padding_mask=~mask)
-        output = (self.finallayer(self.sigmoid(output)).reshape(mask.shape[1], bs, self.njoints, self.nfeats)).squeeze(
-            -1)
+        output = (self.finallayer((output)).reshape(mask.shape[1], bs, self.njoints, self.nfeats)).squeeze(-1)
         # zero for padded area
         output = output.permute(1, 0, 2) * mask.unsqueeze(dim=-1).repeat(1, 1, self.njoints).float()
         return output.to(z.device), torch.tensor(0.75).to(z.device)
+
+

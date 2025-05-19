@@ -1,0 +1,46 @@
+batch_size: 64
+beta: 1
+dataset_name: vilanro
+epochs: 400
+exp_name: vilanro_d5b_mvae
+iterseeds: 1
+labels: null
+lr: 1e-3
+mixing: poe
+modality_1:
+  decoder: TxtTransformer
+  encoder: TxtTransformer
+  llik_scaling: 1
+  mod_type: language
+  path: ./data/vilanro/D5b/instructions_final.pkl
+  prior: normal
+  private_latents: null
+  recon_loss: optimal_sigma
+  test_datapath: null
+modality_2:
+  decoder: Transformer
+  encoder: Transformer
+  llik_scaling: 1
+  mod_type: actions
+  path: ./data/vilanro/D5b/endeff_actions_final.pkl
+  prior: normal
+  private_latents: null
+  recon_loss: optimal_sigma
+  test_datapath: null
+modality_3:
+  decoder: CNN
+  encoder: CNN
+  llik_scaling: 1
+  mod_type: front RGB
+  path: ./data/vilanro/D5b/image_final.pkl
+  prior: normal
+  private_latents: null
+  recon_loss: optimal_sigma
+  test_datapath: null
+n_latents: 32
+obj: elbo
+optimizer: adam
+pre_trained: null
+seed: 2
+test_split: 0.1
+viz_freq: 100

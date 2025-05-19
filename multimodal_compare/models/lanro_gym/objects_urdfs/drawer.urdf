@@ -1,0 +1,26 @@
+<?xml version="0.0" ?>
+<robot name="model.urdf">
+  <link name="baseLink">
+    <contact>
+      <friction_anchor/>
+      <lateral_friction value="1"/>
+      <rolling_friction value="1"/>
+
+    </contact>
+    <inertial>
+       <origin rpy="0 0 0" xyz="0 0 0"/>
+       <mass value="1.1"/>
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0" />
+    </inertial>
+    <visual>
+      <geometry>
+        <mesh filename="./drawer/drawerhandle.obj" scale="1 1 1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+    	 	<mesh filename="./drawer/drawerhandle.obj" scale="1 1 1"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
